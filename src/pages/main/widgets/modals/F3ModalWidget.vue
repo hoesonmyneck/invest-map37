@@ -4,24 +4,27 @@
             <a-spin />
         </div>
         <BaseCard v-else title="" number="" :show-close-button="true" @close="$emit('close')">
+            <div class="flex gap-1 text-white">
+                <div :class="{ 'active': tab === 1 }" @click="tab = 1" class="btn mini">Вакансии</div>
+                <div :class="{ 'active': tab === 2 }" @click="tab = 2" class="btn mini">Резюме</div>
+            </div>
             <div class="grid grid-cols-3 text-white h-[40vh]">
                 <div>
                     <highcharts :options="chartOptions" class="w-full m-auto h-[calc(100%-100px)]"></highcharts>
                     <ul class=" gap-4 flex-col gap-3 text-[10px] justify-center">
                         <li class="flex gap-2 mb-2">
                             <p class="w-4 h-4 rounded-full" style="background-color: #4990D3;"></p> Весь рынок:
-                            <b>{{
-                                Numeral(vacancy_count) }}</b>
+                            <b>{{ Numeral(tab === 1 ? vacancy_count : resume_count) }}</b>
                         </li>
                         <li class="flex gap-2 mb-2">
                             <p class="w-4 h-4 rounded-full" style="background-color: #D568FB;"></p>
                             Квалифицированные
-                            профессии: <b>{{ Numeral(qual_prof) }}</b>
+                            профессии: <b>{{ Numeral(tab === 1 ? qual_prof : qual_resume_prof) }}</b>
                         </li>
                         <li class="flex gap-2 mb-2">
                             <p class="w-4 h-4 rounded-full" style="background-color: #D15B32;"></p> Рабочие
                             профессии:
-                            <b>{{ Numeral(rab_prof) }}</b>
+                            <b>{{ Numeral(tab === 1 ? rab_prof : rab_resume_prof) }}</b>
                         </li>
                     </ul>
                 </div>
@@ -76,11 +79,9 @@
             </div>
             <div class="map h-[calc(54vh)]">
                 <div class="flex items-center justify-between w-full pr-10">
-                    <div class="flex gap-1 text-white">
-                        <div :class="{ 'active': tab === 1 }" @click="tab = 1" class="btn mini">Вакансии</div>
-                        <div :class="{ 'active': tab === 2 }" @click="tab = 2" class="btn mini">Резюме</div>
-                    </div>
-                    <div v-if="currentRegion" class="rounded cursor-pointer bg-[#252A36] w-8 h-8 flex items-center justify-center cursor-pointer"
+                    <div></div>
+                    <div v-if="currentRegion"
+                        class="rounded cursor-pointer bg-[#252A36] w-8 h-8 flex items-center justify-center cursor-pointer"
                         @click="currentRegion = null">
                         <CloseOutlined />
                     </div>
@@ -99,7 +100,7 @@
                                     <p>Регион:</p>
                                     <p class="font-bold">{{ p.properties.region }}</p>
                                 </div>
-                                <div class="flex items-center gap-2 ">
+                                <!-- <div class="flex items-center gap-2 ">
                                     <p>Вакансий:</p>
                                     <p class="font-bold">{{ groupByRegion()[+p.properties.parent1_code]?.vacancy_count
                                         }}</p>
@@ -108,7 +109,7 @@
                                     <p>Резюме:</p>
                                     <p class="font-bold">{{ groupByRegion()[+p.properties.parent1_code]?.resume_count }}
                                     </p>
-                                </div>
+                                </div> -->
                             </l-tooltip>
                         </l-polygon>
                     </template>
@@ -128,7 +129,7 @@ import { useRegionStore } from '../../../../entities/region/store';
 import { storeToRefs } from 'pinia';
 import { reverseCoordinates } from '../../../../shared/helpers/reverseCoordinates';
 import { getColorFromGradient } from "../../../../shared/helpers/gradientColors";
-import { CloseCircleFilled, CloseOutlined } from "@ant-design/icons-vue";
+import { CloseOutlined } from "@ant-design/icons-vue";
 
 const loader = ref(false);
 const data = ref([]);
@@ -182,7 +183,11 @@ const maxRegionResumeCount = computed(() => Object.values(groupByRegion()).sort(
 
 const qual_prof = computed(() => data.value.filter(item => !!currentRegion.value ? item.parent1_code === currentRegion.value : true).reduce((acc, curr) => acc += curr.qual_prof, 0))
 const rab_prof = computed(() => data.value.filter(item => !!currentRegion.value ? item.parent1_code === currentRegion.value : true).reduce((acc, curr) => acc += curr.rab_prof, 0))
+const qual_resume_prof = computed(() => data.value.filter(item => !!currentRegion.value ? item.parent1_code === currentRegion.value : true).reduce((acc, curr) => acc += curr.qual_resume, 0))
+const rab_resume_prof = computed(() => data.value.filter(item => !!currentRegion.value ? item.parent1_code === currentRegion.value : true).reduce((acc, curr) => acc += curr.rab_resume, 0))
+
 const vacancy_count = computed(() => data.value.filter(item => !!currentRegion.value ? item.parent1_code === currentRegion.value : true).reduce((acc, curr) => acc += curr.vacancy_count, 0))
+const resume_count = computed(() => data.value.filter(item => !!currentRegion.value ? item.parent1_code === currentRegion.value : true).reduce((acc, curr) => acc += curr.resume_count, 0))
 
 const chartOptions = computed(() => ({
     chart: {
@@ -240,7 +245,7 @@ const chartOptions = computed(() => ({
             color: '#4990D3',
             radius: '112%',
             innerRadius: '88%',
-            count: Numeral(vacancy_count.value),
+            count: tab.value === 1 ? Numeral(vacancy_count.value) : Numeral(resume_count.value),
             y: 100
         }],
         custom: {
@@ -254,7 +259,7 @@ const chartOptions = computed(() => ({
             radius: '87%',
             innerRadius: '63%',
             count: Numeral(qual_prof.value),
-            y: qual_prof.value / vacancy_count.value * 100
+            y: tab.value === 1 ? (qual_prof.value / vacancy_count.value * 100) : (qual_resume_prof.value / resume_count.value * 100)
         }],
         custom: {
             icon: 'comments-o',
@@ -267,7 +272,7 @@ const chartOptions = computed(() => ({
             radius: '62%',
             innerRadius: '38%',
             count: Numeral(rab_prof.value),
-            y: rab_prof.value / vacancy_count.value * 100
+            y: tab.value === 1 ? (rab_prof.value / vacancy_count.value * 100) : (rab_resume_prof.value / resume_count.value * 100)
         }],
         custom: {
             icon: 'commenting-o',
