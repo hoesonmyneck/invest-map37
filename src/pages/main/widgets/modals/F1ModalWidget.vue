@@ -171,7 +171,6 @@ const chartOptions = computed(() => {
     return {
         chart: {
             type: "solidgauge",
-            height: "100%",
             backgroundColor: "transparent",
         },
 
