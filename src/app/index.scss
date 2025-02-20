@@ -1,59 +1,59 @@
 * {
-    box-sizing: border-box;
+  box-sizing: border-box;
 }
 
 .ant-modal-content {
-    background-color: #181818 !important;
-    padding: 0 !important;
+  background-color: #181818 !important;
+  padding: 0 !important;
 
-    .anticon svg{
-        fill: #fff; 
-    }
+  .anticon svg {
+    fill: #fff;
+  }
 }
 
 .leaflet-container,
-.leaflet-control-attribution{
-    background-color: transparent !important;
+.leaflet-control-attribution {
+  background-color: transparent !important;
 }
 
-.leaflet-interactive{
-    outline: none !important;
+.leaflet-interactive {
+  outline: none !important;
 }
 
-.highcharts-credits{
-    display: none;
+.highcharts-credits {
+  display: none;
 }
 
-.btn{
-    cursor: pointer;
-    border: 1px solid #ccc;
-    border-radius: 5px;
-    text-align: center;
-    width: max-content;
-    padding: 3px 15px;
-    font-size: 12px;
-    transition: all 0.2s ease;
-    display: flex;
-    align-items: center;
+.btn {
+  cursor: pointer;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  text-align: center;
+  width: max-content;
+  padding: 3px 15px;
+  font-size: 12px;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
 
-    &.mini{
-        padding: 3px 10px;
-        font-size: 9px;
-    }
+  &.mini {
+    padding: 3px 10px;
+    font-size: 9px;
+  }
 
-    &.active{
-        border: 1px solid #3090E8;
-        background: #3090E8;
-        color: #fff;
-    }
+  &.active {
+    border: 1px solid #3090e8;
+    background: #3090e8;
+    color: #fff;
+  }
 
-    &:hover{
-        border: 1px solid #3090E8;
-        background: #3090E8;
-        color: #fff;
-    }
+  &:hover {
+    border: 1px solid #3090e8;
+    background: #3090e8;
+    color: #fff;
+  }
 }
 
-.highcharts-grid-line{
-    display: none;
+.highcharts-grid-line {
+  display: none;
 }
