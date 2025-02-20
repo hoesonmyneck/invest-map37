@@ -1,8 +1,6 @@
 <template>
   <div>
-    <BaseCard title="Рынок труда" number="F1" :show-open-button="true" @open="openLink">
-      <div class="btn mini text-white active">Программы</div>
-
+    <BaseCard title="Рынок труда" number="F1" :show-open-button="true" @open="visible = true">
       <div class="flex pt-5 justify-center items-center w-full" v-if="loader">
         <a-spin />
       </div>
