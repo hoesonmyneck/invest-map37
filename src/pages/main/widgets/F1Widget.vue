@@ -73,17 +73,13 @@ import F1ModalWidget from "./modals/F1ModalWidget.vue";
 import BaseCard from "../../../shared/ui/BaseCard/BaseCard.vue";
 
 const loader = ref(true);
-const data = ref([]);
+const data = ref<any[]>([]);
 const visible = ref(false);
 
 async function loadF1() {
   data.value = await getF1().finally(() => {
     loader.value = false;
   });
-}
-
-function openLink() {
-  window.open("https://map-invest-new.netlify.app/", "_blank");
 }
 
 loadF1();

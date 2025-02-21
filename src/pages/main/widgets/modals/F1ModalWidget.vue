@@ -1,43 +1,22 @@
 <template>
-  <a-modal
-    :footer="null"
-    class="p-0"
-    width="100%"
-    height="100%"
-    :closable="false"
-    :centered="true"
-  >
+  <a-modal :footer="null" class="p-0" width="100%" height="100%" :closable="false" :centered="true">
     <div class="flex pt-10 justify-center items-center w-full" v-if="loader">
       <a-spin />
     </div>
-    <BaseCard
-      v-else
-      title=""
-      number=""
-      :show-close-button="true"
-      @close="$emit('close')"
-    >
+    <BaseCard v-else title="" number="" :show-close-button="true" @close="$emit('close')">
       <div class="grid grid-cols-2 h-[35vh]">
         <div>
           <div class="btn mini text-white active" @click="openLink">
             Программы
           </div>
 
-          <div
-            class="flex pt-5 justify-center items-center w-full"
-            v-if="loader"
-          >
+          <div class="flex pt-5 justify-center items-center w-full" v-if="loader">
             <a-spin />
           </div>
           <div v-else class="text-white grid grid-cols-2 gap-2">
             <div class="relative">
-              <highcharts
-                :options="chartOptions"
-                class="h-[350px] w-full m-auto"
-              ></highcharts>
-              <div
-                class="absolute text-center top-[150px] m-auto left-1/2 -translate-x-1/2"
-              >
+              <highcharts :options="chartOptions" class="h-[350px] w-full m-auto"></highcharts>
+              <div class="absolute text-center top-[150px] m-auto left-1/2 -translate-x-1/2">
                 <p class="text-[24px] mx-3">
                   {{ Intl.NumberFormat().format(naselenie) }}
                 </p>
@@ -59,17 +38,10 @@
 
             <div>
               <ul>
-                <li
-                  class="flex text-[10px] items-center gap-2 mb-3 text-lg justify-between"
-                  v-for="item in list"
-                  :key="item.title"
-                >
+                <li class="flex text-[10px] items-center gap-2 mb-3 text-lg justify-between" v-for="item in list"
+                  :key="item.title">
                   <div class="flex gap-2 items-center">
-                    <img
-                      :src="`/images/icons/${item.icon}.png`"
-                      alt=""
-                      class="h-4"
-                    />
+                    <img :src="`/images/icons/${item.icon}.png`" alt="" class="h-4" />
                     <p>{{ item.title }}</p>
                   </div>
                   <div class="flex gap-2 items-center">
@@ -85,86 +57,44 @@
         </div>
       </div>
       <div class="map h-[calc(54vh)] relative">
-        <div
-          v-if="!!currentRegion"
-          class="absolute top-5 z-10 right-5 rounded cursor-pointer bg-[#252A36] w-8 h-8 flex items-center justify-center cursor-pointer"
-          @click="currentRegion = null"
-        >
+        <div v-if="!!currentRegion"
+          class="absolute top-5 z-10 right-5 rounded bg-[#252A36] w-8 h-8 flex items-center justify-center cursor-pointer"
+          @click="currentRegion = null">
           <CloseOutlined />
         </div>
-        <l-map
-          ref="mapRef"
-          :zoom="5"
-          :max-zoom="5"
-          :min-zoom="5"
-          :center="[49.213962, 67.109173]"
-          :options="{ zoomControl: false }"
-          class="w-full"
-          :use-global-leaflet="false"
-        >
-          <!-- <l-tile-layer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" /> -->
-          <template>
-            <l-polygon
-              v-for="p in Object.values(regionPolygons.features)"
-              :key="p.parent1_code"
-              @click="currentRegion = p.properties.parent1_code"
-              :lat-lngs="reverseCoordinates(p.geometry.coordinates)"
-              color="white"
-              :opacity="1"
-              :weight="1"
-              :fillOpacity="1"
-              :fillColor="
-                getColorFromGradient(
-                  (+groupByRegion()[+p.properties.parent1_code].rt_unemployed /
-                    allBezrabot) *
-                    100,
-                  true,
-                  false,
-                  10
-                )
-              "
-            >
-              <l-tooltip class="p-0 bg-transparent rounded-md">
-                <div class="flex items-center gap-2">
-                  <p>Регион:</p>
-                  <p class="font-bold">{{ p.properties.region }}</p>
-                </div>
-                <div class="flex items-center gap-2">
-                  <p>Безрабочий:</p>
-                  <p class="font-bold">
-                    {{
-                      Numeral(
-                        groupByRegion()[+p.properties.parent1_code]
-                          .rt_unemployed
-                      )
-                    }}
-                  </p>
-                </div>
-              </l-tooltip>
-            </l-polygon>
-          </template>
-        </l-map>
+        <BaseMap :current-region="+currentRegion" :fill-color="(v) => {
+          return getColorFromGradient((+groupByRegion()[+v].rt_unemployed / allBezrabot) * 100, true, false, 10)
+        }" @click-polygon="clickPolygon" v-slot="slotProps">
+          <div>
+            <div class="flex items-center gap-2">
+              <p>Регион:</p>
+              <p class="font-bold">{{ slotProps.data.region }}</p>
+            </div>
+            <div class="flex items-center gap-2">
+              <p>Безрабочий:</p>
+              <p class="font-bold">
+                {{ Numeral(groupByRegion()[+slotProps.data.parent1_code].rt_unemployed) }}
+              </p>
+            </div>
+          </div>
+        </BaseMap>
       </div>
     </BaseCard>
   </a-modal>
 </template>
 <script setup lang="ts">
-import "leaflet/dist/leaflet.css";
-import { LMap, LTooltip, LPolygon } from "@vue-leaflet/vue-leaflet";
 import { computed, ref } from "vue";
 import BaseCard from "../../../../shared/ui/BaseCard/BaseCard.vue";
 
 import { getF1 } from "../../../../entities/f/api";
 import { Numeral } from "../../../../shared/helpers/numeral";
 import { getColorFromGradient } from "../../../../shared/helpers/gradientColors";
-import { reverseCoordinates } from "../../../../shared/helpers/reverseCoordinates";
-import { useRegionStore } from "../../../../entities/region/store";
 import { CloseOutlined } from "@ant-design/icons-vue";
+import BaseMap from "../../../../shared/ui/BaseMap/BaseMap.vue";
 
 const loader = ref(true);
-const data = ref([]);
-const currentRegion = ref(null);
-const { regionPolygons } = useRegionStore();
+const data = ref<any[]>([]);
+const currentRegion = ref();
 
 async function loadF1() {
   data.value = await getF1().finally(() => {
@@ -174,6 +104,10 @@ async function loadF1() {
 
 function openLink() {
   window.open("https://map-invest-new.netlify.app/", "_blank");
+}
+
+function clickPolygon(code: string) {
+  currentRegion.value = +code;
 }
 
 loadF1();
@@ -187,7 +121,7 @@ const groupByRegion = () =>
 
     acc[curr.parent1_code].rt_unemployed += +curr.rt_unemployed;
     return acc;
-  }, {});
+  }, {} as any);
 
 const _filter = computed(() =>
   [...data.value].filter((e) =>

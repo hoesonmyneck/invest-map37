@@ -105,7 +105,7 @@ import F3ModalWidget from "./modals/F3ModalWidget.vue";
 const loader = ref(false);
 const data = ref([]);
 const tab = ref(0);
-const visible = ref(false);
+const visible = ref(true);
 
 async function loadF3() {
   loader.value = true;
