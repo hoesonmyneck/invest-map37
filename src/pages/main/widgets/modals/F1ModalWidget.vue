@@ -1,22 +1,43 @@
 <template>
-  <a-modal :footer="null" class="p-0" width="100%" height="100%" :closable="false" :centered="true">
+  <a-modal
+    :footer="null"
+    class="p-0"
+    width="100%"
+    height="100%"
+    :closable="false"
+    :centered="true"
+  >
     <div class="flex pt-10 justify-center items-center w-full" v-if="loader">
       <a-spin />
     </div>
-    <BaseCard v-else title="" number="" :show-close-button="true" @close="$emit('close')">
+    <BaseCard
+      v-else
+      title=""
+      number=""
+      :show-close-button="true"
+      @close="$emit('close')"
+    >
       <div class="grid grid-cols-2 h-[35vh]">
         <div>
           <div class="btn mini text-white active" @click="openLink">
             Программы
           </div>
 
-          <div class="flex pt-5 justify-center items-center w-full" v-if="loader">
+          <div
+            class="flex pt-5 justify-center items-center w-full"
+            v-if="loader"
+          >
             <a-spin />
           </div>
           <div v-else class="text-white grid grid-cols-2 gap-2">
             <div class="relative">
-              <highcharts :options="chartOptions" class="h-[350px] w-full m-auto"></highcharts>
-              <div class="absolute text-center top-[150px] m-auto left-1/2 -translate-x-1/2">
+              <highcharts
+                :options="chartOptions"
+                class="h-[350px] w-full m-auto"
+              ></highcharts>
+              <div
+                class="absolute text-center top-[150px] m-auto left-1/2 -translate-x-1/2"
+              >
                 <p class="text-[24px] mx-3">
                   {{ Intl.NumberFormat().format(naselenie) }}
                 </p>
@@ -38,10 +59,17 @@
 
             <div>
               <ul>
-                <li class="flex text-[10px] items-center gap-2 mb-3 text-lg justify-between" v-for="item in list"
-                  :key="item.title">
+                <li
+                  class="flex text-[10px] items-center gap-2 mb-3 text-lg justify-between"
+                  v-for="item in list"
+                  :key="item.title"
+                >
                   <div class="flex gap-2 items-center">
-                    <img :src="`/images/icons/${item.icon}.png`" alt="" class="h-4" />
+                    <img
+                      :src="`/images/icons/${item.icon}.png`"
+                      alt=""
+                      class="h-4"
+                    />
                     <p>{{ item.title }}</p>
                   </div>
                   <div class="flex gap-2 items-center">
@@ -57,14 +85,28 @@
         </div>
       </div>
       <div class="map h-[calc(54vh)] relative">
-        <div v-if="!!currentRegion"
+        <div
+          v-if="!!currentRegion"
           class="absolute top-5 z-10 right-5 rounded bg-[#252A36] w-8 h-8 flex items-center justify-center cursor-pointer"
-          @click="currentRegion = null">
+          @click="currentRegion = null"
+        >
           <CloseOutlined />
         </div>
-        <BaseMap :current-region="+currentRegion" :fill-color="(v) => {
-          return getColorFromGradient((+groupByRegion()[+v].rt_unemployed / allBezrabot) * 100, true, false, 10)
-        }" @click-polygon="clickPolygon" v-slot="slotProps">
+        <BaseMap
+          :current-region="+currentRegion"
+          :fill-color="
+            (v) => {
+              return getColorFromGradient(
+                (+groupByRegion()[+v].rt_unemployed / allBezrabot) * 100,
+                true,
+                false,
+                10
+              );
+            }
+          "
+          @click-polygon="clickPolygon"
+          v-slot="slotProps"
+        >
           <div>
             <div class="flex items-center gap-2">
               <p>Регион:</p>
@@ -73,7 +115,11 @@
             <div class="flex items-center gap-2">
               <p>Безрабочий:</p>
               <p class="font-bold">
-                {{ Numeral(groupByRegion()[+slotProps.data.parent1_code].rt_unemployed) }}
+                {{
+                  Numeral(
+                    groupByRegion()[+slotProps.data.parent1_code].rt_unemployed
+                  )
+                }}
               </p>
             </div>
           </div>
