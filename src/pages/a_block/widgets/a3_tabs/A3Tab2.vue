@@ -1,0 +1,87 @@
+<template>
+    <div class="overflow-scroll h-[calc(50vh-156px)] text-white text-[12px] pt-3">
+        <ul class="head text-white pb-1 mb-1 border-b border-gray-700 items-end w-min">
+            <li>Наименование</li>
+            <li>Стоимость проекта</li>
+            <li>План раб.мест</li>
+            <li>Факт раб.мест</li>
+            <li>%</li>
+            <li>План ФОТ</li>
+            <li>Факт ФОТ</li>
+            <li>%</li>
+            <li>СМЗ</li>
+            <li>Риски КТР</li>
+            <li>Высокий</li>
+            <li>Средний</li>
+            <li>Отсутствует</li>
+        </ul>
+        <div class="body">
+            <template v-for="item in a1FilterByOtrasl" :key="item">
+                <div class="head mt-1">
+                    <a-tooltip placement="topLeft" :title="item.project_name">
+                        <p class="element truncate cur cursor-pointer"
+                            :class="{ 'text-[#3090e8]': currentProject === item.id }"
+                            @click="aStore.setCurrentProject(item.id)">
+                            {{ item.project_name }}
+                        </p>
+                    </a-tooltip>
+                    <p class="element truncate text-center">{{ Numeral(item.project_price) }}</p>
+
+                    <p class="element truncate text-center">{{ Numeral(item.work_places) }}</p>
+                    <p class="element truncate text-center">{{ Numeral(item.fact_work) }}</p>
+                    <p class="element truncate text-center"
+                        :style="{ background: getColorFromGradient(item.fact_work / item.work_places * 100) }">
+                        {{ Numeral(item.fact_work / item.work_places * 100) }}%
+                    </p>
+
+                    <p class="element truncate text-center">{{ Numeral(item.plan_fot) }}</p>
+                    <p class="element truncate text-center">{{ Numeral(item.fact_fot) }}</p>
+
+                    <p class="element truncate text-center"
+                        :style="{ background: getColorFromGradient(item.fact_fot / item.plan_fot * 100) }">
+                        {{ Numeral(item.fact_fot / item.plan_fot * 100) }}%
+                    </p>
+
+                    <p class="element truncate text-center">{{ Numeral(item.smz_12mes) }}</p>
+                    <p class="element truncate text-center border border-[#3090e8]">
+                        {{ Numeral(item.risk_otsut + item.risk_vysok + item.risk_sred) }}
+                    </p>
+                    <p class="element truncate text-center border border-[#3090e8]">{{ Numeral(item.risk_vysok)
+                        }}</p>
+                    <p class="element truncate text-center border border-[#3090e8]">{{ Numeral(item.risk_sred)
+                        }}</p>
+                    <p class="element truncate text-center border border-[#3090e8]">{{ Numeral(item.risk_otsut)
+                        }}</p>
+                </div>
+            </template>
+        </div>
+    </div>
+</template>
+<script setup lang="ts">
+import { Numeral } from '../../../../shared/helpers/numeral';
+import { useAStore } from '../../store';
+import { storeToRefs } from 'pinia';
+import { getColorFromGradient } from '../../../../shared/helpers/gradientColors';
+
+const aStore = useAStore()
+const { a1FilterByOtrasl, currentProject } = storeToRefs(aStore);
+
+</script>
+<style scoped lang="scss">
+.head {
+    display: grid;
+    grid-gap: 4px;
+    grid-template-columns: 150px 120px 120px 120px 50px 140px 110px 50px 120px 90px 90px 90px 90px;
+}
+
+.element {
+    position: relative;
+    display: flex;
+    background: #252A36;
+    border-radius: 6px;
+    width: 100%;
+    height: 30px;
+    padding: 0 12px;
+    align-items: center;
+}
+</style>

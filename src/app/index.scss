@@ -1,3 +1,5 @@
+@import "./styles/main.scss";
+@import "./styles/components.scss";
 * {
   box-sizing: border-box;
 }
@@ -24,35 +26,6 @@
   display: none;
 }
 
-.btn {
-  cursor: pointer;
-  border: 1px solid #ccc;
-  border-radius: 5px;
-  text-align: center;
-  width: max-content;
-  padding: 3px 15px;
-  font-size: 12px;
-  transition: all 0.2s ease;
-  display: flex;
-  align-items: center;
-
-  &.mini {
-    padding: 3px 10px;
-    font-size: 9px;
-  }
-
-  &.active {
-    border: 1px solid #3090e8;
-    background: #3090e8;
-    color: #fff;
-  }
-
-  &:hover {
-    border: 1px solid #3090e8;
-    background: #3090e8;
-    color: #fff;
-  }
-}
 
 .highcharts-grid-line {
   display: none;

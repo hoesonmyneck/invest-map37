@@ -1,32 +1,32 @@
 import { api } from "../../shared/api";
 
 export const getF1 = async () => {
-  const res = await api.get(`data/f1.json`);
+  const res = await api.get(`data/f/f1.json`);
   return res.data;
 };
 
 export const getF2 = async () => {
-  const res = await api.get(`data/f2.json`);
+  const res = await api.get(`data/f/f2.json`);
   return res.data;
 };
 
 export const getF3 = async () => {
-  const res = await api.get(`data/f3.json`);
+  const res = await api.get(`data/f/f3.json`);
   return res.data;
 };
 
 export const getF4 = async () => {
-  const res = await api.get(`data/f4.json`);
+  const res = await api.get(`data/f/f4.json`);
   return res.data;
 };
 
 export const getF5 = async () => {
-  const res = await api.get(`data/f5.json`);
+  const res = await api.get(`data/f/f5.json`);
   return res.data;
 };
 
 export const getF5_1 = async () => {
-  const res = await api.get(`data/f5-1.json`);
+  const res = await api.get(`data/f/f5-1.json`);
   return res.data;
 };
 

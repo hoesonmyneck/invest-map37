@@ -1,0 +1,11 @@
+interface AInfo {
+  id: string;
+  name: string;
+  description: string;
+  cnt: number;
+  rt_unemployed: number;
+  trud_vozrast: number;
+  working: number;
+  nezanyat: number;
+  unemployed: number;
+}

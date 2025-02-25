@@ -1,21 +1,10 @@
 <template>
-  <l-map
-    ref="mapRef"
-    :zoom="5"
-    :max-zoom="5"
-    :min-zoom="5"
-    :center="mapCenter"
-    :options="mapOptions"
-    class="w-full"
-    :use-global-leaflet="false"
-  >
-    <l-polygon
-      v-for="feature in polygonFeatures"
-      :key="feature.parent1_code"
+  <l-map ref="mapRef" :zoom="zoom ?? 5" :max-zoom="5" :min-zoom="4" :center="mapCenter" :options="mapOptions"
+    class="w-full" :use-global-leaflet="false">
+    <l-polygon v-for="feature in polygonFeatures" :key="feature.parent1_code"
       @click="handlePolygonClick(feature.properties.parent1_code)"
       :lat-lngs="reverseCoordinates(feature.geometry.coordinates as [number, number][][])"
-      v-bind="polygonStyles(feature.properties.parent1_code)"
-    >
+      v-bind="polygonStyles(feature.properties.parent1_code)">
       <l-tooltip class="p-0 bg-transparent rounded-md">
         <slot :data="feature.properties" />
       </l-tooltip>
@@ -44,6 +33,7 @@ const DEFAULT_POLYGON_STYLES = {
 interface Props {
   fillColor: (data: any) => string;
   currentRegion?: number;
+  zoom?: number;
 }
 
 const props = defineProps<Props>();

@@ -1,21 +1,14 @@
 <template>
   <div :key="cardId" class="p-1 bg-[#1C1F27] w-full h-full rounded">
-    <div class="head flex justify-between bg-[#252A36] p-2 rounded">
+    <div class="head flex justify-between bg-[#252A36] p-2 rounded w-full">
       <div class="flex text-xs text-white items-center">
         <p class="border-r mr-2 pr-2 border-[#3B3F4B]">{{ number }}</p>
         <p>{{ title }}</p>
       </div>
       <div class="flex items-center text-white text-xs gap-4 pr-2">
-        <ExpandOutlined
-          v-if="showOpenButton"
-          @click="emit('open')"
-          class="cursor-pointer"
-        />
-        <CloseOutlined
-          v-if="showCloseButton"
-          @click="emit('close')"
-          class="cursor-pointer"
-        />
+        <slot name="actions" />
+        <ExpandOutlined v-if="showOpenButton" @click="emit('open')" class="cursor-pointer" />
+        <CloseOutlined v-if="showCloseButton" @click="emit('close')" class="cursor-pointer" />
       </div>
     </div>
     <div class="p-2">

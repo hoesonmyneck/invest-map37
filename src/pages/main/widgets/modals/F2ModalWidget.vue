@@ -28,7 +28,7 @@
               </p>
               <p class="h-6 w-full px-3 flex items-center bg-[#252A36] rounded w-full truncate">
                 {{
-                  !!i.prirost_2025 ? `${+i.prirost_2025.toFixed(2)} %` : ""
+                !!i.prirost_2025 ? `${+i.prirost_2025.toFixed(2)} %` : ""
                 }}
               </p>
             </div>
@@ -56,38 +56,6 @@
               </div>
             </div>
           </BaseMap>
-          <!-- <l-map ref="mapRef" :zoom="5" :center="[49.213962, 67.109173]" :options="{ zoomControl: false }"
-            class="w-full" :use-global-leaflet="false">
-            <template>
-              <l-polygon v-for="p in Object.values(regionPolygons.features)" :key="p.parent1_code"
-                @click="currentRegion = p.properties.parent1_code"
-                :lat-lngs="reverseCoordinates(p.geometry.coordinates)" color="white" :opacity="1" :weight="1"
-                :fillOpacity="1" :fillColor="getColorFromGradient(
-                  (groupByRegion[+p.properties.parent1_code]?.cnt24 /
-                    maxGroupByRegion) *
-                  100 +
-                  10
-                )
-                  ">
-                <l-tooltip class="p-0 bg-transparent rounded-md">
-                  <div class="flex items-center gap-2">
-                    <p>Регион:</p>
-                    <p class="font-bold">{{ p.properties.region }}</p>
-                  </div>
-                  <div class="flex items-center gap-2">
-                    <p>Количество:</p>
-                    <p class="font-bold">
-                      {{
-                        Numeral(
-                          groupByRegion[+p.properties.parent1_code]?.cnt24
-                        )
-                      }}
-                    </p>
-                  </div>
-                </l-tooltip>
-              </l-polygon>
-            </template>
-</l-map> -->
         </div>
       </div>
     </BaseCard>
