@@ -6,6 +6,6 @@ export const getA1 = async () => {
 };
 
 export const getA2 = async () => {
-  const res = await api.get(`data/a/a2.json`);
+  const res = await api.get(`data/a/a2_year.json`);
   return res.data;
 };

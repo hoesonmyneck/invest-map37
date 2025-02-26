@@ -5,10 +5,13 @@
         </div>
         <div v-else class="gap-1 h-[93vh]">
             <div class="grid grid-cols-[1fr_2fr]">
-                <A1Widget />
+                <div class="grid">
+                    <A1Widget />
+                    <A3Widget />
+                </div>
                 <A2Widget />
             </div>
-            <A3Widget />
+            <A4Widget />
         </div>
     </BaseCard>
 </template>
@@ -19,8 +22,9 @@ import { getA2 } from '../../../entities/a/api';
 import BaseCard from '../../../shared/ui/BaseCard/BaseCard.vue';
 import A1Widget from '../widgets/A1Widget.vue';
 import A2Widget from '../widgets/A2Widget.vue';
-import A3Widget from '../widgets/A3Widget.vue';
+import A4Widget from '../widgets/A4Widget.vue';
 import { useAStore } from '../store';
+import A3Widget from '../widgets/A3Widget.vue';
 
 const loader = ref(true);
 

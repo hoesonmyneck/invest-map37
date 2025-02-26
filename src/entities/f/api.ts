@@ -15,11 +15,6 @@ export const getF3 = async () => {
   return res.data;
 };
 
-export const getF4 = async () => {
-  const res = await api.get(`data/f/f4.json`);
-  return res.data;
-};
-
 export const getF5 = async () => {
   const res = await api.get(`data/f/f5.json`);
   return res.data;

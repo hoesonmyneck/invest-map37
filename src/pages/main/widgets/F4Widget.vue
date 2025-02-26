@@ -37,12 +37,12 @@
 <script setup lang="ts">
 import { computed, ref } from "vue";
 import BaseCard from "../../../shared/ui/BaseCard/BaseCard.vue";
-import { getF4 } from "../../../entities/f/api";
 import { randomColorGenerate } from "../../../shared/helpers/randomColorGenerate";
 import { Numeral } from "../../../shared/helpers/numeral";
 import F4ModalWidget from "./modals/F4ModalWidget.vue";
 import { useAStore } from "../../a_block/store";
 import { storeToRefs } from "pinia";
+import { getA1 } from "../../../entities/a/api";
 
 const loader = ref(true);
 const visible = ref(false);
@@ -51,7 +51,7 @@ const aStore = useAStore();
 const { a1 } = storeToRefs(aStore);
 
 async function loadF4() {
-  getF4()
+  getA1()
     .then((res) => {
       aStore.setA1(res);
     })

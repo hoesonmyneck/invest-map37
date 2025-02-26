@@ -18,7 +18,7 @@ export const useAStore = defineStore("a", {
             return this.a1Filter.filter((item) =>  (!this.currentOtrasl || item.otrasl === this.currentOtrasl));
         },
         a1YearFilter(): any[] {
-            return this.a1Year.filter((item) => (!this.currentLabel || +item.label === this.currentLabel) && (!this.currentRegion || item.parent1_code === this.currentRegion));
+            return this.a1Year.filter((item) => +item.year > 2019 && (!this.currentLabel || +item.label === this.currentLabel) && (!this.currentRegion || item.parent1_code === this.currentRegion));
         }
     },
     actions: {

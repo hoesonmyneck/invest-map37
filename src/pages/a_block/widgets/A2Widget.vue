@@ -52,6 +52,10 @@
     </div>
     <div class="map h-[calc(45vh)]">
       <BaseMap class="h-full" :current-region="currentRegion" :zoom="4" :fill-color="(v) => {
+  if (!groupByRegion[v]) {
+    return '#222732'
+  }
+
         if (currentTypeKey === 'project_duration') {
           return getColorFromGradient((groupByRegion[v].sroki_dolg + groupByRegion[v].sroki_krat + groupByRegion[v].sroki_sred) / sroki * 100, false, false, 10)
         }
@@ -113,9 +117,9 @@ import { CloseOutlined } from '@ant-design/icons-vue';
 import { getColorFromGradient } from '../../../shared/helpers/gradientColors';
 
 const aStore = useAStore();
-const { currentRegion, a1Filter, currentTypeKey, a1YearFilter } = storeToRefs(aStore);
+const { currentRegion, a1FilterByOtrasl, currentTypeKey, a1YearFilter } = storeToRefs(aStore);
 
-const groupByProject = computed(() => Object.values(a1Filter.value.reduce((acc, curr) => {
+const groupByProject = computed(() => Object.values(a1FilterByOtrasl.value.reduce((acc, curr) => {
   acc[curr.id] = { ...curr };
   return acc;
 }, {})))
@@ -179,7 +183,7 @@ const clickPolygon = (code: string) => {
   currentRegion.value = +code;
 }
 
-const groupByRegion = computed(() => a1Filter.value.reduce((acc, curr) => {
+const groupByRegion = computed(() => a1FilterByOtrasl.value.reduce((acc, curr) => {
   if (!acc[curr.parent1_code]) {
     acc[curr.parent1_code] = {
       ...curr,

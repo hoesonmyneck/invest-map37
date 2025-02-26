@@ -1,5 +1,5 @@
 <template>
-    <div class="overflow-scroll h-[calc(50vh-156px)] text-white text-[12px]">
+    <div class="overflow-scroll h-[34vh] text-white text-[12px]">
         <ul class="head text-white pb-1 mb-1 border-b border-gray-700 items-end w-min">
             <li>Отрасль</li>
             <li>К-во проектов</li>
