@@ -1,5 +1,5 @@
 <template>
-    <highcharts :options="chartOptions" class="h-full" />
+    <highcharts :options="chartOptions" class="h-[380px]" />
 </template>
 <script setup lang="ts">
 import { computed } from 'vue';
@@ -24,6 +24,7 @@ const chartOptions = computed(() => ({
     chart: {
         type: "bar",
         backgroundColor: "transparent",
+        height: "100%",
     },
     title: {
         text: "",

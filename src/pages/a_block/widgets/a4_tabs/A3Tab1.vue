@@ -1,5 +1,5 @@
 <template>
-    <div class="overflow-scroll h-[34vh] text-white text-[12px]">
+    <div class="overflow-scroll h-[27vh] text-white text-[12px]">
         <ul class="head text-white pb-1 mb-1 border-b border-gray-700 items-end w-min">
             <li>Отрасль</li>
             <li>К-во проектов</li>
@@ -58,7 +58,7 @@
                         {{ Numeral(item.risk_otsut + item.risk_vysok + item.risk_sred) }}
                     </p>
                     <p class="element truncate text-center border border-[#3090e8]">{{ Numeral(item.risk_vysok)
-                    }}</p>
+}}</p>
                     <p class="element truncate text-center border border-[#3090e8]">{{ Numeral(item.risk_sred)
                     }}</p>
                     <p class="element truncate text-center border border-[#3090e8]">{{ Numeral(item.risk_otsut)
