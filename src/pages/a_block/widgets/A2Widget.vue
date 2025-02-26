@@ -46,15 +46,16 @@
       </ul>
       <div v-if="!!currentRegion"
         class="rounded absolute z-10 top-5 right-5 bg-[#252A36] w-8 h-8 flex items-center justify-center cursor-pointer"
-        @click="currentRegion = null">
+        @click="currentRegion = null, aStore.setCurrentRaion(null)">
         <CloseOutlined />
       </div>
     </div>
     <div class="map h-[calc(45vh)]">
-      <BaseMap class="h-full" :current-region="currentRegion" :zoom="4" :fill-color="(v) => {
-  if (!groupByRegion[v]) {
-    return '#222732'
-  }
+      <!-- Global Map -->
+      <BaseMap v-if="!currentRegion" class="h-full" :current-region="currentRegion" :zoom="4" :fill-color="(v) => {
+        if (!groupByRegion[v]) {
+          return '#222732'
+        }
 
         if (currentTypeKey === 'project_duration') {
           return getColorFromGradient((groupByRegion[v].sroki_dolg + groupByRegion[v].sroki_krat + groupByRegion[v].sroki_sred) / sroki * 100, false, false, 10)
@@ -104,6 +105,62 @@
           <p class="font-bold">{{ Numeral(groupByRegion[slotProps.data.parent1_code]?.[currentTypeKey]) }}</p>
         </div>
       </BaseMap>
+
+      <!-- Region Map -->
+      <BaseMapRegion v-else class="h-full" :current-region="currentRegion" :current-raion="currentRaion" :zoom="6"
+        :fill-color="(v) => {
+          if (!groupByRaion[v]) {
+            return '#222732'
+          }
+
+          if (currentTypeKey === 'project_duration') {
+            return getColorFromGradient((groupByRaion[v].sroki_dolg + groupByRaion[v].sroki_krat + groupByRaion[v].sroki_sred) / sroki * 100, false, false, 10)
+          }
+
+          if (currentTypeKey === 'percentage_risk_region') {
+            return getColorFromGradient((groupByRaion[v].risk_otsut + groupByRaion[v].risk_vysok + groupByRaion[v].risk_sred) / risk * 100, false, false, 10)
+          }
+
+          const _gradientBlue = ['count', 'project_price', 'project_duration', 'act_exploitation'].includes(currentTypeKey)
+          return getColorFromGradient(groupByRaion[v][currentTypeKey] / SumValues[currentTypeKey] * 100, false, _gradientBlue, 10)
+        }" @click-polygon="aStore.setCurrentRaion" v-slot="slotProps">
+        <div class="flex">
+          <p>Район: </p>
+          <p class="font-bold">{{ slotProps.data.region }}, {{ slotProps.data.raion }}</p>
+        </div>
+        <template v-if="currentTypeKey === 'percentage_risk_region'">
+          <div class="flex">
+            <p>Отсутствует: </p>
+            <p class="font-bold">{{ Numeral(groupByRaion[slotProps.data.parent2_code]?.risk_otsut) }}</p>
+          </div>
+          <div class="flex">
+            <p>Высокий: </p>
+            <p class="font-bold">{{ Numeral(groupByRaion[slotProps.data.parent2_code]?.risk_vysok) }}</p>
+          </div>
+          <div class="flex">
+            <p>Средний: </p>
+            <p class="font-bold">{{ Numeral(groupByRaion[slotProps.data.parent2_code]?.risk_sred) }}</p>
+          </div>
+        </template>
+        <template v-else-if="currentTypeKey === 'project_duration'">
+          <div class="flex">
+            <p>Краткосрочные (0-5 лет): </p>
+            <p class="font-bold">{{ Numeral(groupByRaion[slotProps.data.parent2_code]?.sroki_dolg) }}</p>
+          </div>
+          <div class="flex">
+            <p>Среднесрочные (6-10 лет): </p>
+            <p class="font-bold">{{ Numeral(groupByRaion[slotProps.data.parent2_code]?.sroki_sred) }}</p>
+          </div>
+          <div class="flex">
+            <p>Долгосрочные (11-20 лет): </p>
+            <p class="font-bold">{{ Numeral(groupByRaion[slotProps.data.parent2_code]?.sroki_krat) }}</p>
+          </div>
+        </template>
+        <div class="flex" v-else>
+          <p>{{listLabels.find((item) => item.key === currentTypeKey)?.name}}: </p>
+          <p class="font-bold">{{ Numeral(groupByRaion[slotProps.data.parent2_code]?.[currentTypeKey]) }}</p>
+        </div>
+      </BaseMapRegion>
     </div>
   </div>
 </template>
@@ -115,9 +172,10 @@ import { Numeral } from '../../../shared/helpers/numeral';
 import { storeToRefs } from 'pinia';
 import { CloseOutlined } from '@ant-design/icons-vue';
 import { getColorFromGradient } from '../../../shared/helpers/gradientColors';
+import BaseMapRegion from '../../../shared/ui/BaseMap/BaseMapRegion.vue';
 
 const aStore = useAStore();
-const { currentRegion, a1FilterByOtrasl, currentTypeKey, a1YearFilter } = storeToRefs(aStore);
+const { currentRegion, currentRaion, a1FilterByOtrasl, currentTypeKey } = storeToRefs(aStore);
 
 const groupByProject = computed(() => Object.values(a1FilterByOtrasl.value.reduce((acc, curr) => {
   acc[curr.id] = { ...curr };
@@ -210,6 +268,38 @@ const groupByRegion = computed(() => a1FilterByOtrasl.value.reduce((acc, curr) =
   acc[curr.parent1_code].risk_otsut += curr.ball_tip_name.includes('Отсутствует') ? 1 : 0;
   acc[curr.parent1_code].risk_vysok += curr.ball_tip_name.includes('Высокий') ? 1 : 0;
   acc[curr.parent1_code].risk_sred += curr.ball_tip_name.includes('Средний') ? 1 : 0;
+
+  return acc;
+}, {}))
+
+
+const groupByRaion = computed(() => a1FilterByOtrasl.value.reduce((acc, curr) => {
+  if (!acc[curr.parent2_code]) {
+    acc[curr.parent2_code] = {
+      ...curr,
+      count: 1,
+      sroki_dolg: curr.duration_label.includes('Долгосрочные') ? 1 : 0,
+      sroki_sred: curr.duration_label.includes('Среднесрочные') ? 1 : 0,
+      sroki_krat: curr.duration_label.includes('Краткосрочные') ? 1 : 0,
+      risk_otsut: curr.ball_tip_name.includes('Отсутствует') ? 1 : 0,
+      risk_vysok: curr.ball_tip_name.includes('Высокий') ? 1 : 0,
+      risk_sred: curr.ball_tip_name.includes('Средний') ? 1 : 0,
+    };
+    return acc;
+  }
+
+  acc[curr.parent2_code].project_price += curr.project_price;
+  acc[curr.parent2_code].work_places += curr.work_places;
+  acc[curr.parent2_code].plan_fot += curr.plan_fot;
+  acc[curr.parent2_code].count += 1;
+
+  acc[curr.parent2_code].sroki_dolg += curr.duration_label.includes('Долгосрочные') ? 1 : 0;
+  acc[curr.parent2_code].sroki_sred += curr.duration_label.includes('Среднесрочные') ? 1 : 0;
+  acc[curr.parent2_code].sroki_krat += curr.duration_label.includes('Краткосрочные') ? 1 : 0;
+
+  acc[curr.parent2_code].risk_otsut += curr.ball_tip_name.includes('Отсутствует') ? 1 : 0;
+  acc[curr.parent2_code].risk_vysok += curr.ball_tip_name.includes('Высокий') ? 1 : 0;
+  acc[curr.parent2_code].risk_sred += curr.ball_tip_name.includes('Средний') ? 1 : 0;
 
   return acc;
 }, {}))

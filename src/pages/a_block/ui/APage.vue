@@ -13,27 +13,31 @@
             </div>
             <A4Widget />
         </div>
+        <PopupWidget v-if="!!aStore.currentProject" />
     </BaseCard>
 </template>
 
 <script setup lang="ts">
 import { ref } from 'vue';
-import { getA2 } from '../../../entities/a/api';
+import { getA2, getPopup } from '../../../entities/a/api';
 import BaseCard from '../../../shared/ui/BaseCard/BaseCard.vue';
 import A1Widget from '../widgets/A1Widget.vue';
 import A2Widget from '../widgets/A2Widget.vue';
 import A4Widget from '../widgets/A4Widget.vue';
 import { useAStore } from '../store';
 import A3Widget from '../widgets/A3Widget.vue';
+import PopupWidget from '../widgets/PopupWidget.vue';
 
 const loader = ref(true);
+const aStore = useAStore();
 
-function fetch() {
-    getA2().then((v) => {
-        useAStore().setA1Year(v);
-    }).finally(() => {
-        loader.value = false
-    })
+async function fetch() {
+    const popup = await getPopup()
+    const a2 = await getA2()
+    useAStore().setPopup(popup);
+    useAStore().setA1Year(a2);
+
+    loader.value = false
 }
 
 fetch()

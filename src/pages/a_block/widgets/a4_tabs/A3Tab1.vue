@@ -20,7 +20,7 @@
         <div class="body">
             <template v-for="item in Object.values(groupByOtrasl).sort((a, b) => b.count - a.count)" :key="item">
                 <div class="head mt-1">
-                    <a-tooltip placement="topLeft" :title="item.otrasl">
+                    <a-tooltip placement="left" :title="item.otrasl">
                         <p class="element truncate cursor-pointer"
                             :class="{ 'text-[#3090e8]': currentOtrasl === item.otrasl }"
                             @click="aStore.setCurrentOtrasl(item.otrasl)">
@@ -58,11 +58,11 @@
                         {{ Numeral(item.risk_otsut + item.risk_vysok + item.risk_sred) }}
                     </p>
                     <p class="element truncate text-center border border-[#3090e8]">{{ Numeral(item.risk_vysok)
-}}</p>
+                        }}</p>
                     <p class="element truncate text-center border border-[#3090e8]">{{ Numeral(item.risk_sred)
-                    }}</p>
+                        }}</p>
                     <p class="element truncate text-center border border-[#3090e8]">{{ Numeral(item.risk_otsut)
-                    }}</p>
+                        }}</p>
                 </div>
             </template>
         </div>

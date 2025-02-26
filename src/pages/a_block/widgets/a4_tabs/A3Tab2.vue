@@ -18,7 +18,7 @@
         <div class="body">
             <template v-for="item in a1FilterByOtrasl" :key="item">
                 <div class="head mt-1">
-                    <a-tooltip placement="topLeft" :title="item.project_name">
+                    <a-tooltip placement="left" :title="item.project_name">
                         <p class="element truncate cur cursor-pointer"
                             :class="{ 'text-[#3090e8]': currentProject === item.id }"
                             @click="aStore.setCurrentProject(item.id)">

@@ -7,18 +7,24 @@ export const useAStore = defineStore("a", {
         currentLabel: 3,
         currentTypeKey: 'count',
         currentRegion: null as number | null,
+        currentRaion: null as number | null,
         currentOtrasl: null as string | null,
         currentProject: null as number | null,
+        projectModalVisible: false,
+        popup: null as any[] | null,
     }), 
     getters: {
         a1Filter(): any[] {
-            return this.a1.filter((item) =>  (!this.currentLabel || +item.label === this.currentLabel) && (!this.currentRegion || item.parent1_code === this.currentRegion));
+            return this.a1.filter((item) =>  (!this.currentLabel || +item.label === this.currentLabel) && (!this.currentRegion || item.parent1_code === this.currentRegion) && (!this.currentRaion || item.parent2_code === this.currentRaion));
         },
         a1FilterByOtrasl(): any[] {
             return this.a1Filter.filter((item) =>  (!this.currentOtrasl || item.otrasl === this.currentOtrasl));
         },
         a1YearFilter(): any[] {
-            return this.a1Year.filter((item) => +item.year > 2019 && (!this.currentOtrasl || item.otrasl === this.currentOtrasl) && (!this.currentLabel || +item.label === this.currentLabel) && (!this.currentRegion || item.parent1_code === this.currentRegion));
+            return this.a1Year.filter((item) => +item.year > 2019 && (!this.currentOtrasl || item.otrasl === this.currentOtrasl) && (!this.currentLabel || +item.label === this.currentLabel) && (!this.currentRegion || item.parent1_code === this.currentRegion) && (!this.currentRaion || item.parent2_code === this.currentRaion));
+        },
+        currentProjectPopup(): any | undefined {
+            return this.popup?.find(e => e.id === this.currentProject);
         }
     },
     actions: {
@@ -37,11 +43,20 @@ export const useAStore = defineStore("a", {
         setCurrentRegion(payload: number | null) {
             this.currentRegion = payload;
         },
+        setCurrentRaion(payload: number | null) {
+            this.currentRaion = payload;
+        },
         setCurrentOtrasl(payload: string | null) {
             this.currentOtrasl = payload;
         },
         setCurrentProject(payload: number | null) {
             this.currentProject = payload;
+        },
+        setProjectModalVisible(payload: boolean) {
+            this.projectModalVisible = payload;
+        },
+        setPopup(payload: any[] | null) {
+            this.popup = payload;
         }
     }
 });
