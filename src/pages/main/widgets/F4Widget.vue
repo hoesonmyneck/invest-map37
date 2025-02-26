@@ -45,7 +45,7 @@ import { storeToRefs } from "pinia";
 import { getA1 } from "../../../entities/a/api";
 
 const loader = ref(true);
-const visible = ref(false);
+const visible = ref(true);
 const aStore = useAStore();
 
 const { a1 } = storeToRefs(aStore);
