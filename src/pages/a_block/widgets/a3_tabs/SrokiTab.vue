@@ -10,17 +10,17 @@ const aStore = useAStore();
 const { a1YearFilter } = storeToRefs(aStore);
 
 const _groupByYear = (data: any) => Object.entries(data.reduce((acc, curr) => {
+    console.log(curr.duration_label);
+
     !acc[curr.year] ? acc[curr.year] = 1 : acc[curr.year] += 1;
 
     return acc
 }, { 2020: 0, 2021: 0, 2022: 0, 2023: 0, 2024: 0, 2025: 0, 2026: 0, 2027: 0, 2028: 0, 2029: 0, 2030: 0 })).sort((a, b) => +a[0] - +b[0]);
 
 
-const statusFinished = computed(() => _groupByYear(a1YearFilter.value.filter(e => e.status === 'Завершенные')))
-const statusWorking = computed(() => _groupByYear(a1YearFilter.value.filter(e => e.status === 'Действующие')))
-const statusNew = computed(() => _groupByYear(a1YearFilter.value.filter(e => e.status === 'Новые')))
-const statusOthod = computed(() => _groupByYear(a1YearFilter.value.filter(e => e.status === 'Отходы')))
-
+const statusLang = computed(() => _groupByYear(a1YearFilter.value.filter(e => e.duration_label === 'Долгосрочные (10 и более лет)')))
+const statusMedium = computed(() => _groupByYear(a1YearFilter.value.filter(e => e.duration_label === 'Среднесрочные (6-10 лет)')))
+const statusShort = computed(() => _groupByYear(a1YearFilter.value.filter(e => e.duration_label === 'Краткосрочные (0-5 лет)')))
 
 const chartOptions = computed(() => ({
     chart: {
@@ -32,7 +32,7 @@ const chartOptions = computed(() => ({
         text: "",
     },
     xAxis: {
-        categories: statusFinished.value.map(e => e[0]),
+        categories: statusLang.value.map(e => e[0]),
         accessibility: { rangeDescription: "" },
         labels: {
             enabled: true,
@@ -88,24 +88,23 @@ const chartOptions = computed(() => ({
     },
     series: [
         {
-            name: "Завершение",
+            name: "Долгосрочные (10 и более лет)",
             tooltip: {
                 pointFormat: '<span style="color:{point.color}">\u25CF</span> {series.name}: <b>{point.y}</b><br/> Годовые:<b> {point.othod} </b>',
             },
-            data: statusFinished.value.map((e, idx) => {
+            data: statusLang.value.map((e, idx) => {
                 return {
-                    y: e[1] - statusOthod.value[idx][1],
-                    othod: statusOthod.value[idx][1]
+                    y: e[1],
                 }
             }),
         },
         {
-            name: "Реализация",
-            data: statusWorking.value.map(e => e[1]),
+            name: "Среднесрочные (6-10 лет)",
+            data: statusMedium.value.map(e => e[1]),
         },
         {
-            name: "Новые",
-            data: statusNew.value.map(e => e[1]),
+            name: "Краткосрочные (0-5 лет)",
+            data: statusShort.value.map(e => e[1]),
         },
     ],
 }))

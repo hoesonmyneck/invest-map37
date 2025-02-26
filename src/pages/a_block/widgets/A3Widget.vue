@@ -9,7 +9,16 @@
                     <InvestTab />
                 </template>
                 <template v-if="currentTypeKey === 'work_places'">
-                    <WorkPlaces />
+                    <WorkPlacesTab />
+                </template>
+                <template v-if="currentTypeKey === 'plan_fot'">
+                    <FotTab />
+                </template>
+                <template v-if="currentTypeKey === 'project_duration'">
+                    <SrokiTab />
+                </template>
+                <template v-if="currentTypeKey === 'percentage_risk_region'">
+                    <RiskTab />
                 </template>
             </div>
         </BaseCard>
@@ -21,7 +30,10 @@ import InvestProjectTab from './a3_tabs/InvestProjectTab.vue';
 import { useAStore } from '../store';
 import { storeToRefs } from 'pinia';
 import InvestTab from './a3_tabs/InvestTab.vue';
-import WorkPlaces from './a3_tabs/WorkPlaces.vue';
+import WorkPlacesTab from './a3_tabs/WorkPlacesTab.vue';
+import FotTab from './a3_tabs/FotTab.vue';
+import SrokiTab from './a3_tabs/SrokiTab.vue';
+import RiskTab from './a3_tabs/RiskTab.vue';
 
 const aStore = useAStore();
 const { currentTypeKey } = storeToRefs(aStore);
