@@ -1,7 +1,13 @@
 <template>
     <div class="">
-        <BaseCard title="Показатели эффективности" number="A4" :show-close-button="!!currentOtrasl"
-            @close="aStore.setCurrentOtrasl(null)">
+        <BaseCard title="Показатели эффективности" number="A4" :show-close-button="!!currentOtrasl" @close="() => {
+            if (currentProject) {
+                aStore.setCurrentProject(null)
+                aStore.setCurrentRaion(null)
+                return;
+            }
+            aStore.setCurrentOtrasl(null)
+        }">
             <template v-slot:actions>
                 <div class="flex gap gap-1">
                     <p @click="tab = 0" :class="{ active: tab === 0 }" class="btn mini">Отрасль</p>
@@ -29,6 +35,6 @@ import { storeToRefs } from 'pinia';
 const tab = ref(0);
 
 const aStore = useAStore()
-const { a1FilterByOtrasl, currentOtrasl } = storeToRefs(aStore);
+const { a1FilterByOtrasl, currentOtrasl, currentProject } = storeToRefs(aStore);
 </script>
 <style scoped lang="scss"></style>

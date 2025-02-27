@@ -13,7 +13,7 @@
             </div>
             <A4Widget />
         </div>
-        <PopupWidget v-if="!!aStore.currentProject" />
+        <PopupWidget v-if="!!aStore.projectModalVisible" />
     </BaseCard>
 </template>
 

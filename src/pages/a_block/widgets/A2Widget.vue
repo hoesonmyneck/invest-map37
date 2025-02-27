@@ -185,9 +185,9 @@ import { getColorFromGradient } from '../../../shared/helpers/gradientColors';
 import BaseMapRegion from '../../../shared/ui/BaseMap/BaseMapRegion.vue';
 
 const aStore = useAStore();
-const { currentRegion, currentRaion, a1FilterByOtrasl, currentTypeKey } = storeToRefs(aStore);
+const { currentRegion, currentRaion, a1FilterByProject, currentTypeKey } = storeToRefs(aStore);
 
-const groupByProject = computed(() => Object.values(a1FilterByOtrasl.value.reduce((acc, curr) => {
+const groupByProject = computed(() => Object.values(a1FilterByProject.value.reduce((acc, curr) => {
   acc[curr.id] = { ...curr };
   return acc;
 }, {})))
@@ -251,7 +251,7 @@ const clickPolygon = (code: string) => {
   currentRegion.value = +code;
 }
 
-const groupByRegion = computed(() => a1FilterByOtrasl.value.reduce((acc, curr) => {
+const groupByRegion = computed(() => a1FilterByProject.value.reduce((acc, curr) => {
   if (!acc[curr.parent1_code]) {
     acc[curr.parent1_code] = {
       ...curr,
@@ -283,7 +283,7 @@ const groupByRegion = computed(() => a1FilterByOtrasl.value.reduce((acc, curr) =
 }, {}))
 
 
-const groupByRaion = computed(() => a1FilterByOtrasl.value.reduce((acc, curr) => {
+const groupByRaion = computed(() => a1FilterByProject.value.reduce((acc, curr) => {
   if (!acc[curr.parent2_code]) {
     acc[curr.parent2_code] = {
       ...curr,

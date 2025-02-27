@@ -20,6 +20,9 @@ export const useAStore = defineStore("a", {
         a1FilterByOtrasl(): any[] {
             return this.a1Filter.filter((item) =>  (!this.currentOtrasl || item.otrasl === this.currentOtrasl));
         },
+        a1FilterByProject(): any[] {
+            return this.a1FilterByOtrasl.filter((item) =>  (!this.currentProject || item.id === this.currentProject));
+        },
         a1YearFilter(): any[] {
             return this.a1Year.filter((item) => +item.year > 2019 && (!this.currentOtrasl || item.otrasl === this.currentOtrasl) && (!this.currentLabel || +item.label === this.currentLabel) && (!this.currentRegion || item.parent1_code === this.currentRegion) && (!this.currentRaion || item.parent2_code === this.currentRaion));
         },

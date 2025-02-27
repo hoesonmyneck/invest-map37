@@ -11,8 +11,9 @@
         </l-tooltip>
       </l-polygon>
     </template>
-    <template v-for="p in a1FilterByOtrasl" :key="p.id + p.coordinates">
-      <l-marker @click="aStore.setCurrentProject(p.id)" v-if="!!p.coordinates" :lat-lng="p.coordinates?.split(',')">
+    <template v-for="p in a1FilterByProject" :key="p.id + p.coordinates">
+      <l-marker @click="aStore.setCurrentProject(p.id), aStore.setProjectModalVisible(true)" v-if="!!p.coordinates"
+        :lat-lng="p.coordinates?.split(',')">
         <l-tooltip class="p-0 bg-transparent rounded-md" :options="{ direction: 'right' }">
           <div class="py-2 px-3 gap-2 items-center">
             <p>Наименование проектов: <b><span class="font-bold">{{
@@ -38,7 +39,7 @@ import { storeToRefs } from "pinia";
 
 const regionStore = useRegionStore();
 const aStore = useAStore()
-const { a1FilterByOtrasl } = storeToRefs(aStore);
+const { a1FilterByProject } = storeToRefs(aStore);
 
 // Constants
 const MAP_CENTER = () => regionStore.regionCenteroid?.find((item) => +item.parent1_code === +props.currentRegion)?.centroid.reverse();

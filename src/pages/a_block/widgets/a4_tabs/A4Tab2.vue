@@ -17,15 +17,16 @@
             <li>Отсутствует</li>
         </ul>
         <div class="body">
-            <template v-for="item in a1FilterByOtrasl" :key="item">
+            <template v-for="item in a1FilterByProject" :key="item">
                 <div class="head mt-1">
                     <p class="w-full h-full flex items-center justify-center rounded bg-[#252A36] cursor-pointer">
-                        <img src="/images/icons/map.png" alt="" class="w-[16px]">
+                        <img src="/images/icons/map.png" alt="" class="w-[16px]" v-if="!!item.coordinates"
+                            @click="aStore.setCurrentProject(item.id), aStore.setCurrentRegion(item.parent1_code), aStore.setCurrentRaion(item.parent2_code), aStore.setCurrentOtrasl(item.otrasl)">
                     </p>
                     <a-tooltip placement="left" :title="item.project_name">
                         <p class="element truncate cur cursor-pointer"
                             :class="{ 'text-[#3090e8]': currentProject === item.id }"
-                            @click="aStore.setCurrentProject(item.id)">
+                            @click="aStore.setCurrentProject(item.id), aStore.setProjectModalVisible(true)">
                             {{ item.project_name }}
                         </p>
                     </a-tooltip>
@@ -68,7 +69,7 @@ import { storeToRefs } from 'pinia';
 import { getColorFromGradient } from '../../../../shared/helpers/gradientColors';
 
 const aStore = useAStore()
-const { a1FilterByOtrasl, currentProject } = storeToRefs(aStore);
+const { a1FilterByProject, currentProject } = storeToRefs(aStore);
 
 </script>
 <style scoped lang="scss">
