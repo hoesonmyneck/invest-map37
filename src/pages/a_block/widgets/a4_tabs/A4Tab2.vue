@@ -1,6 +1,7 @@
 <template>
     <div class="overflow-scroll h-[27vh] text-white text-[12px] pt-3">
         <ul class="head text-white pb-1 mb-1 border-b border-gray-700 items-end w-min">
+            <li></li>
             <li>Наименование</li>
             <li>Стоимость проекта</li>
             <li>План раб.мест</li>
@@ -18,6 +19,9 @@
         <div class="body">
             <template v-for="item in a1FilterByOtrasl" :key="item">
                 <div class="head mt-1">
+                    <p class="w-full h-full flex items-center justify-center rounded bg-[#252A36] cursor-pointer">
+                        <img src="/images/icons/map.png" alt="" class="w-[16px]">
+                    </p>
                     <a-tooltip placement="left" :title="item.project_name">
                         <p class="element truncate cur cursor-pointer"
                             :class="{ 'text-[#3090e8]': currentProject === item.id }"
@@ -71,7 +75,7 @@ const { a1FilterByOtrasl, currentProject } = storeToRefs(aStore);
 .head {
     display: grid;
     grid-gap: 4px;
-    grid-template-columns: 150px 120px 120px 120px 50px 140px 110px 50px 120px 90px 90px 90px 90px;
+    grid-template-columns: 30px 150px 120px 120px 120px 50px 140px 110px 50px 120px 90px 90px 90px 90px;
 }
 
 .element {

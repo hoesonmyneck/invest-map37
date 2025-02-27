@@ -5,7 +5,7 @@
             <div class="grid grid-cols-3 gap-1 w-max m-auto items-end text-white">
                 <div class="text-center relative">
                     <p class="absolute top-[130px] left-1/2 -translate-x-1/2 text-3xl">{{
-                        !!currentProjectPopup.kpi_work ? Numeral(currentProjectPopup.kpi_work) : 0 }}%
+    !!currentProjectPopup.kpi_work ? Numeral(currentProjectPopup.fact_work / currentProjectPopup.work_places * 100) : 0 }}%
                     </p>
                     <highcharts
                         :options="chartOptions('ПЛАНОВЫЕ РАБОЧИЕ МЕСТА', 'Фактический рабочие места', currentProjectPopup.fact_work / currentProjectPopup.work_places * 100, currentProjectPopup.work_places, currentProjectPopup.work_places, currentProjectPopup.fact_work)"
@@ -31,7 +31,7 @@
                 </div>
                 <div class="text-center relative">
                     <p class="absolute top-[130px] left-1/2 -translate-x-1/2 text-3xl">{{
-                        Numeral(currentProjectPopup.kpi_fot) }}%
+    Numeral(currentProjectPopup.fact_fot / currentProjectPopup.plan_fot * 100) }}%
                     </p>
                     <highcharts
                         :options="chartOptions('ПЛАНОВЫЙ ФОНД ОПЛАТЫ ТРУДА', 'Фактический фонд оплаты труда', currentProjectPopup.fact_fot / currentProjectPopup.plan_fot * 100, currentProjectPopup.plan_fot, currentProjectPopup.plan_fot, currentProjectPopup.fact_fot)"
