@@ -46,7 +46,14 @@
       </ul>
       <div v-if="!!currentRegion"
         class="rounded absolute z-10 top-5 right-5 bg-[#252A36] w-8 h-8 flex items-center justify-center cursor-pointer"
-        @click="currentRegion = null, aStore.setCurrentRaion(null)">
+        @click="() => {
+          if (!!currentRaion) {
+            aStore.setCurrentRaion(null)
+            return
+          }
+          currentRegion = null
+          aStore.setCurrentRaion(null)
+        }">
         <CloseOutlined />
       </div>
     </div>
