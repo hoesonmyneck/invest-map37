@@ -1,6 +1,6 @@
 <template>
-  <l-map ref="mapRef" :zoom="zoom ?? 6" :max-zoom="zoom ?? 6" :min-zoom="zoom ?? 6" :center="mapCenter"
-    :options="mapOptions" class="w-full" :use-global-leaflet="false">
+  <l-map ref="mapRef" :zoom="zoom ?? 6" :max-zoom="10" :min-zoom="zoom ?? 6" :center="mapCenter" :options="mapOptions"
+    class="w-full" :use-global-leaflet="false">
     <template v-for="feature in polygonFeatures" :key="feature.parent2_code">
       <l-polygon @click="handlePolygonClick(feature.properties.parent2_code)"
         v-if="!currentRegion ? true : +currentRegion === +feature.properties.parent1_code"
@@ -12,13 +12,13 @@
       </l-polygon>
     </template>
     <template v-for="p in a1FilterByOtrasl" :key="p.id + p.coordinates">
-      <l-marker @click="aStore.setCurrentProject(p.id)" :lat-lng="p.coordinates?.split(',')">
+      <l-marker @click="aStore.setCurrentProject(p.id)" v-if="!!p.coordinates" :lat-lng="p.coordinates?.split(',')">
         <l-tooltip class="p-0 bg-transparent rounded-md" :options="{ direction: 'right' }">
           <div class="py-2 px-3 gap-2 items-center">
             <p>Наименование проектов: <b><span class="font-bold">{{
-              p.project_name }}</span></b></p>
+                  p.project_name }}</span></b></p>
             <p>Отрасль: <b><span class="font-bold">{{
-              p.otrasl }}</span></b></p>
+                  p.otrasl }}</span></b></p>
             <p>Район: <b>{{ p.raion }}</b></p>
           </div>
         </l-tooltip>

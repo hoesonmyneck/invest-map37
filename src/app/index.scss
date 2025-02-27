@@ -1,9 +1,12 @@
-@import "./styles/main.scss";
-@import "./styles/components.scss";
+@import "./styles/main";
+@import "./styles/components";
 * {
   box-sizing: border-box;
 }
 
+.leaflet-control-attribution {
+  display: none;
+}
 .ant-modal-content {
   background-color: #181818 !important;
   padding: 0 !important;

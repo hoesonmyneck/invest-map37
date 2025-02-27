@@ -15,7 +15,7 @@
                             <!-- <img src="/images/a1-1.png" alt=""
                                 class="w-[14px] h-[14px] mr-1 mb-2"> -->
                             {{
-                                Numeral(currentProjectPopup.work_places) }}
+                            Numeral(currentProjectPopup.work_places) }}
                         </p>
                         <p class="text-[12px]">РАБОЧИЕ МЕСТА</p>
                     </div>
@@ -96,7 +96,6 @@
                         <p>СМЗ: </p>
                         <p>{{ Numeral(currentProjectPopup.smz_12mes) }}</p>
                         <p>кол-во сотрудников: </p>
-                        <p>Кол активных договоров: </p>
                         <p>{{ Numeral(currentProjectPopup['12mes_kol']) }}</p>
                         <p>Кол активных договоров: </p>
                         <p>{{ Numeral(currentProjectPopup.esutd_akt_td) }}</p>

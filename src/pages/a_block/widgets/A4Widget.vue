@@ -22,8 +22,8 @@
 <script setup lang="ts">
 import BaseCard from '../../../shared/ui/BaseCard/BaseCard.vue';
 import { ref } from 'vue';
-import A4Tab1 from './a4_tabs/A3Tab1.vue';
-import A4Tab2 from './a4_tabs/A3Tab2.vue';
+import A4Tab1 from './a4_tabs/A4Tab1.vue';
+import A4Tab2 from './a4_tabs/A4Tab2.vue';
 import { useAStore } from '../store';
 import { storeToRefs } from 'pinia';
 const tab = ref(0);
