@@ -69,7 +69,8 @@
         }
 
         if (currentTypeKey === 'percentage_risk_region') {
-          return getColorFromGradient((groupByRegion[v].risk_otsut + groupByRegion[v].risk_vysok + groupByRegion[v].risk_sred) / risk * 100, false, false, 10)
+          const _color = getColorFromGradient((groupByRegion[v].risk_vysok + groupByRegion[v].risk_sred) / risk * 100, true, false, 10)
+          return _color === '#222732' ? '#059669' : _color
         }
 
         const _gradientBlue = ['count', 'project_price', 'project_duration', 'act_exploitation'].includes(currentTypeKey)
@@ -125,7 +126,9 @@
           }
 
           if (currentTypeKey === 'percentage_risk_region') {
-            return getColorFromGradient((groupByRaion[v].risk_otsut + groupByRaion[v].risk_vysok + groupByRaion[v].risk_sred) / risk * 100, false, false, 10)
+            if (groupByRaion[v].risk_vysok + groupByRaion[v].risk_sred + groupByRaion[v].risk_otsut === 0) return '#222732'
+            const _color = getColorFromGradient((groupByRaion[v].risk_vysok + groupByRaion[v].risk_sred) / risk * 100, true, false, 10)
+            return _color === '#222732' ? '#059669' : _color
           }
 
           const _gradientBlue = ['count', 'project_price', 'project_duration', 'act_exploitation'].includes(currentTypeKey)
@@ -193,7 +196,7 @@ const project_price = computed(() => groupByProject.value.reduce((acc, curr) => 
 const work_places = computed(() => groupByProject.value.reduce((acc, curr) => acc + curr.work_places, 0));
 const plan_fot = computed(() => groupByProject.value.reduce((acc, curr) => acc + curr.plan_fot, 0));
 const risk = computed(() => groupByProject.value.reduce((acc: any, curr: any) => {
-  if (['Не определено'].includes(curr.ball_tip_name)) return acc;
+  if (['Не определено', 'Отсутствует'].includes(curr.ball_tip_name)) return acc;
 
   return acc += 1;
 }, 0));
