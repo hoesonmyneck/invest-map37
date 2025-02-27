@@ -244,10 +244,12 @@ const tab2_risk = [
 ]
 
 const getColorRisk = (risk: string) => {
-    if (risk === 'k_') return 'white'
+    console.log(risk);
+
+    if (risk === 'k_5') return 'red'
     if (risk === 'k_0') return 'green'
     if (risk === 'k_3') return 'yellow'
-    return 'red'
+    return 'white'
 }
 
 const chartOptions = (name: string, name2: string, percent: number, all: number, value: number, value2: number) => {
