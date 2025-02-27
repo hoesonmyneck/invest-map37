@@ -12,10 +12,8 @@
                         class="h-[200px] w-[250px] m-auto mt-5"></highcharts>
                     <div class="-mt-7">
                         <p class="text-gray-400 text-[12px] flex justify-center">
-                            <!-- <img src="/images/a1-1.png" alt=""
-                                class="w-[14px] h-[14px] mr-1 mb-2"> -->
-                            {{
-                            Numeral(currentProjectPopup.work_places) }}
+                            <img src="/images/a_block/a1-1.png" alt="" class="w-[14px] h-[14px] mr-1 mb-2">
+                            {{ Numeral(currentProjectPopup.work_places) }}
                         </p>
                         <p class="text-[12px]">РАБОЧИЕ МЕСТА</p>
                     </div>
@@ -267,7 +265,7 @@ const chartOptions = (name: string, name2: string, percent: number, all: number,
         yAxis: { min: 0, max: 100, lineWidth: 0, tickPositions: [] },
         plotOptions: { solidgauge: { dataLabels: { enabled: false, showInLegend: false } } },
         series: [
-            { name: "", data: [{ name, radius: "80%", innerRadius: "100%", color: "rgba(48,144,232,0.2)", y: all ?? 100, value: Numeral(value) }] },
+            { name: "", data: [{ name, radius: "80%", innerRadius: "100%", color: "rgba(48,144,232,0.2)", y: 100, value: Numeral(value) }] },
             { name: name ?? '', data: [{ name: name2, radius: "80%", innerRadius: "100%", color: "#3090E8", y: +percent.toFixed(0), value: Numeral(value2) }] },
         ],
     }
