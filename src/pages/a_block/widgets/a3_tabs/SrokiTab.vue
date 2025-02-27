@@ -10,8 +10,6 @@ const aStore = useAStore();
 const { a1YearFilter } = storeToRefs(aStore);
 
 const _groupByYear = (data: any) => Object.entries(data.reduce((acc, curr) => {
-    console.log(curr.duration_label);
-
     !acc[curr.year] ? acc[curr.year] = 1 : acc[curr.year] += 1;
 
     return acc

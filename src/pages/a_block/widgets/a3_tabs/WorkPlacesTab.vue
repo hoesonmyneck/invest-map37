@@ -15,16 +15,20 @@ import { computed, ref } from 'vue';
 import { Numeral } from '../../../../shared/helpers/numeral';
 
 const aStore = useAStore();
-const { a1YearFilter, a1FilterByOtrasl } = storeToRefs(aStore);
+const { a1YearFilter, a1FilterByProject, currentRegion } = storeToRefs(aStore);
 
 const tab = ref(0);
 
-const groupByRegion = computed(() => Object.entries(a1FilterByOtrasl.value.reduce((acc, curr) => {
-    if (!acc[curr.region]) {
-        acc[curr.region] = { work_places: curr.work_places, fact_work: curr.fact_work }
+const groupByRegion = computed(() => Object.entries(a1FilterByProject.value.reduce((acc, curr) => {
+    const _key = currentRegion.value ? curr.raion : curr.region;
+
+    if (!_key) return acc;
+
+    if (!acc[_key]) {
+        acc[_key] = { work_places: curr.work_places, fact_work: curr.fact_work }
     } else {
-        acc[curr.region].work_places += curr.work_places
-        acc[curr.region].fact_work += curr.fact_work
+        acc[_key].work_places += curr.work_places
+        acc[_key].fact_work += curr.fact_work
     }
 
     return acc

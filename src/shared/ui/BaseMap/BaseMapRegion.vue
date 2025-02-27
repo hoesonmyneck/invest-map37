@@ -77,8 +77,6 @@ const mapOptions = computed(() => MAP_OPTIONS);
 
 // Methods
 const getColor = (code: number): string => {
-  console.log(props.currentRaion, code);
-
   if (!props.currentRaion) return props.fillColor(code);
   return props.currentRaion === code ? props.fillColor(code) : "#252A36";
 };

@@ -243,8 +243,6 @@ const tab2_risk = [
 ]
 
 const getColorRisk = (risk: string) => {
-    console.log(risk);
-
     if (risk === 'k_5') return 'red'
     if (risk === 'k_0') return 'green'
     if (risk === 'k_3') return 'yellow'

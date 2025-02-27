@@ -15,26 +15,26 @@ import { computed, ref } from 'vue';
 import { Numeral } from '../../../../shared/helpers/numeral';
 
 const aStore = useAStore();
-const { a1YearFilter, a1FilterByOtrasl } = storeToRefs(aStore);
+const { a1YearFilter, a1FilterByProject, currentRegion } = storeToRefs(aStore);
 
 const tab = ref(0);
 
-const groupByRegion = computed(() => Object.entries(a1FilterByOtrasl.value.reduce((acc, curr) => {
-    console.log(curr.plan_fot);
+const groupByRegion = computed(() => Object.entries(a1FilterByProject.value.reduce((acc, curr) => {
+    const _key = currentRegion.value ? curr.raion : curr.region;
 
-    if (!acc[curr.region]) {
-        acc[curr.region] = { plan_fot: curr.plan_fot, fact_fot: curr.fact_fot }
+    if (!_key) return acc;
+
+    if (!acc[_key]) {
+        acc[_key] = { plan_fot: curr.plan_fot, fact_fot: curr.fact_fot }
     } else {
-        acc[curr.region].plan_fot += curr.plan_fot
-        acc[curr.region].fact_fot += curr.fact_fot
+        acc[_key].plan_fot += curr.plan_fot
+        acc[_key].fact_fot += curr.fact_fot
     }
 
     return acc
 }, {})).sort((a, b) => b[1].fact_fot - a[1].fact_fot))
 
 const groupByYear = computed(() => Object.entries(a1YearFilter.value.filter((item) => item.year < 2026).reduce((acc, curr) => {
-    console.log(curr.fact_fot);
-
     if (!acc[curr.year]) {
         acc[curr.year] = { plan_fot_by_year: curr.plan_fot_by_year, fact_fot: curr.fact_fot }
     } else {

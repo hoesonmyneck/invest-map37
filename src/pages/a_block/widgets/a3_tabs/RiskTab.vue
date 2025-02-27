@@ -31,10 +31,10 @@ import { storeToRefs } from 'pinia';
 import { Numeral } from '../../../../shared/helpers/numeral';
 
 const aStore = useAStore();
-const { a1FilterByOtrasl } = storeToRefs(aStore);
+const { a1FilterByProject } = storeToRefs(aStore);
 
-const _filterNotDefined = a1FilterByOtrasl.value.filter((item) => item.ball_tip_name !== 'Не определено');
-const _groupByYear = computed(() => _filterNotDefined.reduce((acc, curr) => {
+const _filterNotDefined = computed(() => a1FilterByProject.value.filter((item) => item.ball_tip_name !== 'Не определено'))
+const _groupByYear = computed(() => _filterNotDefined.value.reduce((acc, curr) => {
     if (curr.ball_tip_name === 'Не определено') return acc;
     !acc[curr.ball_tip_name] ? acc[curr.ball_tip_name] = 1 : acc[curr.ball_tip_name] += 1;
 

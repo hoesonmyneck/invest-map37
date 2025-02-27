@@ -8,13 +8,17 @@ import { storeToRefs } from 'pinia';
 import { Numeral } from '../../../../shared/helpers/numeral';
 
 const aStore = useAStore();
-const { a1FilterByOtrasl } = storeToRefs(aStore);
+const { a1FilterByOtrasl, currentRegion } = storeToRefs(aStore);
 
 const groupByRegion = computed(() => Object.entries(a1FilterByOtrasl.value.reduce((acc, curr) => {
-    if (!acc[curr.region]) {
-        acc[curr.region] = curr.project_price;
+    const _key = currentRegion.value ? curr.raion : curr.region;
+
+    if (!_key) return acc;
+
+    if (!acc[_key]) {
+        acc[_key] = curr.project_price;
     } else {
-        acc[curr.region] += curr.project_price;
+        acc[_key] += curr.project_price;
     }
 
     return acc
