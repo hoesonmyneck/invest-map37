@@ -1,7 +1,7 @@
 <template>
-  <l-map ref="mapRef" :zoom="zoom ?? 6" :max-zoom="10" :min-zoom="zoom ?? 6" :center="mapCenter" :options="mapOptions"
-    class="w-full" :use-global-leaflet="false">
-    <template v-for="feature in polygonFeatures" :key="feature.parent2_code">
+  <l-map :zoom="zoom ?? 6" :max-zoom="10" :min-zoom="5" :center="mapCenter" :options="mapOptions" class="w-full"
+    :use-global-leaflet="false">
+    <template v-for="feature in polygonFeatures" :key="feature.parent2_code + Math.random()">
       <l-polygon @click="handlePolygonClick(feature.properties.parent2_code)"
         v-if="!currentRegion ? true : +currentRegion === +feature.properties.parent1_code"
         :lat-lngs="reverseCoordinates(feature.geometry.coordinates as [number, number][][])"
@@ -11,7 +11,7 @@
         </l-tooltip>
       </l-polygon>
     </template>
-    <template v-for="p in a1FilterByProject" :key="p.id + p.coordinates">
+    <template v-for="p in a1FilterByProject" :key="p.id + p.coordinates + Math.random()">
       <l-marker @click="aStore.setCurrentProject(p.id), aStore.setProjectModalVisible(true)" v-if="!!p.coordinates"
         :lat-lng="p.coordinates?.split(',')">
         <l-tooltip class="p-0 bg-transparent rounded-md" :options="{ direction: 'right' }">
@@ -30,7 +30,6 @@
 
 <script setup lang="ts">
 import { LMap, LPolygon, LTooltip, LMarker } from "@vue-leaflet/vue-leaflet";
-import "leaflet/dist/leaflet.css";
 import { useRegionStore } from "../../../entities/region/store";
 import { computed, ref } from "vue";
 import { reverseCoordinates } from "../../helpers/reverseCoordinates";
@@ -54,7 +53,7 @@ const DEFAULT_POLYGON_STYLES = {
 // Props and Emits
 interface Props {
   fillColor: (data: any) => string;
-  markerClick: (data: any) => void;
+  markerClick?: (data: any) => void;
   currentRegion?: number;
   currentRaion?: number;
   zoom?: number;

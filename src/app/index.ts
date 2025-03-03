@@ -10,6 +10,7 @@ import "vue3-openlayers/styles.css";
 import antd from "./plugins/antd";
 import highcharts from "./plugins/highcharts";
 import openlayers from "./plugins/openlayers";
+import virtual_scroller from "./plugins/virtual_scroller";
 
 export const app = createApp(App)
   .use(pinia)
@@ -17,4 +18,5 @@ export const app = createApp(App)
   .use(antd)
   .use(highcharts)
   .use(openlayers)
+  .use(virtual_scroller)
   .use(router);
