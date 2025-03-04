@@ -244,9 +244,9 @@
                 class="header-grid-text3 text-xs"
                 style="margin-bottom: 0; padding: 2px 5px"
               >
-                <p class="block truncate">{{ l.project_name }}</p>
+              <a-tooltip placement="left" :title="l.project_name"><p class="block truncate">{{ l.project_name }}</p> </a-tooltip>
                 <p class="block">{{ Numeral(l.project_price) }}</p>
-                <p class="block truncate">{{ l.name }}</p>
+              <a-tooltip placement="left" :title="l.name">  <p class="block truncate">{{ l.name }}</p></a-tooltip>
                 <p class="block">{{ l.start_date }}</p>
                 <p class="block">{{ l.end_date }}</p>
                 <p class="block">{{ l.plan_rab }}</p>
@@ -351,10 +351,10 @@ const _filterA3 = computed(() => [...a3.value]
 );
 
 const listLabels = computed(() => [
-  { name: 'Серпiн', icon: '/img/a_block/map_1.png', key: 'serpin' },
-  { name: 'Ауыл аманаты', icon: '/img/a_block/map_2.png', key: 'auyl_amanat' },
-  { name: 'Дипломмен ауылға', icon: '/img/a_block/map_3.png', key: 'diplom' },
-  { name: 'Ауыл - ел бесiгi', icon: '/img/a_block/map_3.png', key: 'auyl_el' },
+  { name: 'Серпiн', icon: '/images/a_block/map_1.png', key: 'serpin' },
+  { name: 'Ауыл аманаты', icon: '/images/a_block/map_2.png', key: 'auyl_amanat' },
+  { name: 'Дипломмен ауылға', icon: '/images/a_block/map_3.png', key: 'diplom' },
+  { name: 'Ауыл - ел бесiгi', icon: '/images/a_block/map_3.png', key: 'auyl_el' },
 ]);
 
 const summ = computed(() => {

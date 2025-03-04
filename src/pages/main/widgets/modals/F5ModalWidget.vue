@@ -69,18 +69,18 @@
             <div
               class="head gap-1 grid grid-cols-[100px_100px_100px_100px_100px_100px_100px_50px_50px] text-[10px] mt-1"
               v-for="item in dataListFiltered.slice(0, 30)" :key="item.area + item.full_name">
-              <p class="h-6 w-full px-1 flex items-center bg-[#252A36] rounded w-full truncate">
+              <a-tooltip placement="left" :title="item.full_name"><p class="h-6 w-full px-1 flex items-center bg-[#252A36] rounded w-full truncate">
                 {{ item.full_name }}
-              </p>
+              </p></a-tooltip>
               <p class="h-6 w-full px-1 flex items-center bg-[#252A36] rounded w-full truncate">
                 {{ item.bin }}
               </p>
               <p class="h-6 w-full px-1 flex items-center bg-[#252A36] rounded w-full truncate">
                 {{ +item.tip === 1 ? "Растениеводство" : "Животноводство" }}
               </p>
-              <p class="h-6 w-full px-1 flex items-center bg-[#252A36] rounded w-full truncate">
+              <a-tooltip placement="left" :title="item.crop_ru"><p class="h-6 w-full px-1 flex items-center bg-[#252A36] rounded w-full truncate">
                 {{ item.crop_ru }}
-              </p>
+              </p></a-tooltip>
               <p class="h-6 w-full px-1 flex items-center bg-[#252A36] rounded w-full truncate">
                 {{ +item.tip === 1 ? item.area : "" }}
               </p>

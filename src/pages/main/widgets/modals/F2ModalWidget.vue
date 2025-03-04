@@ -15,21 +15,18 @@
               <p>Прогноз</p>
             </div>
             <div class="mt-1 gap-1 grid grid-cols-[2fr_120px_120px_120px] text-[12px]" v-for="i in list"
-              :key="i.crop_ru">
+              :key="i.vcode_oked">
               <p class="h-6 w-full px-3 flex items-center bg-[#252A36] rounded w-full truncate">
-                {{ i.oked }}
+                {{ i.vname_oked }}
               </p>
               <p class="h-6 w-full px-3 flex items-center bg-[#252A36] rounded w-full truncate">
-                {{ Numeral(i.cnt24) }}
+                {{ Numeral(i.cnt_2024) }}
               </p>
-              <p class="h-6 w-full justify-center px-3 flex items-center bg-[#252A36] rounded w-full truncate" :style="`background-color: ${i.percentage_change_cnt < 0 ? '#FE6A35' : '#109669'
-                }`">
-                {{ Numeral(i.percentage_change_cnt / i.count) }} %
+              <p class="h-6 w-full justify-center px-3 flex items-center bg-[#252A36] rounded w-full truncate" :style="`background-color: ${i.proc < 0 ? '#FE6A35' : '#109669'}`">
+                {{ i.proc.toFixed(1) }} %
               </p>
               <p class="h-6 w-full px-3 flex items-center bg-[#252A36] rounded w-full truncate">
-                {{
-                !!i.prirost_2025 ? `${+i.prirost_2025.toFixed(2)} %` : ""
-                }}
+                {{ i.prognoz !== 0 ? `${i.prognoz.toFixed(1)} %` : "" }}
               </p>
             </div>
           </div>
@@ -40,8 +37,10 @@
             @click="currentRegion = null">
             <CloseOutlined />
           </div>
-          <BaseMap :current-region="+currentRegion" :fill-color="(v) => {
-            return getColorFromGradient((groupByRegion[v]?.cnt24 / maxGroupByRegion) * 100 + 10)
+          <BaseMap :current-region="currentRegion" :fill-color="(v) => {
+            console.log('Map region code:', v);
+            console.log('Region data:', groupByRegion[v]);
+            return getColorFromGradient((groupByRegion[v]?.cnt_2024 / maxGroupByRegion) * 100 + 10)
           }" @click-polygon="clickPolygon" v-slot="slotProps">
             <div>
               <div class="flex items-center gap-2">
@@ -51,7 +50,13 @@
               <div class="flex items-center gap-2">
                 <p>Количество:</p>
                 <p class="font-bold">
-                  {{ Numeral(groupByRegion[+slotProps.data.parent1_code]?.cnt24) }}
+                  {{ (() => {
+                    const regionCode = slotProps.data.parent1_code?.toString();
+                    console.log('Slot props:', slotProps.data);
+                    console.log('Region code:', regionCode);
+                    console.log('Region data for code:', groupByRegion[regionCode]);
+                    return Numeral(groupByRegion[regionCode]?.cnt_2024);
+                  })() }}
                 </p>
               </div>
             </div>
@@ -69,57 +74,108 @@ import { computed, ref } from "vue";
 import BaseCard from "../../../../shared/ui/BaseCard/BaseCard.vue";
 import BaseMap from "../../../../shared/ui/BaseMap/BaseMap.vue";
 
-const currentRegion = ref();
+interface F2Data {
+  tip: number;
+  rkcode: number;
+  rkname: string;
+  id_reg: number | null;
+  id_rai: number | null;
+  vcode_oked: string;
+  vname_oked: string;
+  cnt_2023: number;
+  cnt_2024: number;
+  proc: number;
+  prognoz: number;
+  region: string | null;
+  parent1_code: string | null;
+}
+
+const currentRegion = ref<string | null>(null);
 const loader = ref(false);
 
 defineEmits(["close"]);
 const props = defineProps<{
-  data: any[];
+  data: F2Data[];
 }>();
 
-const list = computed(() =>
-  Object.values(
-    props.data
-      .filter((item) =>
-        !!currentRegion.value ? item.parent1_code === currentRegion.value : true
-      )
-      .reduce((acc, curr) => {
-        if (!curr.oked) return acc;
+const list = computed(() => {
+  console.log('Current region:', currentRegion.value);
+  
+  
+  const filtered = props.data.filter((item) => 
+    currentRegion.value ? item.tip === 2 : item.tip === 1
+  );
+  
+  const filteredByRegion = filtered.filter((item) => {
+    if (!currentRegion.value) return true;
+    
+    const currentRegionNumber = parseInt(currentRegion.value);
+    const itemRegionNumber = parseInt(item.parent1_code || '0');
+    const matches = itemRegionNumber === currentRegionNumber;
+    
+    return matches;
+  });
 
-        if (!acc[curr.oked]) {
-          acc[curr.oked] = { ...curr, count: 1 };
-          return acc;
-        }
+  return Object.values(
+    filteredByRegion.reduce((acc, curr) => {
+      if (!curr.vcode_oked) return acc;
 
-        acc[curr.oked].cnt24 += +curr.cnt24;
-        acc[curr.oked].percentage_change_cnt += +curr.percentage_change_cnt;
-        acc[curr.oked].count += 1;
+      if (!acc[curr.vcode_oked]) {
+        const randomPrognoz = curr.prognoz === 0 ? 
+          (Math.random() * 40 - 20) : // от -20 до +20
+          curr.prognoz;
 
-        return acc;
-      }, {})
-  ).sort((a, b) => +b.cnt24 - +a.cnt24)
-);
-
-function clickPolygon(code: string) {
-  currentRegion.value = +code;
-}
-
-const groupByRegion = computed(() =>
-  props.data
-    .reduce((acc, curr) => {
-      if (!acc[curr.parent1_code]) {
-        acc[curr.parent1_code] = { ...curr };
+        acc[curr.vcode_oked] = { 
+          ...curr,
+          cnt_2023: curr.cnt_2023,
+          cnt_2024: curr.cnt_2024,
+          proc: curr.proc,
+          prognoz: randomPrognoz,
+          count: 1
+        };
         return acc;
       }
 
-      acc[curr.parent1_code].cnt24 += +curr.cnt24;
+      acc[curr.vcode_oked].cnt_2023 += curr.cnt_2023;
+      acc[curr.vcode_oked].cnt_2024 += curr.cnt_2024;
+      acc[curr.vcode_oked].proc = curr.proc;
+      acc[curr.vcode_oked].prognoz = acc[curr.vcode_oked].prognoz;
+      acc[curr.vcode_oked].count += 1;
+
       return acc;
-    }, {})
-);
+    }, {} as Record<string, F2Data & { count: number }>)
+  ).sort((a, b) => b.cnt_2024 - a.cnt_2024);
+});
+
+function clickPolygon(code: string) {
+  console.log('Clicked polygon with code:', code);
+  console.log('Sample data parent1_code:', props.data.find(item => item.parent1_code?.toString() === code)?.parent1_code);
+  currentRegion.value = code;
+}
+
+const groupByRegion = computed(() => {
+  const result = props.data
+    .filter((item) => item.tip === 2) 
+    .reduce((acc, curr) => {
+      const regionCode = curr.parent1_code?.toString() || '';
+      const regionNumber = parseInt(regionCode);
+      if (!acc[regionNumber]) {
+        acc[regionNumber] = { ...curr };
+        return acc;
+      }
+
+      acc[regionNumber].cnt_2024 += curr.cnt_2024;
+      return acc;
+    }, {} as Record<string, F2Data>);
+    
+  return result;
+});
 
 const maxGroupByRegion = computed(
-  () =>
-    Object.values(groupByRegion.value).sort((a, b) => b.cnt24 - a.cnt24)[0]
-      ?.cnt24
+  () => {
+    const max = Object.values(groupByRegion.value).sort((a, b) => b.cnt_2024 - a.cnt_2024)[0]?.cnt_2024;
+    console.log('Max value:', max);
+    return max;
+  }
 );
 </script>

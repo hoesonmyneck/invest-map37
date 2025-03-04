@@ -19,8 +19,24 @@ import { getF2 } from "../../../entities/f/api";
 import { Numeral } from "../../../shared/helpers/numeral";
 import F2ModalWidget from "./modals/F2ModalWidget.vue";
 
+interface F2Data {
+  tip: number;
+  rkcode: number;
+  rkname: string;
+  id_reg: number | null;
+  id_rai: number | null;
+  vcode_oked: string;
+  vname_oked: string;
+  cnt_2023: number;
+  cnt_2024: number;
+  proc: number;
+  prognoz: number;
+  region: string | null;
+  parent1_code: string | null;
+}
+
 const loader = ref(true);
-const data = ref([]);
+const data = ref<F2Data[]>([]);
 const visible = ref(false);
 const currentRegion = ref("");
 
@@ -33,43 +49,45 @@ async function loadF2() {
 const list = computed(() =>
   Object.values(
     data.value
+      .filter((item) => item.tip === 1)
       .filter((item) =>
         !!currentRegion.value ? item.parent1_code === currentRegion.value : true
       )
       .reduce((acc, curr) => {
-        if (!curr.oked) return acc;
+        if (!curr.vcode_oked) return acc;
 
-        if (!acc[curr.oked]) {
-          acc[curr.oked] = { ...curr };
+        if (!acc[curr.vcode_oked]) {
+          acc[curr.vcode_oked] = { ...curr };
           return acc;
         }
 
-        acc[curr.oked].cnt24 += +curr.cnt24;
+        acc[curr.vcode_oked].cnt_2024 += curr.cnt_2024;
         return acc;
-      }, {})
-  ).sort((a, b) => +b.cnt24 - +a.cnt24)
+      }, {} as Record<string, F2Data>)
+  ).sort((a, b) => b.cnt_2024 - a.cnt_2024)
 );
 
 const groupByRegion = computed(() =>
   data.value
+    .filter((item) => item.tip === 1)
     .filter((item) =>
       !!currentRegion.value ? item.parent1_code === currentRegion.value : true
     )
     .reduce((acc, curr) => {
-      if (!acc[curr.parent1_code]) {
-        acc[curr.parent1_code] = { ...curr };
+      if (!acc[curr.parent1_code || '']) {
+        acc[curr.parent1_code || ''] = { ...curr };
         return acc;
       }
 
-      acc[curr.parent1_code].cnt24 += +curr.cnt24;
+      acc[curr.parent1_code || ''].cnt_2024 += curr.cnt_2024;
       return acc;
-    }, {})
+    }, {} as Record<string, F2Data>)
 );
 
 const maxGroupByRegion = computed(
   () =>
-    Object.values(groupByRegion.value).sort((a, b) => b.cnt24 - a.cnt24)[0]
-      ?.cnt24
+    Object.values(groupByRegion.value).sort((a, b) => b.cnt_2024 - a.cnt_2024)[0]
+      ?.cnt_2024
 );
 
 loadF2();
@@ -105,7 +123,7 @@ const chartOptions = computed(() => {
       },
     },
     xAxis: {
-      categories: list.value.map((item) => item.oked),
+      categories: list.value.map((item) => item.vname_oked),
       tickmarkPlacement: "on",
       labels: {
         style: {
@@ -132,9 +150,9 @@ const chartOptions = computed(() => {
         pointWidth: 14,
         borderWidth: 0,
         data: list.value.map((e) => ({
-          y: e.cnt24,
+          y: e.cnt_2024,
           color: "#3090E8",
-          price: Numeral(e.cnt24),
+          price: Numeral(e.cnt_2024),
         })),
       },
     ],
