@@ -1,5 +1,12 @@
 <template>
-  <BaseCard title="Инвестиционные проекты" number="A1" class="text-white">
+  <BaseCard title="Инвестиционные проекты" number="A1" class="text-white" :show-close-button="!!currentOtrasl" @close="() => {
+    if (currentProject) {
+      aStore.setCurrentProject(null)
+      aStore.setCurrentRaion(null)
+      return;
+    }
+    aStore.setCurrentOtrasl(null)
+  }">
     <div class="flex gap-1 text-xs p-1">
       <p class="h-6 px-4 flex items-center border cursor-pointer" @click="aStore.setCurrentLabel(0)"
         :class="`${currentLabel === 0 ? 'border-[#3090e8]' : 'border-gray-600'}`">
@@ -28,7 +35,7 @@
           <li class="flex text-[10px] items-center gap-2 mb-1 text-xs justify-between min-w-[200px]" v-for="item in Object.values(list).sort(
             (a, b) => b.count - a.count
           )" :key="item.otrasl">
-            <div class="flex gap-2 items-center">
+            <div class="flex gap-2 items-center cursor-pointer" @click="aStore.setCurrentOtrasl(item.otrasl)">
               <p class="min-w-4 w-4 h-4 rounded-full" :style="{ backgroundColor: a1FilterByOtrasl.color }"></p>
               <p>{{ item.otrasl }}</p>
             </div>
@@ -53,7 +60,7 @@ import { useAStore } from "../store";
 import { storeToRefs } from "pinia";
 
 const aStore = useAStore();
-const { a1FilterByOtrasl, currentLabel } = storeToRefs(aStore);
+const { a1FilterByOtrasl, currentLabel, currentOtrasl, currentProject } = storeToRefs(aStore);
 
 const list = computed(() =>
   a1FilterByOtrasl.value.reduce((acc, curr) => {
