@@ -1,28 +1,17 @@
 <template>
-  <a-modal
-    :footer="null"
-    class="p-0"
-    width="100%"
-    height="100%"
-    :closable="false"
-    :centered="true"
-  >
+ <div style="width:97%; height:88vh; overflow:scroll">
     <div class="flex pt-10 justify-center items-center w-full" v-if="loader">
       <a-spin />
     </div>
-    <BaseCard
-      v-else
-      title=""
-      number=""
-      :show-close-button="true"
-      @close="$emit('close')"
-    >
+    <div v-else>
       <div class="grid grid-cols-2 gap-3">
         <div class="grid grid-cols-1 gap-3 text-white">
-          <div>
-            <p class="mb-2 px-4 py-1 rounded bg-[#252A36] flex items-center">
-              «СЕРПIН»
-            </p>
+          <BaseCard
+      title="«СЕРПIН»"
+      number="A1"
+      :show-close-button="false"
+      @close="$emit('close')"
+    >
             <div
               class="grid grid-cols-[200px_1fr] gap-2 items-start p-3 px-5 relative"
             >
@@ -65,11 +54,13 @@
                 </li>
               </ul>
             </div>
-          </div>
-          <div>
-            <p class="mb-2 px-4 py-1 rounded bg-[#252A36] flex items-center">
-              «АУЫЛ АМАНАТЫ»
-            </p>
+          </BaseCard>
+          <BaseCard
+           title="«АУЫЛ АМАНАТЫ»"
+           number="A2"
+           :show-close-button="false"
+           @close="$emit('close')">
+            
             <div class="grid grid-cols-[200px_1fr] gap-2 items-start p-3 px-5">
               <div class="relative flex items-center justify-center">
                 <highcharts
@@ -109,11 +100,13 @@
                 </li>
               </ul>
             </div>
-          </div>
-          <div>
-            <p class="mb-2 px-4 py-1 rounded bg-[#252A36] flex items-center">
-              «ДИПЛОММЕН АУЫЛҒА»
-            </p>
+          </BaseCard>
+          <BaseCard
+      title="«ДИПЛОММЕН АУЫЛҒА»"
+      number="A3"
+      :show-close-button="false"
+      @close="$emit('close')"
+    >
             <div class="grid grid-cols-[200px_1fr] gap-2 items-center p-3 px-5">
               <div class="relative flex items-center justify-center">
                 <highcharts
@@ -153,15 +146,68 @@
                 </li>
               </ul>
             </div>
-          </div>
+          </BaseCard>
         </div>
 
-        <div class="text-white">
-          <p
-            class="mb-2 px-4 py-1 w-full rounded bg-[#252A36] flex items-center"
-          >
-            «АУЫЛ-ЕЛ БЕСІГІ»
-          </p>
+        <Card :title="currentRegion ? `${regions[currentRegion].parent1_name}` : 'Казахстан'" number="M1"
+    class="relative z-10 text-white" :close="currentRegion" @clear="
+      regionStore.setCurrentRegion(undefined)">
+    <div class="absolute p-4 z-[2000] overflow-auto w-full">
+      <ul class="py-1 flex gap-2 text-nowrap">
+        <template v-for="l in listLabels" :key="l.name">
+          <li @click="aStore.setAMapCurrentKey(l.key)"
+            class="w-max p-1 bg-[#252A36] text-xs cursor-pointer items-center gap-2 border justify-between mb-1 px-3 h-max"
+            :class="{ 'border-[#3090E8]': a_map_current_key === l.key, 'border-gray-700': a_map_current_key !== l.key }">
+            <div class="flex items-center gap-2">
+              <img :src="l.icon" alt="" class="w-[20px] h-[20px]">
+              <p>{{ l.name }}</p>
+            </div>
+          </li>
+        </template>
+      </ul>
+    </div>
+
+    <div class="relative z-1 overflow-hidden h-[50vh]">
+      <BaseMap
+          :current-region="+currentRegion"
+          :fill-color="
+            (v) => {
+              return getColorFromGradient(
+                (+groupByRegion()[+v].rt_unemployed / allBezrabot) * 100,
+                true,
+                false,
+                10
+              );
+            }
+          "
+          @click-polygon="clickPolygon"
+          v-slot="slotProps"
+        >
+          <div>
+            <div class="flex items-center gap-2">
+              <p>Регион:</p>
+              <p class="font-bold">{{ slotProps.data.region }}</p>
+            </div>
+            <div class="flex items-center gap-2">
+              <p>Безрабочий:</p>
+              <p class="font-bold">
+                {{
+                  Numeral(
+                    groupByRegion()[+slotProps.data.parent1_code].rt_unemployed
+                  )
+                }}
+              </p>
+            </div>
+          </div>
+        </BaseMap>
+    </div>
+  </Card>
+        <BaseCard
+      title="«АУЫЛ-ЕЛ БЕСІГІ»"
+      number="A4"
+      :show-close-button="false"
+      @close="$emit('close')"
+    >
           <div class="text-white overflow-x-scroll h-[calc(70vh)] w-full">
             <div
               class="header-grid-text items-end w-full"
@@ -228,10 +274,11 @@
               </div>
             </div>
           </div>
-        </div>
+        </BaseCard>
+        
       </div>
-    </BaseCard>
-  </a-modal>
+    </div>
+  </div>
 </template>
 <script setup lang="ts">
 import { computed, ref } from "vue";
@@ -246,6 +293,36 @@ import {
   getAulBesigi,
 } from "../../../../entities/f/api";
 import { getColorFromGradient } from "../../../../shared/helpers/gradientColors";
+import { useA2Store } from "../../../../stores/a2.store";
+import Card from "../../../../shared/ui/Card/Card.vue";
+import BaseMap from "../../../../shared/ui/BaseMap/BaseMap.vue";
+import { getF1 } from "../../../../entities/f/api";
+
+const data = ref<any[]>([]);
+async function loadF1() {
+  data.value = await getF1().finally(() => {
+    loader.value = false;
+  });
+}
+loadF1();
+
+const groupByRegion = () =>
+  [...data.value].reduce((acc, curr) => {
+    if (!acc[curr.parent1_code]) {
+      acc[curr.parent1_code] = { rt_unemployed: +curr.rt_unemployed };
+      return acc;
+    }
+
+    acc[curr.parent1_code].rt_unemployed += +curr.rt_unemployed;
+    return acc;
+  }, {} as any);
+
+const _filter = computed(() =>
+  [...data.value].filter((e) =>
+    !currentRegion.value ? true : e.parent1_code === currentRegion.value
+  )
+);
+
 
 const loader = ref(false);
 const serpin = ref([]);
@@ -253,7 +330,117 @@ const aulAmanati = ref([]);
 const diplommenAulga = ref([]);
 const aulBesigi = ref([]);
 
-const { currentRegion } = storeToRefs(useRegionStore());
+
+
+
+const regionStore = useRegionStore();
+const { regionPolygons, currentRegion, regions } = storeToRefs(regionStore);
+const aStore = useA2Store();
+const { a_map_current_key, a1, a2, a3 } = storeToRefs(aStore);
+
+const _filterA1 = computed(() => [...a1.value]
+  .filter(e => (!currentRegion.value || +e.parent1_code === +currentRegion.value))
+);
+
+const _filterA2 = computed(() => [...a2.value]
+  .filter(e => (!currentRegion.value || +e.parent1_code === +currentRegion.value))
+);
+
+const _filterA3 = computed(() => [...a3.value]
+  .filter(e => (!currentRegion.value || +e.parent1_code === +currentRegion.value))
+);
+
+const listLabels = computed(() => [
+  { name: 'Серпiн', icon: '/img/a_block/map_1.png', key: 'serpin' },
+  { name: 'Ауыл аманаты', icon: '/img/a_block/map_2.png', key: 'auyl_amanat' },
+  { name: 'Дипломмен ауылға', icon: '/img/a_block/map_3.png', key: 'diplom' },
+  { name: 'Ауыл - ел бесiгi', icon: '/img/a_block/map_3.png', key: 'auyl_el' },
+]);
+
+const summ = computed(() => {
+  if (a_map_current_key.value === 'serpin') return _filterA1.value.reduce((acc, curr) => {
+    if (acc[curr.parent1_code]) {
+      const item = acc[curr.parent1_code]
+      item.value += curr.ispolnayet
+      item.total += curr.total
+      item.count += 1
+    } else {
+      acc[curr.parent1_code] = {
+        ...curr,
+        count: 1,
+        value: curr.ispolnayet
+      }
+    }
+
+    return acc;
+  }, {});
+
+
+  if (a_map_current_key.value === 'auyl_amanat') return _filterA3.value.reduce((acc, curr) => {
+    console.log(curr.loan_price_sum_aulamanat);
+
+    if (acc[curr.parent1_code]) {
+      const item = acc[curr.parent1_code]
+      item.value += curr.active_ip
+      item.total += curr.total
+      item.not_active += curr.not_active
+      item.opv_has += curr.opv_has
+      item.active_ip += curr.active_ip
+      item.loan_price_sum += !!curr.loan_price_sum ? curr.loan_price_sum : 0
+      item.count += 1
+    } else {
+      acc[curr.parent1_code] = {
+        ...curr,
+        count: 1,
+        value: 0,
+      }
+    }
+
+    return acc;
+  }, {});
+
+
+  if (a_map_current_key.value === 'diplom') return _filterA2.value.reduce((acc, curr) => {
+    if (acc[curr.parent1_code]) {
+      const item = acc[curr.parent1_code]
+      item.value += curr.rabotaet_aul
+      item.total += curr.total
+      item.count += 1
+    } else {
+      acc[curr.parent1_code] = {
+        ...curr,
+        count: 1,
+        value: 0
+      }
+    }
+
+    return acc;
+  }, {});
+
+  return {};
+});
+
+const ratesMaxMin = computed(() => {
+  const rates = Object.values(summ.value).map(e => e.value / e.total * 100);
+  return {
+    min: Math.min(...rates),
+    max: Math.max(...rates)
+  };
+});
+
+const list = computed(() => regionPolygons.value.map(e => {
+  let _data = summ.value[e.parent1_code]
+  const { max } = ratesMaxMin.value
+
+  return {
+    ...e,
+    ..._data,
+    count: Numeral(!!_data ? _data.total : 0),
+    color: !_data ? '#252a36' : getColorFromGradient(_data.value === 0 ? 0 : (_data.value / _data.total * 100) / max * 100),
+  };
+}));
+
+const setCurrentRegion = (code: string) => regionStore.setCurrentRegion(code);
 
 async function loadSerpin() {
   serpin.value = await getSerpin().finally(() => {
@@ -549,5 +736,15 @@ const chartDiplommenAulga = computed(() =>
   grid-gap: 4px;
   padding: 8px;
   grid-template-columns: 170px 140px 170px 100px 80px 60px 100px 50px;
+}
+.tag {
+  background: #12141A;
+  border-radius: 2px;
+  height: 18px;
+  display: flex;
+  align-items: center;
+  padding: 0 6px;
+  color: #818693;
+  font-size: 10px;
 }
 </style>

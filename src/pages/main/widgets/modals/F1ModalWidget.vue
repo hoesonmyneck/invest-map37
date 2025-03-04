@@ -16,11 +16,14 @@
       number=""
       :show-close-button="true"
       @close="$emit('close')"
+      class="h-screen max-h-[1000px]"
     >
       <div class="grid grid-cols-2 h-[35vh]">
         <div>
-          <div class="btn mini text-white active" @click="openLink">
-            Программы
+
+          <div class="flex gap-2">
+            <div class="btn mini text-white" :class="{ 'bg-blue-500 active': activeTab === 'program1' }" @click="activeTab = 'program1'">Программы</div>
+            <div class="btn mini text-white" :class="{ 'bg-blue-500 active': activeTab === 'program2' }" @click="activeTab = 'program2'">Программы 2</div>
           </div>
 
           <div
@@ -30,7 +33,7 @@
             <a-spin />
           </div>
           <div v-else class="text-white grid grid-cols-2 gap-2">
-            <div class="relative">
+            <div v-if="activeTab === 'program1'" class="relative">
               <highcharts
                 :options="chartOptions"
                 class="h-[350px] w-full m-auto"
@@ -58,7 +61,7 @@
             </div>
 
             <div>
-              <ul>
+              <ul v-if="activeTab === 'program1'">
                 <li
                   class="flex text-[10px] items-center gap-2 mb-3 text-lg justify-between"
                   v-for="item in list"
@@ -80,11 +83,14 @@
                   </div>
                 </li>
               </ul>
+              <div v-if="activeTab === 'program2'" class="w-screen">
+                <F1ModalWidgetProgram :visible="visible" @close="visible = false" />
+              </div>
             </div>
           </div>
         </div>
       </div>
-      <div class="map h-[calc(54vh)] relative">
+      <div class="map h-[calc(54vh)] relative" v-if="activeTab === 'program1'">
         <div
           v-if="!!currentRegion"
           class="absolute top-5 z-10 right-5 rounded bg-[#252A36] w-8 h-8 flex items-center justify-center cursor-pointer"
@@ -131,7 +137,7 @@
 <script setup lang="ts">
 import { computed, ref } from "vue";
 import BaseCard from "../../../../shared/ui/BaseCard/BaseCard.vue";
-
+import F1ModalWidgetProgram from "../modals/F1ModalWidgetProgram.vue";
 import { getF1 } from "../../../../entities/f/api";
 import { Numeral } from "../../../../shared/helpers/numeral";
 import { getColorFromGradient } from "../../../../shared/helpers/gradientColors";
@@ -141,6 +147,7 @@ import BaseMap from "../../../../shared/ui/BaseMap/BaseMap.vue";
 const loader = ref(true);
 const data = ref<any[]>([]);
 const currentRegion = ref();
+const activeTab = ref('program1');
 
 async function loadF1() {
   data.value = await getF1().finally(() => {
