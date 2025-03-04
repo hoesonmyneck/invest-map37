@@ -24,7 +24,7 @@
               </p>
               <p class="h-6 w-full justify-center px-3 flex items-center bg-[#252A36] rounded w-full truncate" :style="`background-color: ${i.percentage_change_cnt < 0 ? '#FE6A35' : '#109669'
                 }`">
-                {{ Numeral(i.percentage_change_cnt) }} %
+                {{ Numeral(i.percentage_change_cnt / i.count) }} %
               </p>
               <p class="h-6 w-full px-3 flex items-center bg-[#252A36] rounded w-full truncate">
                 {{
@@ -87,11 +87,14 @@ const list = computed(() =>
         if (!curr.oked) return acc;
 
         if (!acc[curr.oked]) {
-          acc[curr.oked] = { ...curr };
+          acc[curr.oked] = { ...curr, count: 1 };
           return acc;
         }
 
         acc[curr.oked].cnt24 += +curr.cnt24;
+        acc[curr.oked].percentage_change_cnt += +curr.percentage_change_cnt;
+        acc[curr.oked].count += 1;
+
         return acc;
       }, {})
   ).sort((a, b) => +b.cnt24 - +a.cnt24)

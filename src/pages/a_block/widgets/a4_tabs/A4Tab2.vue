@@ -73,7 +73,7 @@
                         }}</p>
                 </div>
             </RecycleScroller>
-            <!-- <template v-for="item in a1FilterByProject" :key="item">
+            <!-- <template v-for="item in a1FilterByProject" :key="item.id">
                 <div class="head mt-1">
                     <p class="w-full h-full flex items-center justify-center rounded bg-[#252A36] cursor-pointer">
                         <img src="/images/icons/map.png" alt="" class="w-[16px]" v-if="!!item.coordinates"
