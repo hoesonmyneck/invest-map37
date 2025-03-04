@@ -10,6 +10,11 @@ export const getF2 = async () => {
   return res.data;
 };
 
+export const getF2_new = async () => {
+  const res = await api.get(`data/f/f2_new.json`);
+  return res.data;
+};
+
 export const getF3 = async () => {
   const res = await api.get(`data/f/f3.json`);
   return res.data;

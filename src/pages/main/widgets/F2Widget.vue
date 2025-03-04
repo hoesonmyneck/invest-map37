@@ -15,7 +15,7 @@
 <script setup lang="ts">
 import { computed, ref } from "vue";
 import BaseCard from "../../../shared/ui/BaseCard/BaseCard.vue";
-import { getF2 } from "../../../entities/f/api";
+import { getF2_new } from "../../../entities/f/api";
 import { Numeral } from "../../../shared/helpers/numeral";
 import F2ModalWidget from "./modals/F2ModalWidget.vue";
 
@@ -41,7 +41,7 @@ const visible = ref(false);
 const currentRegion = ref("");
 
 async function loadF2() {
-  data.value = await getF2().finally(() => {
+  data.value = await getF2_new().finally(() => {
     loader.value = false;
   });
 }
