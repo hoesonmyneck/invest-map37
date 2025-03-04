@@ -17,6 +17,9 @@
       <p class="h-6 px-4 flex items-center border cursor-pointer" @click="aStore.setCurrentLabel(1)"
         :class="`${currentLabel === 1 ? 'border-[#3090e8]' : 'border-gray-600'}`">
         МинПром</p>
+      <p class="h-6 px-4 flex items-center border cursor-pointer" @click="aStore.setCurrentLabel(4)"
+        :class="`${currentLabel === 4 ? 'border-[#3090e8]' : 'border-gray-600'}`">
+        МинЭнерго</p>
       <p class="h-6 px-4 flex items-center border cursor-pointer"
         :class="`${currentLabel === 2 ? 'border-[#3090e8]' : 'border-gray-600'}`">
         СГП</p>
