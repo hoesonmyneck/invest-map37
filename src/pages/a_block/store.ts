@@ -15,7 +15,7 @@ export const useAStore = defineStore("a", {
     }), 
     getters: {
         a1Filter(): any[] {
-            return this.a1.filter((item) =>  (!this.currentLabel || +item.label === this.currentLabel) && (!this.currentRegion || item.parent1_code === this.currentRegion) && (!this.currentRaion || item.parent2_code === this.currentRaion));
+            return this.a1.filter((item) =>  (!this.currentLabel || +item.label === this.currentLabel) && (!this.currentRegion || +item.parent1_code === +this.currentRegion) && (!this.currentRaion || item.parent2_code === this.currentRaion));
         },
         a1FilterByOtrasl(): any[] {
             return this.a1Filter.filter((item) =>  (!this.currentOtrasl || item.otrasl === this.currentOtrasl));
