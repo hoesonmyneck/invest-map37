@@ -7,13 +7,13 @@
       <div class="grid grid-cols-[1fr_2fr] text-white">
         <div>
           <div class="flex gap-1">
-            <div :class="{ active: tab === 0 }" @click="tab = 0" class="btn">
+            <div :class="{ active: tab === 0 }" @click="changeTab(0)" class="btn">
               Соотношение
             </div>
-            <div :class="{ active: tab === 1 }" @click="tab = 1" class="btn">
+            <div :class="{ active: tab === 1 }" @click="changeTab(1)" class="btn">
               Общая площадь
             </div>
-            <div :class="{ active: tab === 2 }" @click="tab = 2" class="btn">
+            <div :class="{ active: tab === 2 }" @click="changeTab(2)" class="btn">
               Количество голов
             </div>
           </div>
@@ -24,6 +24,8 @@
                 <div class="absolute top-1/2 text-center left-1/2 -translate-x-1/2 -translate-y-1/2">
                   <p class="text-2xl">{{ Numeral(allCount) }}</p>
                   <p class="text-gray-500 text-xs">Всего</p>
+                  <p class="text-2xl">{{ Numeral(totalUniqueIdSum) }}</p>
+                  <p class="text-gray-500 text-xs">Из них уникальных</p>
                 </div>
               </div>
               <ul class="flex gap-4 text-[10px] justify-center">
@@ -41,12 +43,12 @@
             <template v-else>
               <p v-if="tab === 1" class="mb-2 pb-2 border-b mt-4 text-sm">
                 Общая площадь:
-                <b>{{Numeral(Object.values(totalArea).reduce((acc, curr) => acc + curr.area, 0))}}</b>
+                <b>{{filteredArea}}</b>
                 га
               </p>
               <p v-if="tab === 2" class="mb-2 pb-2 border-b mt-4 text-sm">
                 Количество голов:
-                <b>{{Numeral(Object.values(totalArea).reduce((acc, curr) => acc + curr.area, 0))}}</b>
+                <b>{{filteredTotalHeadCount}}</b>
               </p>
               <highcharts :options="chartOptions2" class="w-full m-auto"></highcharts>
             </template>
@@ -54,20 +56,21 @@
         </div>
         <div class="ml-4 pl-4 border-l border-gray-600 overflow-scroll">
           <div
-            class="head grid gap-1 grid-cols-[100px_100px_100px_100px_100px_100px_100px_50px_50px] text-[10px] pt-4 pb-2 mb-2 border-b border-gray-600">
+            class="head grid gap-1 grid-cols-[100px_100px_100px_100px_100px_100px_100px_150px_70px_100px] text-[10px] pt-4 pb-2 mb-2 border-b border-gray-600">
             <p>НАИМЕНОВАНИЕ</p>
-            <p>БИН</p>
+            <p>БИН <br><br> {{ formatNumber(filteredBin) }}</p>
             <p>ТИП</p>
             <p>ПОДТИП</p>
-            <p>ПЛОЩАДЬ</p>
-            <p>ГОЛОВ</p>
-            <p>Потреб. в кадрах</p>
-            <p>Св. вакансии</p>
-            <p>ТиПО</p>
+            <p>ПЛОЩАДЬ <br><br> <div v-if="tab === 1"> {{ formatNumber(filteredArea) }}</div></p>
+            <p>ГОЛОВ <br><br> <div v-if="tab === 2"> {{ formatNumber(filteredTotalHeadCount) }}</div></p>
+            <p>Потреб. в кадрах <br><br> {{ formatNumber(filteredTotalHeadCount) }}</p>
+            <p>Фактические рабочие места <br><br> {{ formatNumber(filteredWorkPlaces) }}</p>
+            <p>Св. вакансии<br><br> {{ formatNumber(filteredIinSum) }}</p>
+            <p>ТиПО <br><br> {{ formatNumber(filteredBezrabotZero) }}</p>
           </div>
           <div class="overflow-y-auto h-[calc(40vh-50px)] w-full">
             <div
-              class="head gap-1 grid grid-cols-[100px_100px_100px_100px_100px_100px_100px_50px_50px] text-[10px] mt-1"
+              class="head gap-1 grid grid-cols-[100px_100px_100px_100px_100px_100px_100px_150px_70px_100px] text-[10px] mt-1"
               v-for="item in dataListFiltered.slice(0, 30)" :key="item.area + item.full_name">
               <a-tooltip placement="left" :title="item.full_name"><p class="h-6 w-full px-1 flex items-center bg-[#252A36] rounded w-full truncate">
                 {{ item.full_name }}
@@ -91,10 +94,13 @@
                 {{ item.total_head_count }}
               </p>
               <p class="h-6 w-full px-1 flex items-center bg-[#252A36] rounded w-full truncate">
-                -
+                {{ item.work_places }}
               </p>
               <p class="h-6 w-full px-1 flex items-center bg-[#252A36] rounded w-full truncate">
-                -
+                {{ item.iin_sum }}
+              </p>
+              <p class="h-6 w-full px-1 flex items-center bg-[#252A36] rounded w-full truncate">
+                {{ item.bezrabot_zero }}
               </p>
             </div>
           </div>
@@ -134,64 +140,30 @@
             </div>
           </div>
         </BaseMap>
-        <!-- <l-map ref="mapRef" :zoom="5" :center="[49.213962, 67.109173]" :options="{ zoomControl: false }" class="w-full"
-          :use-global-leaflet="false">
-          <template>
-            <l-polygon v-for="p in Object.values(regionPolygons.features)" :key="p.parent1_code"
-              @click="currentRegion = p.properties.parent1_code" :lat-lngs="reverseCoordinates(p.geometry.coordinates)"
-              color="white" :opacity="1" :weight="1" :fillOpacity="1" :fillColor="
-                !!currentRegion
-                  ? currentRegion === p.properties.parent1_code
-                    ? getColorFromGradient(
-                        (groupByRegion[+p.properties.parent1_code]?.area /
-                          maxCountGroupByRegion) *
-                          100
-                      )
-                    : '#252A36'
-                  : getColorFromGradient(
-                      (groupByRegion[+p.properties.parent1_code]?.area /
-                        maxCountGroupByRegion) *
-                        100
-                    )
-              ">
-              <l-tooltip class="p-0 bg-transparent rounded-md">
-                <div class="flex items-center gap-2">
-                  <p>Регион:</p>
-                  <p class="font-bold">{{ p.properties.region }}</p>
-                </div>
-                <div class="flex items-center gap-2">
-                  <p>{{ tabMapStatus === 1 ? "Площадь" : "Голов" }}:</p>
-                  <p class="font-bold">
-                    {{
-                    Numeral(groupByRegion[+p.properties.parent1_code]?.area)
-                    }}
-                  </p>
-                </div>
-              </l-tooltip>
-            </l-polygon>
-          </template>
-        </l-map> -->
       </div>
     </BaseCard>
   </a-modal>
 </template>
 <script setup lang="ts">
 import "leaflet/dist/leaflet.css";
-import { computed, ref } from "vue";
+import { computed, ref, onMounted } from "vue";
 import BaseCard from "../../../../shared/ui/BaseCard/BaseCard.vue";
-import { getF5, getF5_1 } from "../../../../entities/f/api";
+import { getF5, getF5_1, getF7_total } from "../../../../entities/f/api";
 import { Numeral } from "../../../../shared/helpers/numeral";
 import { useRegionStore } from "../../../../entities/region/store";
 import { getColorFromGradient } from "../../../../shared/helpers/gradientColors";
 import { CloseOutlined } from "@ant-design/icons-vue";
 import BaseMap from "../../../../shared/ui/BaseMap/BaseMap.vue";
+import { createApp } from 'vue';
 
 const loader = ref(true);
 const data = ref([]);
 const dataList = ref([]);
 const tab = ref(0);
 const tabMapStatus = ref(0);
-const currentRegion = ref();
+const currentRegion = ref(null);
+const f7Data = ref([]);
+const f5Data = ref([]);
 
 async function loadF5() {
   data.value = await getF5();
@@ -204,6 +176,7 @@ loadF5();
 
 const clickPolygon = (code: string) => {
   currentRegion.value = +code;
+  console.log("Region clicked:", code);
 }
 
 const allCount = computed(() =>
@@ -221,8 +194,8 @@ const _transformedData = computed(() =>
           +item.parent1_code === currentRegion.value) &&
         (tab.value === 0
           ? true
-          : item.tip ===
-          (tab.value === 1 ? "Растениеводство" : "Животноводство"))
+          : +item.tip ===
+          (tab.value === 1 ? 1 : 2))
     )
     .reduce((acc, curr) => {
       const _key = curr.raion + curr.tip + curr.region;
@@ -248,12 +221,12 @@ const maxCountGroupByRegion = computed(
 
 const type_1 = computed(() =>
   Object.values(_transformedData.value)?.filter(
-    (item) => item.tip === "Растениеводство"
+    (item) => +item.tip === 1
   )
 );
 const type_2 = computed(() =>
   Object.values(_transformedData.value)?.filter(
-    (item) => item.tip === "Животноводство"
+    (item) => +item.tip === 2
   )
 );
 
@@ -261,7 +234,7 @@ const totalArea = computed(() =>
   data.value
     .filter(
       (item) =>
-        item.tip === (tab.value === 1 ? "Растениеводство" : "Животноводство")
+        +item.tip === (tab.value === 1 ? 1 : 2)
     )
     ?.reduce((acc, curr) => {
       if (
@@ -291,8 +264,8 @@ const totalArea = computed(() =>
 const groupByRegion = () => data.value
   .filter(
     (item) =>
-      item.tip ===
-      (tabMapStatus.value === 1 ? "Растениеводство" : "Животноводство")
+      +item.tip ===
+      (tabMapStatus.value === 1 ? 1 : 2)
   )
   ?.reduce((acc, curr) => {
     if (!acc[curr.parent1_code]) {
@@ -437,6 +410,197 @@ const chartOptions2 = computed(() => {
     ],
   };
 });
+
+onMounted(async () => {
+  const responseF7 = await getF7_total();
+  f7Data.value = responseF7;
+
+  const responseF5 = await getF5();
+  f5Data.value = responseF5;
+});
+
+const totalUniqueIdSum = computed(() => {
+  const uniqueRaions = {};
+  f5Data.value.forEach(item => {
+    if (!uniqueRaions[item.parent2_code]) {
+      uniqueRaions[item.parent2_code] = item.total_unique_id;
+    }
+  });
+  return Object.values(uniqueRaions).reduce((acc, curr) => acc + curr, 0);
+});
+
+const filteredBin = computed(() => {
+  const selectedTip = tab.value === 1 ? 1 : 2;
+
+  if (tab.value === 0) {
+    if (!currentRegion.value) {
+      return f7Data.value.reduce((acc, curr) => acc + curr.bin, 0);
+    } else {
+      return f7Data.value
+        .filter(item => item.parent1_code === currentRegion.value)
+        .reduce((acc, curr) => acc + curr.bin, 0);
+    }
+  }
+
+  if (!currentRegion.value) {
+    return f7Data.value
+      .filter(item => +item.tip === selectedTip)
+      .reduce((acc, curr) => acc + curr.bin, 0);
+  }
+
+  const filteredData = f7Data.value.find(
+    (item) => item.parent1_code === currentRegion.value && +item.tip === selectedTip
+  );
+
+  return filteredData ? filteredData.bin : "Нет данных";
+});
+
+const filteredArea = computed(() => {
+  const selectedTip = tab.value === 1 ? 1 : 2;
+
+  if (tab.value === 0) {
+    if (!currentRegion.value) {
+      return Math.round(f7Data.value.reduce((acc, curr) => acc + curr.area, 0));
+    } else {
+      return Math.round(f7Data.value
+        .filter(item => item.parent1_code === currentRegion.value)
+        .reduce((acc, curr) => acc + curr.area, 0));
+    }
+  }
+
+  if (!currentRegion.value) {
+    return Math.round(f7Data.value
+      .filter(item => +item.tip === selectedTip)
+      .reduce((acc, curr) => acc + curr.area, 0));
+  }
+
+  const filteredData = f7Data.value.find(
+    (item) => item.parent1_code === currentRegion.value && +item.tip === selectedTip
+  );
+
+  return filteredData ? Math.round(filteredData.area) : "Нет данных";
+});
+
+const filteredTotalHeadCount = computed(() => {
+  const selectedTip = tab.value === 1 ? 1 : 2;
+
+  if (tab.value === 0) {
+    if (!currentRegion.value) {
+      return f7Data.value.reduce((acc, curr) => acc + curr.total_head_count, 0);
+    } else {
+      return f7Data.value
+        .filter(item => item.parent1_code === currentRegion.value)
+        .reduce((acc, curr) => acc + curr.total_head_count, 0);
+    }
+  }
+
+  if (!currentRegion.value) {
+    return f7Data.value
+      .filter(item => +item.tip === selectedTip)
+      .reduce((acc, curr) => acc + curr.total_head_count, 0);
+  }
+
+  const filteredData = f7Data.value.find(
+    (item) => item.parent1_code === currentRegion.value && +item.tip === selectedTip
+  );
+
+  return filteredData ? filteredData.total_head_count : "Нет данных";
+});
+
+const filteredIinSum = computed(() => {
+  const selectedTip = tab.value === 1 ? 1 : 2;
+
+  if (tab.value === 0) {
+    if (!currentRegion.value) {
+      return f7Data.value.reduce((acc, curr) => acc + curr.iin_sum, 0);
+    } else {
+      return f7Data.value
+        .filter(item => item.parent1_code === currentRegion.value)
+        .reduce((acc, curr) => acc + curr.iin_sum, 0);
+    }
+  }
+
+  if (!currentRegion.value) {
+    return f7Data.value
+      .filter(item => +item.tip === selectedTip)
+      .reduce((acc, curr) => acc + curr.iin_sum, 0);
+  }
+
+  const filteredData = f7Data.value.find(
+    (item) => item.parent1_code === currentRegion.value && +item.tip === selectedTip
+  );
+
+  return filteredData ? filteredData.iin_sum : "Нет данных";
+});
+
+const filteredBezrabotZero = computed(() => {
+  const selectedTip = tab.value === 1 ? 1 : 2;
+
+  if (tab.value === 0) {
+    if (!currentRegion.value) {
+      return f7Data.value.reduce((acc, curr) => acc + curr.bezrabot_zero, 0);
+    } else {
+      return f7Data.value
+        .filter(item => item.parent1_code === currentRegion.value)
+        .reduce((acc, curr) => acc + curr.bezrabot_zero, 0);
+    }
+  }
+
+  if (!currentRegion.value) {
+    return f7Data.value
+      .filter(item => +item.tip === selectedTip)
+      .reduce((acc, curr) => acc + curr.bezrabot_zero, 0);
+  }
+
+  const filteredData = f7Data.value.find(
+    (item) => item.parent1_code === currentRegion.value && +item.tip === selectedTip
+  );
+
+  return filteredData ? filteredData.bezrabot_zero : "Нет данных";
+});
+
+const filteredWorkPlaces = computed(() => {
+  const uniqueRegions = {};
+
+  f7Data.value.forEach(item => {
+    if (tab.value === 0) {
+      if (!currentRegion.value || item.parent1_code === currentRegion.value) {
+        if (!uniqueRegions[item.parent1_code]) {
+          uniqueRegions[item.parent1_code] = 0;
+        }
+        uniqueRegions[item.parent1_code] += item.work_places;
+      }
+    } else {
+      const selectedTip = tab.value === 1 ? 1 : 2;
+      if ((!currentRegion.value || item.parent1_code === currentRegion.value) && item.tip === selectedTip) {
+        if (!uniqueRegions[item.parent1_code]) {
+          uniqueRegions[item.parent1_code] = item.work_places;
+        }
+      }
+    }
+  });
+
+  return Object.values(uniqueRegions).reduce((acc, curr) => acc + curr, 0);
+});
+
+const changeTab = (newTab) => {
+  tab.value = newTab;
+  console.log("Tab changed to:", newTab);
+};
+
+const app = createApp({});
+
+app.config.globalProperties.$filters = {
+  formatNumber(value) {
+    if (!value) return '0';
+    return value.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+  }
+};
+
+const formatNumber = (value) => {
+  if (!value) return '0';
+  return value.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+};
 </script>
 
 <style scoped lang="scss">

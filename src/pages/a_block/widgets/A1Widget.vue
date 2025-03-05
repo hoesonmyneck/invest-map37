@@ -44,7 +44,7 @@
             </div>
             <div class="flex gap-2 items-center">
               <p>{{ item.count }}</p>
-              <p class="bg-black p-1 rounded px-2 w-[40px] text-center">
+              <p class="bg-black p-1 rounded px-2 w-[50px] text-center">
                 {{ Numeral((item.count / a1FilterByOtrasl.length) * 100) }}%
               </p>
             </div>

@@ -30,10 +30,6 @@ import { useProgramStore } from '../../../b_block/BTab2/store';
 const activeTab = ref(1);
 
 const { currentYear } = storeToRefs(useProgramStore());
-
-function useBStore(): any {
-  throw new Error('Function not implemented.');
-}
 </script>
 
 <style scoped lang="scss"></style>

@@ -49,8 +49,8 @@
                     <p class="element truncate text-center">{{ Numeral(item.work_places) }}</p>
                     <p class="element truncate text-center">{{ Numeral(item.fact_work) }}</p>
                     <p class="element truncate text-center"
-                        :style="{ background: getColorFromGradient(item.fact_work / item.work_places * 100) }">
-                        {{ Numeral(item.fact_work / item.work_places * 100) }}%
+                        :style="{ background: getColorFromGradient(item.work_places === 0 ? 0 : Math.min(100, (item.fact_work / item.work_places * 100))) }">
+                        {{ item.work_places === 0 ? '0%' : Numeral(Math.min(100, item.fact_work / item.work_places * 100)) + '%' }}
                     </p>
 
                     <p class="element truncate text-center">{{ Numeral(item.plan_fot) }}</p>

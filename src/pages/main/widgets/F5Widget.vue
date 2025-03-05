@@ -125,12 +125,12 @@ const _transformedData = computed(() =>
 
 const type_1 = computed(() =>
   Object.values(_transformedData.value)?.filter(
-    (item) => item.tip === "Растениеводство"
+    (item) => item.tip === 1
   )
 );
 const type_2 = computed(() =>
   Object.values(_transformedData.value)?.filter(
-    (item) => item.tip === "Животноводство"
+    (item) => item.tip === 2
   )
 );
 
@@ -138,7 +138,7 @@ const totalArea = computed(() =>
   data.value
     .filter(
       (item) =>
-        item.tip === (tab.value === 1 ? "Растениеводство" : "Животноводство")
+        item.tip === (tab.value === 1 ? 1 : 2)
     )
     ?.reduce((acc, curr) => {
       if (
