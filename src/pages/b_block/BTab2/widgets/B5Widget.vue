@@ -27,25 +27,18 @@
       <CloseOutlined />
     </div>
     <BaseMap
-      v-if="ready"
       :current-region="+currentRegion"
       :fill-color="
         (v) => {
-          try {
-            return getColorFromGradient(
-              !groupByRegion ? 0 : (groupByRegion[v].total / maxTotal) * 100,
-              false,
-              false,
-              10
-            );
-          } catch (error) {
-            return return getColorFromGradient(
-              0,
-              false,
-              false,
-              10
-            );
-          }
+          if (!groupByRegion[v])
+            return getColorFromGradient(0, false, false, 10);
+
+          return getColorFromGradient(
+            (groupByRegion[v].total / maxTotal) * 100,
+            false,
+            false,
+            10
+          );
         }
       "
       @click-polygon="clickPolygon"
@@ -69,7 +62,7 @@
   </div>
 </template>
 <script setup lang="ts">
-import { computed, onMounted, ref } from "vue";
+import { computed } from "vue";
 import { useProgramStore } from "../store";
 import { storeToRefs } from "pinia";
 import BaseMap from "../../../../shared/ui/BaseMap/BaseMap.vue";
@@ -77,15 +70,8 @@ import { getColorFromGradient } from "../../../../shared/helpers/gradientColors"
 import { CloseOutlined } from "@ant-design/icons-vue";
 
 const programStore = useProgramStore();
-const ready = ref(false);
 const { current_key, currentRegion, serpin, aulAmanati, diplommenAulga } =
   storeToRefs(programStore);
-
-onMounted(() => {
-  setTimeout(() => {
-    ready.value = true;
-  }, 100);
-});
 
 const listLabels = computed(() => [
   { name: "Серпiн", icon: "/images/a_block/map_1.png", key: "serpin" },
@@ -106,8 +92,12 @@ const listLabels = computed(() => [
   },
 ]);
 
-const maxTotal = computed(() =>
-  Object.values(groupByRegion.value).reduce((acc, curr) => acc + curr.total, 0)
+const maxTotal = computed(
+  (): number =>
+    Object.values(groupByRegion.value).reduce(
+      (acc, curr) => acc + curr.total,
+      0
+    ) as number
 );
 
 const groupByRegion = computed(() => {

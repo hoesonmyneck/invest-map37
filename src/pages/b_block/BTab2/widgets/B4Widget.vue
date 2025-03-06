@@ -81,25 +81,12 @@ import { Numeral } from "../../../../shared/helpers/numeral";
 import { storeToRefs } from "pinia";
 import { getColorFromGradient } from "../../../../shared/helpers/gradientColors";
 
-const loader = ref(true);
-const data = ref<any[]>([]);
-
 const programStore = useProgramStore();
 const { aulBesigiFilter } = storeToRefs(programStore);
 
 const totalSumm = computed(() =>
   aulBesigiFilter.value.reduce((acc, curr) => acc + curr.project_price, 0)
 );
-
-async function loadSerpin() {
-  data.value = await getAulBesigi().finally(() => {
-    loader.value = false;
-  });
-
-  programStore.setAulBesigi(data.value);
-}
-
-loadSerpin();
 </script>
 
 <style scoped lang="scss">
