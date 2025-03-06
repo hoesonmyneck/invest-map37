@@ -31,12 +31,21 @@
       :current-region="+currentRegion"
       :fill-color="
         (v) => {
-          return getColorFromGradient(
-            !groupByRegion ? 0 : (groupByRegion[v].total / maxTotal) * 100,
-            false,
-            false,
-            10
-          );
+          try {
+            return getColorFromGradient(
+              !groupByRegion ? 0 : (groupByRegion[v].total / maxTotal) * 100,
+              false,
+              false,
+              10
+            );
+          } catch (error) {
+            return return getColorFromGradient(
+              0,
+              false,
+              false,
+              10
+            );
+          }
         }
       "
       @click-polygon="clickPolygon"
