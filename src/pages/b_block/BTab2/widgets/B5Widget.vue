@@ -30,10 +30,10 @@
       :current-region="+currentRegion"
       :fill-color="
         (v) => {
-          if(!groupByRegion[v]) return "#252A36";
-
           return getColorFromGradient(
-            !groupByRegion ? 0 : (groupByRegion[v].total / maxTotal) * 100,
+            !groupByRegion || groupByRegion[v]
+              ? 0
+              : (groupByRegion[v].total / maxTotal) * 100,
             false,
             false,
             10
