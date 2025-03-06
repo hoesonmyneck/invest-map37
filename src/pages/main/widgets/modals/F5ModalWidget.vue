@@ -176,7 +176,6 @@ loadF5();
 
 const clickPolygon = (code: string) => {
   currentRegion.value = +code;
-  console.log("Region clicked:", code);
 }
 
 const allCount = computed(() =>
@@ -585,7 +584,6 @@ const filteredWorkPlaces = computed(() => {
 
 const changeTab = (newTab) => {
   tab.value = newTab;
-  console.log("Tab changed to:", newTab);
 };
 
 const app = createApp({});

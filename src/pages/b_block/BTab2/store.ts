@@ -14,6 +14,7 @@ export const useProgramStore = defineStore("program", {
     }), 
     getters: {
         serpinFilter(): any[] {
+            if(!this.serpin) return [];
             return this.serpin.filter((item) => (this.currentYear === 'Все' ? true : +item.year_contract === this.currentYear) && (!this.currentRegion || item.parent1_code === this.currentRegion) && (!this.currentRaion || item.parent2_code === this.currentRaion));
         },
         aulAmanatiFilter(): any[] {
