@@ -29,8 +29,6 @@ export const useProgramStore = defineStore("program", {
     },
     actions: {
         async setSerpin(payload: any[]) {
-            console.log(payload);
-            
             this.serpin = payload;
         },
         async setAulAmanati(payload: any[]) {

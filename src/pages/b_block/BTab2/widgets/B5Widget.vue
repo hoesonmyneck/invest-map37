@@ -67,7 +67,6 @@ import { storeToRefs } from "pinia";
 import BaseMap from "../../../../shared/ui/BaseMap/BaseMap.vue";
 import { getColorFromGradient } from "../../../../shared/helpers/gradientColors";
 import { CloseOutlined } from "@ant-design/icons-vue";
-import { Numeral } from "../../../../shared/helpers/numeral";
 
 const programStore = useProgramStore();
 const { current_key, currentRegion, serpin, aulAmanati, diplommenAulga } =
