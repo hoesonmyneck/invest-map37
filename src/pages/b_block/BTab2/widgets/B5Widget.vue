@@ -27,13 +27,12 @@
       <CloseOutlined />
     </div>
     <BaseMap
+      v-if="ready"
       :current-region="+currentRegion"
       :fill-color="
         (v) => {
           return getColorFromGradient(
-            !groupByRegion || groupByRegion[v]
-              ? 0
-              : (groupByRegion[v].total / maxTotal) * 100,
+            !groupByRegion ? 0 : (groupByRegion[v].total / maxTotal) * 100,
             false,
             false,
             10
@@ -61,7 +60,7 @@
   </div>
 </template>
 <script setup lang="ts">
-import { computed } from "vue";
+import { computed, onMounted, ref } from "vue";
 import { useProgramStore } from "../store";
 import { storeToRefs } from "pinia";
 import BaseMap from "../../../../shared/ui/BaseMap/BaseMap.vue";
@@ -69,8 +68,15 @@ import { getColorFromGradient } from "../../../../shared/helpers/gradientColors"
 import { CloseOutlined } from "@ant-design/icons-vue";
 
 const programStore = useProgramStore();
+const ready = ref(false);
 const { current_key, currentRegion, serpin, aulAmanati, diplommenAulga } =
   storeToRefs(programStore);
+
+onMounted(() => {
+  setTimeout(() => {
+    ready.value = true;
+  }, 100);
+});
 
 const listLabels = computed(() => [
   { name: "Серпiн", icon: "/images/a_block/map_1.png", key: "serpin" },
@@ -97,7 +103,7 @@ const maxTotal = computed(() =>
 
 const groupByRegion = computed(() => {
   if (current_key.value === "serpin")
-    return [...serpin.value].reduce((acc, curr) => {
+    return serpin.value.reduce((acc, curr) => {
       if (acc[curr.parent1_code]) {
         acc[curr.parent1_code].total += curr.total;
         acc[curr.parent1_code].value += curr.ispolnayet;
