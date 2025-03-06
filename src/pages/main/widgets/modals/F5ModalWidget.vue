@@ -43,12 +43,12 @@
             <template v-else>
               <p v-if="tab === 1" class="mb-2 pb-2 border-b mt-4 text-sm">
                 Общая площадь:
-                <b>{{filteredArea}}</b>
+                <b>{{ formatNumber(filteredArea) }}</b>
                 га
               </p>
               <p v-if="tab === 2" class="mb-2 pb-2 border-b mt-4 text-sm">
                 Количество голов:
-                <b>{{filteredTotalHeadCount}}</b>
+                <b>{{ formatNumber(filteredArea) }}</b>
               </p>
               <highcharts :options="chartOptions2" class="w-full m-auto"></highcharts>
             </template>
@@ -62,7 +62,7 @@
             <p>ТИП</p>
             <p>ПОДТИП</p>
             <p>ПЛОЩАДЬ <br><br> <div v-if="tab === 1"> {{ formatNumber(filteredArea) }}</div></p>
-            <p>ГОЛОВ <br><br> <div v-if="tab === 2"> {{ formatNumber(filteredTotalHeadCount) }}</div></p>
+            <p>ГОЛОВ <br><br> <div v-if="tab === 2"> {{ formatNumber(filteredArea) }}</div></p>
             <p>Потреб. в кадрах <br><br> {{ formatNumber(filteredTotalHeadCount) }}</p>
             <p>Фактические рабочие места <br><br> {{ formatNumber(filteredWorkPlaces) }}</p>
             <p>Св. вакансии<br><br> {{ formatNumber(filteredIinSum) }}</p>

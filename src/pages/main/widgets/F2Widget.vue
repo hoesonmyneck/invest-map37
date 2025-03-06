@@ -98,6 +98,9 @@ const chartOptions = computed(() => {
       type: "bar",
       height: visible.value ? "" : "150%",
       backgroundColor: "transparent",
+      spacingLeft: 10,
+      spacingRight: 150,
+      marginRight: 100,
     },
     title: {
       text: "",
@@ -113,8 +116,16 @@ const chartOptions = computed(() => {
       series: {
         borderRadius: 0,
         dataLabels: {
-          format: "{point.price}",
+          formatter: function(this: any): string {
+            const item = list.value.find(i => i.cnt_2024 === this.point.y);
+            const proc = item ? item.proc : 0;
+            const bgColor = proc < 0 ? '#FE6A35' : '#109669';
+            return this.point.price + ' <span style="font-weight: bold; background-color: ' + bgColor + '; padding: 2px 6px; border-radius: 4px; margin-left: 5px; display: inline-block;">' + proc.toFixed(1) + ' %</span>';
+          },
+          useHTML: true,
           enabled: true,
+          crop: false,
+          overflow: 'allow',
           style: {
             color: "#fff",
           },
@@ -149,6 +160,7 @@ const chartOptions = computed(() => {
         colorByPoint: true,
         pointWidth: 14,
         borderWidth: 0,
+        maxPointWidth: 300,
         data: list.value.map((e) => ({
           y: e.cnt_2024,
           color: "#3090E8",
