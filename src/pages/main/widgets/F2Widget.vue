@@ -53,6 +53,7 @@ const list = computed(() =>
       .filter((item) =>
         !!currentRegion.value ? item.parent1_code === currentRegion.value : true
       )
+      .filter((item) => item.vname_oked !== "Окэд не указан")
       .reduce((acc, curr) => {
         if (!curr.vcode_oked) return acc;
 
