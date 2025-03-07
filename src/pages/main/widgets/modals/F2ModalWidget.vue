@@ -45,12 +45,12 @@
               <p
                 class="h-9 w-full px-3 flex items-center bg-[#252A36] rounded w-full truncate"
               >
-                {{ i.cnt_2023 }}
+                {{ i.cnt_2023.toLocaleString() }}
               </p>
               <p
                 class="h-9 w-full px-3 flex items-center bg-[#252A36] rounded w-full truncate"
               >
-                {{ i.cnt_2024 }}
+                {{ i.cnt_2024.toLocaleString() }}
               </p>
               <p
                 class="h-9 w-full justify-center px-3 flex items-center bg-[#252A36] rounded w-full truncate"
