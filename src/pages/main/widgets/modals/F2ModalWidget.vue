@@ -63,7 +63,7 @@
               <p
                 class="h-9 w-full px-3 flex items-center bg-[#252A36] rounded w-full truncate"
               >
-                {{ i.prognoz !== 0 ? `${i.prognoz.toFixed(1)} %` : "" }}
+                {{ !!i.prognoz ? `${+i.prognoz.toFixed(1)} %` : "" }}
               </p>
             </div>
           </div>
