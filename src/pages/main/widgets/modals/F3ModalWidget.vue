@@ -154,7 +154,7 @@ async function loadF3() {
     loader.value = false;
   });
 
-  console.log(data.value); // Проверьте, содержат ли данные нужные поля
+  console.log(data.value); 
 }
 
 loadF3();
