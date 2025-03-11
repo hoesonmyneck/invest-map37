@@ -223,7 +223,7 @@ const list = computed(() => {
   });
 
   const filteredByName = filteredByRegion.filter(
-    (item) => item.vname_oked !== "Окэд не указан"
+    (item) => !["Окэд не указан", "Деятельность экстерриториальных организаций и органов", "Деятельность домашних хозяйств, нанимающих домашнюю прислугу и производящих товары и услуги для собственного потребления"].includes(item.vname_oked)
   );
 
   return Object.values(
@@ -269,7 +269,7 @@ function clickRaion(code: string) {
 
 const groupByRegion = computed(() => {
   const result = props.data
-    .filter((item) => item.tip === 2 && item.vname_oked !== "Окэд не указан")
+    .filter((item) => item.tip === 2 && !["Окэд не указан", "Деятельность экстерриториальных организаций и органов", "Деятельность домашних хозяйств, нанимающих домашнюю прислугу и производящих товары и услуги для собственного потребления"].includes(item.vname_oked))
     .reduce((acc, curr) => {
       const regionCode = curr.parent1_code?.toString() || "";
       const regionNumber = parseInt(regionCode);
@@ -294,7 +294,7 @@ const groupByRegion = computed(() => {
 
 const groupByRaion = computed(() => {
   const result = props.data
-    .filter((item) => item.tip === 3 && item.vname_oked !== "Окэд не указан")
+    .filter((item) => item.tip === 3 && !["Окэд не указан", "Деятельность экстерриториальных организаций и органов", "Деятельность домашних хозяйств, нанимающих домашнюю прислугу и производящих товары и услуги для собственного потребления"].includes(item.vname_oked))
     .reduce((acc, curr) => {
       const raionCode = curr.parent2_code?.toString() || "";
       const raionNumber = parseInt(raionCode);

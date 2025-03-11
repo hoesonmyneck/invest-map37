@@ -50,37 +50,84 @@
             </div>
         </div>
         <div class="map h-[calc(60vh)] relative mt-15">
-            <div v-if="!!currentRegion"
+            <div v-if="!!currentRegion || !!currentRaion"
                 class="absolute top-5 z-10 right-5 rounded bg-[#252A36] w-8 h-8 flex items-center justify-center cursor-pointer"
-                @click="currentRegion = null">
+                @click="() => {
+                    if (!!currentRaion) {
+                        currentRaion = null;
+                        return;
+                    }
+                    currentRegion = null;
+                }">
                 <CloseOutlined />
             </div>
-            <BaseMap :current-region="+currentRegion" :fill-color="(v) => {
-                return getColorFromGradient(
-                    (+groupByRegion()[+v].rt_unemployed / allBezrabot) * 100,
-                    true,
-                    false,
-                    10
-                );
-            }
-                " @click-polygon="clickPolygon" v-slot="slotProps">
+            <BaseMap 
+                v-if="!currentRegion"
+                :current-region="currentRegion ? Number(currentRegion) : undefined" 
+                :fill-color="(v) => {
+                    return getColorFromGradient(
+                        (+groupByRegion()[+v]?.rt_unemployed / allBezrabot) * 100,
+                        true,
+                        false,
+                        10
+                    );
+                }" 
+                @click-polygon="clickPolygon" 
+                v-slot="slotProps">
                 <div>
                     <div class="flex items-center gap-2">
                         <p>Регион:</p>
                         <p class="font-bold">{{ slotProps.data.region }}</p>
                     </div>
                     <div class="flex items-center gap-2">
-                        <p>Безрабочий:</p>
+                        <p>Безработные:</p>
                         <p class="font-bold">
                             {{
                                 Numeral(
-                                    groupByRegion()[+slotProps.data.parent1_code].rt_unemployed
+                                    groupByRegion()[+slotProps.data.parent1_code]?.rt_unemployed || 0
                                 )
                             }}
                         </p>
                     </div>
                 </div>
             </BaseMap>
+            
+            <BaseMapNoMarker
+                v-else
+                :current-region="currentRegion ? Number(currentRegion) : undefined"
+                :current-raion="currentRaion ? Number(currentRaion) : undefined"
+                :fill-color="(v) => {
+                    if (!groupByRaion()[+v] || groupByRaion()[+v]?.parent1_code !== Number(currentRegion)) {
+                        return '#222732'; 
+                    }
+                    const regionRaions = Object.values(groupByRaion()).filter((raion: any) => raion.parent1_code === Number(currentRegion));
+                    const totalRegionUnemployed = regionRaions.reduce((acc: number, raion: any) => acc + raion.rt_unemployed, 0);
+                    return getColorFromGradient(
+                        (+groupByRaion()[+v]?.rt_unemployed / totalRegionUnemployed) * 100,
+                        true,
+                        false,
+                        10
+                    );
+                }"
+                @click-polygon="clickRaion"
+                v-slot="slotProps">
+                <div>
+                    <div class="flex items-center gap-2">
+                        <p>Район:</p>
+                        <p class="font-bold">{{ slotProps.data.raion }}</p>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <p>Безрабочий:</p>
+                        <p class="font-bold">
+                            {{
+                                Numeral(
+                                    groupByRaion()[+slotProps.data.parent2_code]?.rt_unemployed || 0
+                                )
+                            }}
+                        </p>
+                    </div>
+                </div>
+            </BaseMapNoMarker>
         </div>
     </div>
 </template>
@@ -92,11 +139,14 @@ import { Numeral } from "../../../../shared/helpers/numeral";
 import { getColorFromGradient } from "../../../../shared/helpers/gradientColors";
 import { CloseOutlined } from "@ant-design/icons-vue";
 import BaseMap from "../../../../shared/ui/BaseMap/BaseMap.vue";
+import BaseMapNoMarker from "../../../../shared/ui/BaseMap/BaseMapNoMarker.vue";
 
 const loader = ref(true);
 const data = ref<any[]>([]);
-const currentRegion = ref();
+const currentRegion = ref<string | null>(null);
+const currentRaion = ref<string | null>(null);
 const activeTab = ref('program1');
+const visible = ref(false);
 
 async function loadF1() {
     data.value = await getF1().finally(() => {
@@ -105,7 +155,12 @@ async function loadF1() {
 }
 
 function clickPolygon(code: string) {
-    currentRegion.value = +code;
+    currentRegion.value = code;
+    currentRaion.value = null;
+}
+
+function clickRaion(code: string) {
+    currentRaion.value = code;
 }
 
 loadF1();
@@ -113,7 +168,10 @@ loadF1();
 const groupByRegion = () =>
     [...data.value].reduce((acc, curr) => {
         if (!acc[curr.parent1_code]) {
-            acc[curr.parent1_code] = { rt_unemployed: +curr.rt_unemployed };
+            acc[curr.parent1_code] = { 
+                rt_unemployed: +curr.rt_unemployed,
+                parent1_code: curr.parent1_code
+            };
             return acc;
         }
 
@@ -121,38 +179,65 @@ const groupByRegion = () =>
         return acc;
     }, {} as any);
 
-const _filter = computed(() =>
-    [...data.value].filter((e) =>
-        !currentRegion.value ? true : e.parent1_code === currentRegion.value
-    )
-);
+const groupByRaion = () =>
+    [...data.value].reduce((acc, curr) => {
+        if (!curr.parent2_code) return acc;
+        
+        if (!acc[curr.parent2_code]) {
+            acc[curr.parent2_code] = { 
+                rt_unemployed: +curr.rt_unemployed,
+                parent1_code: curr.parent1_code,
+                parent2_code: curr.parent2_code
+            };
+            return acc;
+        }
+
+        acc[curr.parent2_code].rt_unemployed += +curr.rt_unemployed;
+        return acc;
+    }, {} as any);
+
+const regionBezrabot = computed(() => {
+    if (!currentRegion.value) return 0;
+    return data.value
+        .filter(item => item.parent1_code === Number(currentRegion.value))
+        .reduce((acc, curr) => acc + +curr.rt_unemployed, 0);
+});
+
+const _filter = computed(() => {
+    if (currentRaion.value) {
+        return [...data.value].filter(e => e.parent2_code === Number(currentRaion.value));
+    }
+    return [...data.value].filter(e => 
+        !currentRegion.value ? true : e.parent1_code === Number(currentRegion.value)
+    );
+});
 
 const allBezrabot = computed(() =>
-    data.value.reduce((acc, curr) => acc + curr.rt_unemployed, 0)
+    data.value.reduce((acc, curr) => acc + +curr.rt_unemployed, 0)
 );
 const naselenie = computed(() =>
-    _filter.value.reduce((acc, curr) => acc + curr.cnt, 0)
+    _filter.value.reduce((acc, curr) => acc + +curr.cnt, 0)
 );
 const bezrabot = computed(() =>
-    _filter.value.reduce((acc, curr) => acc + curr.rt_unemployed, 0)
+    _filter.value.reduce((acc, curr) => acc + +curr.rt_unemployed, 0)
 );
 const trudo = computed(() =>
-    _filter.value.reduce((acc, curr) => acc + curr.trud_vozrast, 0)
+    _filter.value.reduce((acc, curr) => acc + +curr.trud_vozrast, 0)
 );
 const working = computed(() =>
-    _filter.value.reduce((acc, curr) => acc + curr.working, 0)
+    _filter.value.reduce((acc, curr) => acc + +curr.working, 0)
 );
 const nezaniat = computed(() =>
-    _filter.value.reduce((acc, curr) => acc + curr.nezaniat, 0)
+    _filter.value.reduce((acc, curr) => acc + +curr.nezaniat, 0)
 );
 const workingNaem = computed(() =>
-    _filter.value.reduce((acc, curr) => acc + curr.working_naem, 0)
+    _filter.value.reduce((acc, curr) => acc + +curr.working_naem, 0)
 );
 const workingIpNaem = computed(() =>
-    _filter.value.reduce((acc, curr) => acc + curr.working_ip_naem, 0)
+    _filter.value.reduce((acc, curr) => acc + +curr.working_ip_naem, 0)
 );
 const workingSam = computed(() =>
-    _filter.value.reduce((acc, curr) => acc + curr.working_sam, 0)
+    _filter.value.reduce((acc, curr) => acc + +curr.working_sam, 0)
 );
 
 const list = computed(() => [

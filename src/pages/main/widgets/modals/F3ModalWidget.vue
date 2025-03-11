@@ -4,37 +4,52 @@
       <a-spin />
     </div>
     <BaseCard v-else title="" number="" :show-close-button="true" @close="$emit('close')">
-      <div class="flex gap-1 text-white">
-        <div :class="{ active: tab === 1 }" @click="tab = 1" class="btn mini">
-          Вакансии
-        </div>
-        <div :class="{ active: tab === 2 }" @click="tab = 2" class="btn mini">
-          Резюме
-        </div>
-      </div>
+      
       <div class="grid grid-cols-3 text-white h-[40vh]">
-        <div>
-          <highcharts :options="chartOptions" class="w-full m-auto h-[calc(100%-100px)]"></highcharts>
+        <div class="flex justify-around">
+          <div >
+          <highcharts :options="chartOptions" class="w-[100%] m-auto h-[calc(100%-100px)]"></highcharts>
           <ul class="gap-4 flex-col gap-3 text-[10px] justify-center">
             <li class="flex gap-2 mb-2">
               <p class="w-4 h-4 rounded-full" style="background-color: #4990d3"></p>
               Весь рынок:
-              <b>{{ Numeral(tab === 1 ? vacancy_count : resume_count) }}</b>
+              <b>{{ Numeral(vacancy_count) }}</b>
             </li>
             <li class="flex gap-2 mb-2">
-              <p class="w-4 h-4 rounded-full" style="background-color: #d568fb"></p>
+              <p class="w-4 h-4 rounded-full" style="background-color: #003B99"></p>
               Квалифицированные профессии:
-              <b>{{ Numeral(tab === 1 ? qual_prof : qual_resume_prof) }}</b>
+              <b>{{ Numeral(qual_prof) }}</b>
             </li>
             <li class="flex gap-2 mb-2">
-              <p class="w-4 h-4 rounded-full" style="background-color: #d15b32"></p>
+              <p class="w-4 h-4 rounded-full" style="background-color: #0027E9"></p>
               Рабочие профессии:
-              <b>{{ Numeral(tab === 1 ? rab_prof : rab_resume_prof) }}</b>
+              <b>{{ Numeral(rab_prof) }}</b>
             </li>
           </ul>
+          </div>
+          <div>
+          <highcharts :options="resumeChartOptions" class="w-[100%] m-auto h-[calc(100%-100px)]"></highcharts>
+          <ul class="gap-4 flex-col gap-3 text-[10px] justify-center">
+            <li class="flex gap-2 mb-2">
+              <p class="w-4 h-4 rounded-full" style="background-color: #D15B32"></p>
+              Все резюме:
+              <b>{{ Numeral(resume_count) }}</b>
+            </li>
+            <li class="flex gap-2 mb-2">
+              <p class="w-4 h-4 rounded-full" style="background-color: #801F00"></p>
+              Квалифицированные профессии:
+              <b>{{ Numeral(qual_resume_prof) }}</b>
+            </li>
+            <li class="flex gap-2 mb-2">
+              <p class="w-4 h-4 rounded-full" style="background-color: #FFA559"></p>
+              Рабочие профессии:
+              <b>{{ Numeral(rab_resume_prof) }}</b>
+            </li>
+          </ul>
+          </div>
         </div>
         <div>
-          <div class="list overflow-auto h-[calc(40vh-50px)] border-x border-gray-600 px-5">
+          <div class="list overflow-auto h-[calc(40vh-50px)] border-x border-gray-600 px-5 mt-5">
             <div v-for="i in Object.values(groupByNkz(false)).splice(0, 15)" :key="i"
               class="grid grid-cols-2 gap-2 justify-between items-center text-xs text-white mb-2">
               <a-tooltip placement="topLeft" :title="i.name_nkz">
@@ -57,7 +72,7 @@
           </div>
         </div>
         <div>
-          <div class="list overflow-auto h-[calc(40vh-50px)] pl-5">
+          <div class="list overflow-auto h-[calc(40vh-50px)] pl-5 mt-4">
             <div v-for="i in Object.values(groupByNkz(true)).splice(0, 15)" :key="i.name_nkz"
               class="grid grid-cols-2 gap-2 justify-between items-center text-xs text-white mb-2">
               <a-tooltip placement="topLeft" :title="i.name_nkz">
@@ -80,6 +95,14 @@
         </div>
       </div>
       <div class="map h-[calc(54vh)]">
+        <div class="flex gap-1 text-white">
+        <div :class="{ active: tab === 1 }" @click="tab = 1" class="btn mini">
+          Вакансии
+        </div>
+        <div :class="{ active: tab === 2 }" @click="tab = 2" class="btn mini">
+          Резюме
+        </div>
+      </div>
         <div class="flex items-center justify-between w-full pr-10">
           <div></div>
           <div v-if="currentRegion"
@@ -312,10 +335,7 @@ const chartOptions = computed(() => ({
           color: "#4990D3",
           radius: "112%",
           innerRadius: "88%",
-          count:
-            tab.value === 1
-              ? Numeral(vacancy_count.value)
-              : Numeral(resume_count.value),
+          count: Numeral(vacancy_count.value),
           y: 100,
         },
       ],
@@ -328,14 +348,11 @@ const chartOptions = computed(() => ({
       name: "Квалифицированные профессии",
       data: [
         {
-          color: "#D568FB",
+          color: "#003B99",
           radius: "87%",
           innerRadius: "63%",
           count: Numeral(qual_prof.value),
-          y:
-            tab.value === 1
-              ? (qual_prof.value / vacancy_count.value) * 100
-              : (qual_resume_prof.value / resume_count.value) * 100,
+          y: (qual_prof.value / vacancy_count.value) * 100,
         },
       ],
       custom: {
@@ -347,14 +364,117 @@ const chartOptions = computed(() => ({
       name: "Рабочие профессии",
       data: [
         {
-          color: "#D15B32",
+          color: "#0027E9",
           radius: "62%",
           innerRadius: "38%",
           count: Numeral(rab_prof.value),
-          y:
-            tab.value === 1
-              ? (rab_prof.value / vacancy_count.value) * 100
-              : (rab_resume_prof.value / resume_count.value) * 100,
+          y: (rab_prof.value / vacancy_count.value) * 100,
+        },
+      ],
+      custom: {
+        icon: "commenting-o",
+        iconColor: "#303030",
+      },
+    },
+  ],
+}));
+
+const resumeChartOptions = computed(() => ({
+  chart: {
+    type: "solidgauge",
+    backgroundColor: "transparent",
+  },
+  title: {
+    text: "",
+  },
+  pane: {
+    startAngle: 0,
+    endAngle: 360,
+    background: [
+      {
+        outerRadius: "112%",
+        innerRadius: "88%",
+        backgroundColor: "#4990D320",
+        borderWidth: 0,
+      },
+      {
+        outerRadius: "87%",
+        innerRadius: "63%",
+        backgroundColor: "#D568FB20",
+        borderWidth: 0,
+      },
+      {
+        outerRadius: "62%",
+        innerRadius: "38%",
+        backgroundColor: "#D15B3220",
+        borderWidth: 0,
+      },
+    ],
+  },
+
+  yAxis: {
+    min: 0,
+    max: 100,
+    lineWidth: 0,
+    tickPositions: [],
+  },
+  tooltip: {
+    pointFormat: "{point.count} <b>({point.percentage:.0f}%)</b>",
+  },
+
+  plotOptions: {
+    solidgauge: {
+      dataLabels: {
+        enabled: false,
+      },
+      linecap: "round",
+      stickyTracking: false,
+      rounded: true,
+    },
+  },
+
+  series: [
+    {
+      name: "Весь рынок",
+      data: [
+        {
+          color: "#D15B32",
+          radius: "112%",
+          innerRadius: "88%",
+          count: Numeral(resume_count.value),
+          y: 100,
+        },
+      ],
+      custom: {
+        icon: "filter",
+        iconColor: "#fff",
+      },
+    },
+    {
+      name: "Квалифицированные профессии",
+      data: [
+        {
+          color: "#801F00",
+          radius: "87%",
+          innerRadius: "63%",
+          count: Numeral(qual_resume_prof.value),
+          y: (qual_resume_prof.value / resume_count.value) * 100,
+        },
+      ],
+      custom: {
+        icon: "comments-o",
+        iconColor: "#ffffff",
+      },
+    },
+    {
+      name: "Рабочие профессии",
+      data: [
+        {
+          color: "#FFA559",
+          radius: "62%",
+          innerRadius: "38%",
+          count: Numeral(rab_resume_prof.value),
+          y: (rab_resume_prof.value / resume_count.value) * 100,
         },
       ],
       custom: {

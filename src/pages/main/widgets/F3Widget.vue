@@ -64,7 +64,7 @@
                 <p class="truncate cursor-pointer">{{ i.name_nkz }}</p>
               </a-tooltip>
               <div>
-                <div class="flex items-center w-[280px]" v-if="tab === 2">
+                <div class="flex items-center w-[28vh]" v-if="tab === 2">
                   <a-progress
                     class="h-2"
                     strokeColor="#FE6A35"
