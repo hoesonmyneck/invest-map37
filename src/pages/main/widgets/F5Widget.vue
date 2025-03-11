@@ -33,6 +33,8 @@
             >
               <p class="text-2xl">{{ Numeral(allCount) }}</p>
               <p class="text-gray-500 text-xs">Всего</p>
+              <p class="text-2xl">{{ Numeral(totalUniqueIdSum) }}</p>
+              <p class="text-gray-500 text-xs">Из них уникальных</p>
             </div>
           </div>
           <ul class="flex gap-4 text-[10px] justify-center">
@@ -96,7 +98,7 @@ import F5ModalWidget from "./modals/F5ModalWidget.vue";
 
 const loader = ref(false);
 const data = ref([]);
-const tab = ref(2);
+const tab = ref(0);
 const visible = ref(false);
 
 async function loadF5() {
@@ -164,6 +166,16 @@ const totalArea = computed(() =>
       return acc;
     }, {})
 );
+
+const totalUniqueIdSum = computed(() => {
+  const uniqueRaions = {};
+  data.value.forEach(item => {
+    if (!uniqueRaions[item.parent2_code]) {
+      uniqueRaions[item.parent2_code] = item.total_unique_id;
+    }
+  });
+  return Object.values(uniqueRaions).reduce((acc, curr) => acc + curr, 0);
+});
 
 const chartOptions1 = computed(() => {
   return {

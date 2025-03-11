@@ -72,11 +72,18 @@
           <div
             v-if="!!currentRegion"
             class="rounded absolute z-10 top-5 right-5 bg-[#252A36] w-8 h-8 flex items-center justify-center cursor-pointer"
-            @click="currentRegion = null"
+            @click="() => {
+              if (!!currentRaion) {
+                currentRaion = null;
+                return;
+              }
+              currentRegion = null;
+            }"
           >
             <CloseOutlined />
           </div>
           <BaseMap
+            v-if="!currentRegion"
             :current-region="currentRegion"
             :fill-color="
               (v) => {
@@ -113,6 +120,50 @@
               </div>
             </div>
           </BaseMap>
+
+          <BaseMapNoMarker
+            v-else
+            :current-region="currentRegion"
+            :current-raion="currentRaion"
+            :fill-color="(v) => {
+              if (!groupByRaion[v] || groupByRaion[v].parent1_code !== currentRegion) {
+                return '#222732'; 
+              }
+
+              const totalProc = groupByRaion[v].totalProc || 0;
+              const sortedRaions = Object.values(groupByRaion)
+                .filter(raion => raion.parent1_code === currentRegion) 
+                .sort((a, b) => b.totalProc - a.totalProc);
+              const index = sortedRaions.findIndex(raion => raion === groupByRaion[v]);
+
+              if (index < 6) {
+                return getColorFromGradient(100); // Зеленый
+              } else if (index >= sortedRaions.length - 6) {
+                return getColorFromGradient(10); // Красный
+              } else {
+                return getColorFromGradient(50); // Оранжевый
+              }
+            }"
+            @click-polygon="clickRaion"
+            v-slot="slotProps"
+          >
+            <div>
+              <div class="flex items-center gap-2">
+                <p>Район:</p>
+                <p class="font-bold">{{ slotProps.data.raion }}</p>
+              </div>
+              <div class="flex items-center gap-2">
+                <p>Общая динамика:</p>
+                <p class="font-bold" :style="`color: ${
+                  (groupByRaion[slotProps.data.parent2_code?.toString()]?.totalProc || 0) >= 0 
+                    ? '#109669' 
+                    : '#FE6A35'
+                }`">
+                  {{ (groupByRaion[slotProps.data.parent2_code?.toString()]?.totalProc || 0).toFixed(1) }}%
+                </p>
+              </div>
+            </div>
+          </BaseMapNoMarker>
         </div>
       </div>
     </BaseCard>
@@ -125,6 +176,7 @@ import { CloseOutlined } from "@ant-design/icons-vue";
 import { computed, ref } from "vue";
 import BaseCard from "../../../../shared/ui/BaseCard/BaseCard.vue";
 import BaseMap from "../../../../shared/ui/BaseMap/BaseMap.vue";
+import BaseMapNoMarker from "../../../../shared/ui/BaseMap/BaseMapNoMarker.vue";
 
 interface F2Data {
   tip: number;
@@ -140,9 +192,11 @@ interface F2Data {
   prognoz: number;
   region: string | null;
   parent1_code: string | null;
+  parent2_code: string | null;
 }
 
 const currentRegion = ref<string | null>(null);
+const currentRaion = ref<string | null>(null);
 const loader = ref(false);
 
 defineEmits(["close"]);
@@ -151,9 +205,12 @@ const props = defineProps<{
 }>();
 
 const list = computed(() => {
-  const filtered = props.data.filter((item) =>
-    currentRegion.value ? item.tip === 2 : item.tip === 1
-  );
+  const filtered = props.data.filter((item) => {
+    if (currentRaion.value) {
+      return item.tip === 3 && item.parent2_code === parseInt(currentRaion.value);
+    }
+    return currentRegion.value ? item.tip === 2 : item.tip === 1;
+  });
 
   const filteredByRegion = filtered.filter((item) => {
     if (!currentRegion.value) return true;
@@ -203,6 +260,11 @@ const list = computed(() => {
 
 function clickPolygon(code: string) {
   currentRegion.value = code;
+  currentRaion.value = null;
+}
+
+function clickRaion(code: string) {
+  currentRaion.value = code;
 }
 
 const groupByRegion = computed(() => {
@@ -224,6 +286,29 @@ const groupByRegion = computed(() => {
 
       acc[regionNumber].cnt_2024 += curr.cnt_2024;
       acc[regionNumber].totalProc += curr.proc;
+      return acc;
+    }, {} as Record<string, F2Data & { totalProc: number }>);
+
+  return result;
+});
+
+const groupByRaion = computed(() => {
+  const result = props.data
+    .filter((item) => item.tip === 3 && item.vname_oked !== "Окэд не указан")
+    .reduce((acc, curr) => {
+      const raionCode = curr.parent2_code?.toString() || "";
+      const raionNumber = parseInt(raionCode);
+      
+      if (!acc[raionNumber]) {
+        acc[raionNumber] = { 
+          ...curr,
+          totalProc: curr.proc
+        };
+        return acc;
+      }
+
+      acc[raionNumber].cnt_2024 += curr.cnt_2024;
+      acc[raionNumber].totalProc += curr.proc;
       return acc;
     }, {} as Record<string, F2Data & { totalProc: number }>);
 

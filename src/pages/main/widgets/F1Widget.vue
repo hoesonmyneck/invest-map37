@@ -32,7 +32,7 @@
                 {{ Numeral((trudo / naselenie) * 100) }}%
               </li>
               <li class="border-t-2 border-[#0CCF89] pt-1">
-                {{ Numeral((rabot / trudo) * 100) }}%
+                {{ Numeral((working / trudo) * 100) }}%
               </li>
             </ul>
           </div>
@@ -93,11 +93,20 @@ const bezrabot = computed(() =>
 const trudo = computed(() =>
   data.value.reduce((acc, curr) => acc + curr.trud_vozrast, 0)
 );
-const rabot = computed(() =>
+const working = computed(() =>
   data.value.reduce((acc, curr) => acc + curr.working, 0)
 );
-const nezanyat = computed(() =>
-  data.value.reduce((acc, curr) => acc + curr.nezanyat, 0)
+const nezaniat = computed(() =>
+  data.value.reduce((acc, curr) => acc + curr.nezaniat, 0)
+);
+const workingNaem = computed(() =>
+data.value.reduce((acc, curr) => acc + curr.working_naem, 0)
+);
+const workingIpNaem = computed(() =>
+data.value.reduce((acc, curr) => acc + curr.working_ip_naem, 0)
+);
+const workingSam = computed(() =>
+data.value.reduce((acc, curr) => acc + curr.working_sam, 0)
 );
 
 const list = computed(() => [
@@ -114,11 +123,29 @@ const list = computed(() => [
     icon: "users",
   },
   {
-    title: "Наемные",
-    value: rabot.value,
-    percent: (rabot.value / trudo.value) * 100,
+    title: "Работающие",
+    value: working.value,
+    percent: (working.value / trudo.value) * 100,
     icon: "work",
   },
+  {
+        title: "Наемные в ЮЛ",
+        value: workingNaem.value,
+        percent: (workingNaem.value / trudo.value) * 100,
+        icon: "work",
+    },
+    {
+        title: "Наемные в ИП",
+        value: workingIpNaem.value,
+        percent: (workingIpNaem.value / trudo.value) * 100,
+        icon: "work",
+    },
+    {
+        title: "Самозанятые",
+        value: workingSam.value,
+        percent: (workingSam.value / trudo.value) * 100,
+        icon: "work",
+    },
   {
     title: "Зарегистрированные безработные",
     value: bezrabot.value,
@@ -127,8 +154,8 @@ const list = computed(() => [
   },
   {
     title: "Незанятые",
-    value: nezanyat.value,
-    percent: (nezanyat.value / trudo.value) * 100,
+    value: nezaniat.value,
+    percent: (nezaniat.value / trudo.value) * 100,
     icon: "work_not",
   },
 ]);
@@ -225,7 +252,7 @@ const chartOptions = computed(() => {
             radius: "80%",
             innerRadius: "90%",
             color: "#0CCF89",
-            y: (rabot.value / trudo.value) * 100,
+            y: (working.value / trudo.value) * 100,
           },
         ],
       },

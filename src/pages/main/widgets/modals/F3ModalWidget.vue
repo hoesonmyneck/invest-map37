@@ -65,14 +65,14 @@
               </a-tooltip>
               <div>
                 <div class="flex items-center">
-                  <a-progress class="h-2" strokeColor="#54ACFE" trailColor="#3B3F4B" :show-info="false" :percent="+Numeral((i.vacancy_count / maxResumeCount) * 100)
-                    " />
-                  <p class="text-[10px] w-[40px]">{{ i.vacancy_count }}</p>
-                </div>
-                <div class="flex items-center">
                   <a-progress class="h-2" strokeColor="#FE6A35" trailColor="#3B3F4B" :show-info="false"
                     :percent="+Numeral((i.resume_count / maxResumeCount) * 100)" />
                   <p class="text-[10px] w-[40px]">{{ i.resume_count }}</p>
+                </div>
+                <div class="flex items-center">
+                  <a-progress class="h-2" strokeColor="#54ACFE" trailColor="#3B3F4B" :show-info="false" :percent="+Numeral((i.vacancy_count / maxResumeCount) * 100)
+                    " />
+                  <p class="text-[10px] w-[40px]">{{ i.vacancy_count }}</p>
                 </div>
               </div>
             </div>
@@ -130,6 +130,8 @@ async function loadF3() {
   data.value = await getF3().finally(() => {
     loader.value = false;
   });
+
+  console.log(data.value); // Проверьте, содержат ли данные нужные поля
 }
 
 loadF3();
