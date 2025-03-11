@@ -56,20 +56,20 @@
         </div>
         <div class="ml-4 pl-4 border-l border-gray-600 overflow-scroll">
           <div
-            class="head grid gap-1 grid-cols-[100px_100px_100px_100px_100px_100px_100px_70px_150px_] text-[10px] pt-4 pb-2 mb-2 border-b border-gray-600">
+            class="head grid gap-1 grid-cols-[100px_100px_100px_100px_100px_100px_150px_70px_100px_] text-[10px] pt-4 pb-2 mb-2 border-b border-gray-600">
             <p>НАИМЕНОВАНИЕ</p>
             <p>БИН <br><br> {{ formatNumber(filteredBin) }}</p>
             <p>ТИП</p>
             <p>ПОДТИП</p>
             <p>ПЛОЩАДЬ <br><br> <div v-if="tab === 1"> {{ formatNumber(filteredArea) }}</div></p>
             <p>ГОЛОВ <br><br> <div v-if="tab === 2"> {{ formatNumber(filteredArea) }}</div></p>
+            <p>Фактические рабочие места <br><br> {{ formatNumber(filteredWorkPlaces) }}</p>
             <p>Потреб. в кадрах <br><br> {{ formatNumber(filteredTotalHeadCount) }}</p>
             <p>Св. вакансии<br><br> {{ formatNumber(filteredIinSum) }}</p>
-            <p>Фактические рабочие места <br><br> {{ formatNumber(filteredWorkPlaces) }}</p>
           </div>
           <div class="overflow-y-auto h-[calc(40vh-50px)] w-full">
             <div
-              class="head gap-1 grid grid-cols-[100px_100px_100px_100px_100px_100px_100px_70px_150px_] text-[10px] mt-1"
+              class="head gap-1 grid grid-cols-[100px_100px_100px_100px_100px_100px_150px_70px_100px_] text-[10px] mt-1"
               v-for="item in dataListFiltered.slice(0, 30)" :key="item.area + item.full_name">
               <a-tooltip placement="left" :title="item.full_name"><p class="h-6 w-full px-1 flex items-center bg-[#252A36] rounded w-full truncate">
                 {{ item.full_name }}
@@ -90,13 +90,13 @@
                 {{ +item.tip !== 1 ? item.area : "" }}
               </p>
               <p class="h-6 w-full px-1 flex items-center bg-[#252A36] rounded w-full truncate">
+                {{ item.work_places }}
+              </p>
+              <p class="h-6 w-full px-1 flex items-center bg-[#252A36] rounded w-full truncate">
                 {{ item.total_head_count }}
               </p>
               <p class="h-6 w-full px-1 flex items-center bg-[#252A36] rounded w-full truncate">
                 {{ item.iin_sum }}
-              </p>
-              <p class="h-6 w-full px-1 flex items-center bg-[#252A36] rounded w-full truncate">
-                {{ item.work_places }}
               </p>
             </div>
           </div>
