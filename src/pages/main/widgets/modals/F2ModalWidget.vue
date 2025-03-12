@@ -223,7 +223,7 @@ const list = computed(() => {
   });
 
   const filteredByName = filteredByRegion.filter(
-    (item) => !["Окэд не указан", "Деятельность экстерриториальных организаций и органов", "Деятельность домашних хозяйств, нанимающих домашнюю прислугу и производящих товары и услуги для собственного потребления"].includes(item.vname_oked)
+    (item) => !["Окэд не указан"].includes(item.vname_oked)
   );
 
   return Object.values(

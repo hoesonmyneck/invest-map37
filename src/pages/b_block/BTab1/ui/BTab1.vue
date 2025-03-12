@@ -65,8 +65,12 @@
                 v-if="!currentRegion"
                 :current-region="currentRegion ? Number(currentRegion) : undefined" 
                 :fill-color="(v) => {
+                    const percentage = (+groupByRegion()[+v]?.nezaniat / allNezaniat) * 100;
+                    if (percentage <= 3.5) {
+                        return '#109669';
+                    }
                     return getColorFromGradient(
-                        (+groupByRegion()[+v]?.rt_unemployed / allBezrabot) * 100,
+                        percentage, 
                         true,
                         false,
                         10
@@ -80,12 +84,12 @@
                         <p class="font-bold">{{ slotProps.data.region }}</p>
                     </div>
                     <div class="flex items-center gap-2">
-                        <p>Безработные:</p>
+                        <p>Незанятые:</p>
                         <p class="font-bold">
                             {{
                                 Numeral(
-                                    groupByRegion()[+slotProps.data.parent1_code]?.rt_unemployed || 0
-                                )
+                                    ((groupByRegion()[+slotProps.data.parent1_code]?.nezaniat || 0) / nezaniat) * 100
+                                ) + "%"
                             }}
                         </p>
                     </div>
@@ -101,9 +105,15 @@
                         return '#222732'; 
                     }
                     const regionRaions = Object.values(groupByRaion()).filter((raion: any) => raion.parent1_code === Number(currentRegion));
-                    const totalRegionUnemployed = regionRaions.reduce((acc: number, raion: any) => acc + raion.rt_unemployed, 0);
+                    const totalRegionUnemployed = regionRaions.reduce((acc: number, raion: any) => acc + raion.nezaniat, 0);
+                    const percentage = (+groupByRaion()[+v]?.nezaniat / totalRegionUnemployed) * 100;
+                    
+                    if (percentage <= 3.5) {
+                        return '#109669'; 
+                    }
+                    
                     return getColorFromGradient(
-                        (+groupByRaion()[+v]?.rt_unemployed / totalRegionUnemployed) * 100,
+                        percentage,
                         true,
                         false,
                         10
@@ -117,12 +127,14 @@
                         <p class="font-bold">{{ slotProps.data.raion }}</p>
                     </div>
                     <div class="flex items-center gap-2">
-                        <p>Безрабочий:</p>
+                        <p>Незанятые:</p>
                         <p class="font-bold">
                             {{
-                                Numeral(
-                                    groupByRaion()[+slotProps.data.parent2_code]?.rt_unemployed || 0
-                                )
+                                (() => {
+                                    const regionRaions = Object.values(groupByRaion()).filter((raion: any) => raion.parent1_code === Number(currentRegion));
+                                    const totalRegionUnemployed = regionRaions.reduce((acc: number, raion: any) => acc + raion.nezaniat, 0);
+                                    return Numeral(((groupByRaion()[+slotProps.data.parent2_code]?.nezaniat || 0) / totalRegionUnemployed) * 100) + "%";
+                                })()
                             }}
                         </p>
                     </div>
@@ -169,13 +181,13 @@ const groupByRegion = () =>
     [...data.value].reduce((acc, curr) => {
         if (!acc[curr.parent1_code]) {
             acc[curr.parent1_code] = { 
-                rt_unemployed: +curr.rt_unemployed,
+                nezaniat: +curr.nezaniat,
                 parent1_code: curr.parent1_code
             };
             return acc;
         }
 
-        acc[curr.parent1_code].rt_unemployed += +curr.rt_unemployed;
+        acc[curr.parent1_code].nezaniat += +curr.nezaniat;
         return acc;
     }, {} as any);
 
@@ -185,14 +197,14 @@ const groupByRaion = () =>
         
         if (!acc[curr.parent2_code]) {
             acc[curr.parent2_code] = { 
-                rt_unemployed: +curr.rt_unemployed,
+                nezaniat: +curr.nezaniat,
                 parent1_code: curr.parent1_code,
                 parent2_code: curr.parent2_code
             };
             return acc;
         }
 
-        acc[curr.parent2_code].rt_unemployed += +curr.rt_unemployed;
+        acc[curr.parent2_code].nezaniat += +curr.nezaniat;
         return acc;
     }, {} as any);
 
@@ -200,7 +212,7 @@ const regionBezrabot = computed(() => {
     if (!currentRegion.value) return 0;
     return data.value
         .filter(item => item.parent1_code === Number(currentRegion.value))
-        .reduce((acc, curr) => acc + +curr.rt_unemployed, 0);
+        .reduce((acc, curr) => acc + +curr.nezaniat, 0);
 });
 
 const _filter = computed(() => {
@@ -226,6 +238,9 @@ const trudo = computed(() =>
 );
 const working = computed(() =>
     _filter.value.reduce((acc, curr) => acc + +curr.working, 0)
+);
+const allNezaniat = computed(() =>
+    data.value.reduce((acc, curr) => acc + +curr.nezaniat, 0)
 );
 const nezaniat = computed(() =>
     _filter.value.reduce((acc, curr) => acc + +curr.nezaniat, 0)

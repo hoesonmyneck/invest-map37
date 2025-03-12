@@ -12,7 +12,7 @@
           <ul class="gap-4 flex-col gap-3 text-[10px] justify-center">
             <li class="flex gap-2 mb-2">
               <p class="w-4 h-4 rounded-full" style="background-color: #4990d3"></p>
-              Весь рынок:
+              Все вакансии:
               <b>{{ Numeral(vacancy_count) }}</b>
             </li>
             <li class="flex gap-2 mb-2">
@@ -329,7 +329,7 @@ const chartOptions = computed(() => ({
 
   series: [
     {
-      name: "Весь рынок",
+      name: "Все вакансии",
       data: [
         {
           color: "#4990D3",
@@ -435,7 +435,7 @@ const resumeChartOptions = computed(() => ({
 
   series: [
     {
-      name: "Весь рынок",
+      name: "Все вакансии",
       data: [
         {
           color: "#D15B32",

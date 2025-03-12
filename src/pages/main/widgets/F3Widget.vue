@@ -34,7 +34,7 @@
                 class="w-4 h-4 rounded-full"
                 style="background-color: #4990D3"
               ></p>
-              Весь рынок: <b>{{ Numeral(vacancy_count) }}</b>
+              Все вакансии: <b>{{ Numeral(vacancy_count) }}</b>
             </li>
             <li class="flex gap-2">
               <p
@@ -282,7 +282,7 @@ const chartOptions = computed(() => ({
 
   series: [
     {
-      name: "Весь рынок",
+      name: "Все вакансии",
       data: [
         {
           color: "#4990D3",

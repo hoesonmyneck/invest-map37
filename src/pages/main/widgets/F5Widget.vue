@@ -41,14 +41,14 @@
             <li class="flex gap-2">
               <p
                 class="w-4 h-4 rounded-full"
-                style="background-color: #8979ff"
+                style="background-color: #FFA559"
               ></p>
               Животноводство
             </li>
             <li class="flex gap-2">
               <p
                 class="w-4 h-4 rounded-full"
-                style="background-color: #ff928a"
+                style="background-color: #0CCF89"
               ></p>
               Растениеводство
             </li>
@@ -90,21 +90,23 @@
   </BaseCard>
 </template>
 <script setup lang="ts">
-import { computed, ref } from "vue";
+import { computed, ref, onMounted } from "vue";
 import BaseCard from "../../../shared/ui/BaseCard/BaseCard.vue";
-import { getF5 } from "../../../entities/f/api";
+import { getF5, getF7_total } from "../../../entities/f/api";
 import { Numeral } from "../../../shared/helpers/numeral";
 import F5ModalWidget from "./modals/F5ModalWidget.vue";
 
-const loader = ref(false);
+const loader = ref(true);
 const data = ref([]);
 const tab = ref(0);
 const visible = ref(false);
+const f7Data = ref([]);
 
 async function loadF5() {
-  data.value = await getF5().finally(() => {
-    loader.value = false;
-  });
+  data.value = await getF5();
+  const responseF7 = await getF7_total();
+  f7Data.value = responseF7;
+  loader.value = false;
 }
 
 loadF5();
@@ -220,12 +222,12 @@ const chartOptions1 = computed(() => {
         data: [
           {
             name: "Растениеводство",
-            color: "#FF928A",
+            color: "#0CCF89",
             y: type_1.value.reduce((acc, curr) => acc + curr.new_id, 0),
           },
           {
             name: "Животноводство",
-            color: "#8979FF",
+            color: "#FFA559",
             y: type_2.value.reduce((acc, curr) => acc + curr.new_id, 0),
           },
         ],
@@ -308,5 +310,11 @@ const chartOptions2 = computed(() => {
       },
     ],
   };
+});
+
+const filteredBin = computed(() => {
+  return f7Data.value
+    .filter(item => item.tip === 0)
+    .reduce((acc, curr) => acc + (curr.bin || 0), 0);
 });
 </script>
