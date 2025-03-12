@@ -417,8 +417,10 @@ onMounted(async () => {
 const totalUniqueIdSum = computed(() => {
   const uniqueRaions = {};
   f5Data.value.forEach(item => {
-    if (!uniqueRaions[item.parent2_code]) {
-      uniqueRaions[item.parent2_code] = item.total_unique_id;
+    if (!currentRegion.value || item.parent1_code === currentRegion.value) {
+      if (!uniqueRaions[item.parent2_code]) {
+        uniqueRaions[item.parent2_code] = item.total_unique_id;
+      }
     }
   });
   return Object.values(uniqueRaions).reduce((acc, curr) => acc + curr, 0);
