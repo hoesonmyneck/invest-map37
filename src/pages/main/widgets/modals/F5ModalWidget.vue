@@ -8,7 +8,7 @@
         <div>
           <div class="flex gap-1">
             <div :class="{ active: tab === 0 }" @click="changeTab(0)" class="btn">
-              Соотношение
+              Общее
             </div>
             <div :class="{ active: tab === 1 }" @click="changeTab(1)" class="btn">
               Общая площадь
@@ -143,7 +143,12 @@
               <p>{{ tabMapStatus === 1 ? "Площадь" : "Голов" }}:</p>
               <p class="font-bold">
                 {{
-                Numeral(groupByRegion()[+slotProps.data.parent1_code]?.area)
+                  (() => {
+                    const regionArea = groupByRegion()[+slotProps.data.parent1_code]?.area || 0;
+                    const totalArea = Object.values(groupByRegion()).reduce((acc, curr) => acc + curr.area, 0);
+                    const percentage = (regionArea / totalArea) * 100;
+                    return Numeral(percentage) + "% (" + Numeral(regionArea) + (tabMapStatus === 1 ? " га" : " голов") + ")";
+                  })()
                 }}
               </p>
             </div>
@@ -160,7 +165,8 @@
             }
             const regionRaions = Object.values(groupByRaion()).filter((raion: F5Item) => raion.parent1_code === Number(currentRegion));
             const totalRegionArea = regionRaions.reduce((acc: number, raion: F5Item) => acc + raion.area, 0);
-            const percentage = (+groupByRaion()[+v]?.area / totalRegionArea) * 100;
+            const areaValue = groupByRaion()[+v]?.area || 0;
+            const percentage = (areaValue / totalRegionArea) * 100;
             
             if (percentage <= 3.5) {
               return '#109669'; 
@@ -187,7 +193,9 @@
                   (() => {
                     const regionRaions = Object.values(groupByRaion()).filter((raion: F5Item) => raion.parent1_code === Number(currentRegion));
                     const totalRegionArea = regionRaions.reduce((acc: number, raion: F5Item) => acc + raion.area, 0);
-                    return Numeral(((groupByRaion()[+slotProps.data.parent2_code]?.area || 0) / totalRegionArea) * 100) + "%";
+                    const areaValue = groupByRaion()[+slotProps.data.parent2_code]?.area || 0;
+                    const percentage = (areaValue / totalRegionArea) * 100;
+                    return Numeral(percentage) + "% (" + Numeral(areaValue) + (tabMapStatus === 1 ? " га" : " голов") + ")";
                   })()
                 }}
               </p>
@@ -214,7 +222,7 @@
         <div class="grid grid-cols-2 gap-4 mb-6">
           <div>
             <h2 class="text-xl mb-4">{{ selectedCompany.full_name }}</h2>
-            <div class="grid grid-cols-2 gap-2 text-sm">
+            <div class="grid grid-cols-2 gap-2 text-sm mr-20">
               <p>БИН:</p>
               <p>{{ selectedCompany.bin }}</p>
               
@@ -227,14 +235,63 @@
               <p>{{ +selectedCompany.tip === 1 ? "Площадь:" : "Количество голов:" }}</p>
               <p>{{ formatNumber(selectedCompany.area) }} {{ +selectedCompany.tip === 1 ? "га" : "" }}</p>
               
-              <p>Фактические рабочие места:</p>
-              <p>{{ formatNumber(selectedCompany.work_places) }}</p>
+              <!-- <p>Фактические рабочие места:</p>
+              <div class="flex gap-5">
+                <p>{{ formatNumber(selectedCompany.work_places) }}</p>
+                <div class="bg-white h-5 w-[1px]"></div>
+                <p> Общие по району: {{ formatNumber(getDistrictTotal('work_places')) }}</p>
+              </div>
+              
               
               <p>Потребность в кадрах:</p>
-              <p>{{ formatNumber(selectedCompany.total_head_count) }}</p>
+              <div class="flex gap-5">
+                <p>{{ formatNumber(selectedCompany.total_head_count) }}</p>
+                <div class="bg-white h-5 w-[1px]"></div>
+                <p> Общая по району: {{ formatNumber(getDistrictTotal('total_head_count')) }}</p>
+              </div>
+              
               
               <p>Свободные резюме:</p>
+              <div class="flex gap-5">
+                <p>{{ formatNumber(selectedCompany.iin_sum) }}</p>
+                <div class="bg-white h-5 w-[1px]"></div>
+                <p> Общие по району: {{ formatNumber(getDistrictTotal('iin_sum')) }}</p>
+              </div> -->
+            </div>
+            <div class="flex">
+            <div class="flex flex-col mt-10">
+             <div class="flex gap-26" >
+              <p>Фактические рабочие места:</p>
+              <p>{{ formatNumber(selectedCompany.work_places) }}</p>
+             </div>
+
+             <div class="flex gap-36" >
+              <p>Потребность в кадрах:</p>
+              <p>{{ formatNumber(selectedCompany.total_head_count) }}</p>
+             </div>
+
+             <div class="flex gap-39" >
+              <p>Свободные резюме:</p>
               <p>{{ formatNumber(selectedCompany.iin_sum) }}</p>
+             </div>
+            </div>
+            <div class="w-[1px] h-16 bg-white mt-10 ml-10"></div>
+            <div class="flex flex-col mt-10 ml-10">
+             <div class="flex gap-5" >
+              <p>Общие по району:</p>
+              <p>{{ formatNumber(getDistrictTotal('work_places')) }}</p>
+             </div>
+
+             <div class="flex gap-5" >
+              <p>Общая по району:</p>
+              <p>{{ formatNumber(getDistrictTotal('total_head_count')) }}</p>
+             </div>
+
+             <div class="flex gap-5" >
+              <p>Общие по району:</p>
+              <p>{{ formatNumber(getDistrictTotal('iin_sum')) }}</p>
+             </div>
+            </div>
             </div>
           </div>
           <div>
@@ -960,11 +1017,40 @@ const getCompanyChartOptions = () => {
         enabled: true,
         color: "#fff",
         formatter: function(): string {
+          // @ts-ignore - this.y существует в контексте Highcharts
           return Numeral(this.y);
         }
       }
     }]
   };
+};
+
+const getDistrictTotal = (field: 'work_places' | 'total_head_count' | 'iin_sum') => {
+  if (!selectedCompany.value || !selectedCompany.value.parent2_code) {
+    return 0;
+  }
+
+  const companyParent2Code = selectedCompany.value.parent2_code;
+  
+  if (tab.value === 0) {
+    return f7Data.value
+      .filter(item => 
+        item.parent2_code !== undefined && 
+        +item.parent2_code === +companyParent2Code && 
+        item.tip === 0
+      )
+      .reduce((acc, curr) => acc + (+curr[field] || 0), 0);
+  } else {
+    const selectedTip = tab.value === 1 ? 1 : 2;
+    
+    return f7Data.value
+      .filter(item => 
+        item.parent2_code !== undefined && 
+        +item.parent2_code === +companyParent2Code && 
+        +item.tip === selectedTip
+      )
+      .reduce((acc, curr) => acc + (+curr[field] || 0), 0);
+  }
 };
 </script>
 
