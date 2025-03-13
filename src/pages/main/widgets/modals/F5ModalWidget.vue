@@ -76,9 +76,11 @@
                   {{ item.full_name }}
                 </p>
               </a-tooltip>
-              <p class="h-6 w-full px-1 flex items-center bg-[#252A36] rounded w-full truncate">
-                {{ item.bin }}
-              </p>
+              <a-tooltip placement="left" :title="item.bin">
+                <p class="h-6 w-full px-1 flex items-center bg-[#252A36] rounded w-full truncate cursor-pointer" @click="selectRegionAndDistrict(item)">
+                  {{ item.bin }}
+                </p>
+              </a-tooltip>
               <p class="h-6 w-full px-1 flex items-center bg-[#252A36] rounded w-full truncate">
                 {{ +item.tip === 1 ? "Растениеводство" : "Животноводство" }}
               </p>
@@ -225,82 +227,78 @@
             <div class="grid grid-cols-2 gap-2 text-sm mr-20">
               <p>БИН:</p>
               <p>{{ selectedCompany.bin }}</p>
+
+              <p>Местонахождение:</p>
+              <p>{{ getCompanyLocation() }}</p>
               
               <p>Тип:</p>
-              <p>{{ +selectedCompany.tip === 1 ? "Растениеводство" : "Животноводство" }}</p>
+              <p>{{ getCompanyType() }}</p>
               
-              <p>Подтип:</p>
-              <p>{{ selectedCompany.crop_ru }}</p>
+              <template v-if="hasLivestock()">
+                <p>Общее количество голов:</p>
+                <p>{{ formatNumber(getTotalLivestock()) }} голов</p>
+              </template>
               
-              <p>{{ +selectedCompany.tip === 1 ? "Площадь:" : "Количество голов:" }}</p>
-              <p>{{ formatNumber(selectedCompany.area) }} {{ +selectedCompany.tip === 1 ? "га" : "" }}</p>
-              
-              <!-- <p>Фактические рабочие места:</p>
-              <div class="flex gap-5">
-                <p>{{ formatNumber(selectedCompany.work_places) }}</p>
-                <div class="bg-white h-5 w-[1px]"></div>
-                <p> Общие по району: {{ formatNumber(getDistrictTotal('work_places')) }}</p>
+              <template v-if="hasCrops()">
+                <p>Общая площадь:</p>
+                <p>{{ formatNumber(getTotalArea()) }} га</p>
+              </template>
+            </div>
+            
+          
+            <div class="mt-6">
+              <h3 class="text-lg mb-3">Детальная информация</h3>
+              <div class="border border-gray-700 rounded overflow-hidden">
+                <div class="grid grid-cols-3 gap-2 p-2 bg-[#252A36] text-white text-sm font-medium">
+                  <div>Тип</div>
+                  <div>Наименование</div>
+                  <div>Площадь/Количество</div>
+                </div>
+                <div v-if="selectedCompany.crop_ru_list && selectedCompany.crop_ru_list.length > 0">
+                 
+                  <template v-for="(crop, idx) in selectedCompany.crop_ru_list" :key="'animal-'+idx">
+                    <div 
+                      v-if="selectedCompany.tip_list && selectedCompany.tip_list[idx] !== 1"
+                      class="grid grid-cols-3 gap-2 p-2 border-t border-gray-700 text-sm"
+                    >
+                      <div>Животноводство</div>
+                      <div>{{ crop }}</div>
+                      <div>
+                        {{ formatNumber(selectedCompany.area_list && selectedCompany.area_list[idx] ? selectedCompany.area_list[idx] : 0) }}
+                        голов
+                      </div>
+                    </div>
+                  </template>
+                  
+            
+                  <template v-for="(crop, idx) in selectedCompany.crop_ru_list" :key="'plant-'+idx">
+                    <div 
+                      v-if="selectedCompany.tip_list && selectedCompany.tip_list[idx] === 1"
+                      class="grid grid-cols-3 gap-2 p-2 border-t border-gray-700 text-sm"
+                    >
+                      <div>Растениеводство</div>
+                      <div>{{ crop }}</div>
+                      <div>
+                        {{ formatNumber(selectedCompany.area_list && selectedCompany.area_list[idx] ? selectedCompany.area_list[idx] : 0) }}
+                        га
+                      </div>
+                    </div>
+                  </template>
+                </div>
+                <div v-else class="p-3 text-center text-gray-400">
+                  Нет данных о видах культур и животных
+                </div>
               </div>
-              
-              
-              <p>Потребность в кадрах:</p>
-              <div class="flex gap-5">
-                <p>{{ formatNumber(selectedCompany.total_head_count) }}</p>
-                <div class="bg-white h-5 w-[1px]"></div>
-                <p> Общая по району: {{ formatNumber(getDistrictTotal('total_head_count')) }}</p>
-              </div>
-              
-              
-              <p>Свободные резюме:</p>
-              <div class="flex gap-5">
-                <p>{{ formatNumber(selectedCompany.iin_sum) }}</p>
-                <div class="bg-white h-5 w-[1px]"></div>
-                <p> Общие по району: {{ formatNumber(getDistrictTotal('iin_sum')) }}</p>
-              </div> -->
             </div>
-            <div class="flex">
-            <div class="flex flex-col mt-10">
-             <div class="flex gap-26" >
-              <p>Фактические рабочие места:</p>
-              <p>{{ formatNumber(selectedCompany.work_places) }}</p>
-             </div>
-
-             <div class="flex gap-36" >
-              <p>Потребность в кадрах:</p>
-              <p>{{ formatNumber(selectedCompany.total_head_count) }}</p>
-             </div>
-
-             <div class="flex gap-39" >
-              <p>Свободные резюме:</p>
-              <p>{{ formatNumber(selectedCompany.iin_sum) }}</p>
-             </div>
-            </div>
-            <div class="w-[1px] h-16 bg-white mt-10 ml-10"></div>
-            <div class="flex flex-col mt-10 ml-10">
-             <div class="flex gap-5" >
-              <p>Общие по району:</p>
-              <p>{{ formatNumber(getDistrictTotal('work_places')) }}</p>
-             </div>
-
-             <div class="flex gap-5" >
-              <p>Общая по району:</p>
-              <p>{{ formatNumber(getDistrictTotal('total_head_count')) }}</p>
-             </div>
-
-             <div class="flex gap-5" >
-              <p>Общие по району:</p>
-              <p>{{ formatNumber(getDistrictTotal('iin_sum')) }}</p>
-             </div>
-            </div>
-            </div>
+            
           </div>
-          <div>
-            <highcharts 
-              v-if="selectedCompany" 
-              :options="getCompanyChartOptions()" 
-              class="w-full h-[250px]"
-            ></highcharts>
-          </div>
+          <div class="mt-10">
+              <highcharts 
+                v-if="selectedCompany" 
+                :options="getCompanyChartOptions()" 
+                class="w-full h-[500px]"
+              ></highcharts>
+            </div>
         </div>
       </div>
     </BaseCard>
@@ -342,6 +340,10 @@ interface F5_1Item {
   iin_sum: number;
   parent1_code: number;
   parent2_code?: number;
+  tip_list?: number[];
+  area_list?: number[];
+  crop_ru_list?: string[];
+  iin_list?: number[];
 }
 
 interface F7Item {
@@ -951,6 +953,9 @@ const formatNumber = (value: string | number) => {
 const openCompanyPopup = (company: F5_1Item) => {
   selectedCompany.value = company;
   companyPopupVisible.value = true;
+  
+  
+  selectRegionAndDistrict(company);
 };
 
 
@@ -963,7 +968,7 @@ const getCompanyChartOptions = () => {
       backgroundColor: "transparent",
     },
     title: {
-      text: "Статистика компании",
+      text: "Сведения об организации и районе",
       style: {
         color: "#fff"
       }
@@ -990,38 +995,76 @@ const getCompanyChartOptions = () => {
       }
     },
     legend: {
-      enabled: false
+      enabled: true,
+      itemStyle: {
+        color: "#fff"
+      }
     },
     plotOptions: {
       column: {
-        borderRadius: 5
+        borderRadius: 5,
+        borderWidth: 0,
+        grouping: false,
+        pointPadding: 0.1
+      },
+      series: {
+        pointWidth: 40
       }
     },
-    series: [{
-      name: "Значение",
-      data: [
-        {
-          y: selectedCompany.value.work_places,
-          color: "#3090E8"
-        },
-        {
-          y: selectedCompany.value.total_head_count,
-          color: "#0CCF89"
-        },
-        {
-          y: selectedCompany.value.iin_sum,
-          color: "#FFA559"
+    series: [
+      {
+        name: "Организация",
+        pointPlacement: -0,
+        data: [
+          {
+            y: selectedCompany.value.work_places,
+            color: "#3090E8"
+          },
+          {
+            y: selectedCompany.value.total_head_count,
+            color: "#3090E8"
+          },
+          {
+            y: selectedCompany.value.iin_sum,
+            color: "#3090E8",
+          }
+        ],
+        dataLabels: {
+          enabled: true,
+          color: "#fff",
+          formatter: function(): string {
+            return Numeral(this.y);
+          }
         }
-      ],
-      dataLabels: {
-        enabled: true,
-        color: "#fff",
-        formatter: function(): string {
-          // @ts-ignore - this.y существует в контексте Highcharts
-          return Numeral(this.y);
+      },
+      {
+        name: "Район",
+        pointPlacement: 0.2,
+        data: [
+          {
+            y: getDistrictTotal('work_places'),
+            color: "transparent",
+            borderWidth: 2,
+            borderDashStyle: 'shortdash',
+            borderColor: '#544fc5'
+          },
+          {
+            y: getDistrictTotal('total_head_count'),
+            color: "transparent",
+            borderWidth: 2,
+            borderDashStyle: 'shortdash',
+            borderColor: '#544fc5'
+          },
+        ],
+        dataLabels: {
+          enabled: true,
+          color: "#fff",
+          formatter: function(): string {
+            return Numeral(this.y);
+          }
         }
       }
-    }]
+    ]
   };
 };
 
@@ -1050,6 +1093,117 @@ const getDistrictTotal = (field: 'work_places' | 'total_head_count' | 'iin_sum')
         +item.tip === selectedTip
       )
       .reduce((acc, curr) => acc + (+curr[field] || 0), 0);
+  }
+};
+
+const getCompanyType = () => {
+  if (!selectedCompany.value || !selectedCompany.value.tip_list) return '';
+  
+  const company = selectedCompany.value;
+  const hasAnimalHusbandry = company.tip_list.some(tip => tip !== 1);
+  const hasCrops = company.tip_list.some(tip => tip === 1);
+  
+  if (hasAnimalHusbandry && hasCrops) {
+    return 'Животноводство и Растениеводство';
+  } else if (hasAnimalHusbandry) {
+    return 'Животноводство';
+  } else if (hasCrops) {
+    return 'Растениеводство';
+  }
+  
+  return company.tip === 1 ? 'Растениеводство' : 'Животноводство';
+};
+
+const hasLivestock = () => {
+  if (!selectedCompany.value || !selectedCompany.value.tip_list) return false;
+  return selectedCompany.value.tip_list.some(tip => tip !== 1);
+};
+
+const getTotalLivestock = () => {
+  if (!selectedCompany.value || !selectedCompany.value.tip_list || !selectedCompany.value.area_list) return 0;
+  
+  const company = selectedCompany.value;
+  let total = 0;
+  company.tip_list.forEach((tip, index) => {
+    if (tip !== 1 && company.area_list) {
+      total += company.area_list[index] || 0;
+    }
+  });
+  
+  return total;
+};
+
+const hasCrops = () => {
+  if (!selectedCompany.value || !selectedCompany.value.tip_list) return false;
+  return selectedCompany.value.tip_list.some(tip => tip === 1);
+};
+
+const getTotalArea = () => {
+  if (!selectedCompany.value || !selectedCompany.value.tip_list || !selectedCompany.value.area_list) return 0;
+  
+  const company = selectedCompany.value;
+  let total = 0;
+  company.tip_list.forEach((tip, index) => {
+    if (tip === 1 && company.area_list) {
+      total += company.area_list[index] || 0;
+    }
+  });
+  
+  return total;
+};
+
+const getCompanyLocation = () => {
+  if (!selectedCompany.value) return '';
+  
+ 
+  const parentCode = selectedCompany.value.parent1_code;
+  const districtCode = selectedCompany.value.parent2_code;
+  
+  let regionName = '';
+  let districtName = '';
+  
+
+  const regionData = data.value.find(item => item.parent1_code === parentCode);
+  if (regionData) {
+    regionName = regionData.region;
+  }
+  
+ 
+  const districtData = data.value.find(item => 
+    item.parent2_code === districtCode && 
+    item.parent1_code === parentCode
+  );
+  if (districtData) {
+    districtName = districtData.raion;
+  }
+  
+  if (regionName && districtName) {
+    return `${regionName}, ${districtName}`;
+  } else if (regionName) {
+    return regionName;
+  } else {
+    return 'Не указано';
+  }
+};
+
+const selectRegionAndDistrict = (item: F5_1Item) => {
+  if (item.parent1_code) {
+    currentRegion.value = item.parent1_code;
+    
+   
+    if (item.parent2_code !== undefined) {
+      setTimeout(() => {
+        currentRaion.value = Number(item.parent2_code);
+      }, 300);
+    }
+    
+    
+    setTimeout(() => {
+      const mapElement = document.querySelector('.map');
+      if (mapElement) {
+        mapElement.scrollIntoView({ behavior: 'smooth' });
+      }
+    }, 500);
   }
 };
 </script>
