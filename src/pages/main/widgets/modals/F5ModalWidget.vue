@@ -972,7 +972,7 @@ const getCompanyChartOptions = () => {
       backgroundColor: "transparent",
     },
     title: {
-      text: "Сведения об организации и районе",
+      text: "Трудовые ресурсы организации и района",
       style: {
         color: "#fff"
       }
