@@ -1043,14 +1043,14 @@ const getCompanyChartOptions = () => {
         data: [
           {
             y: getDistrictTotal('work_places'),
-            color: "transparent",
+            color: "",
             borderWidth: 2,
             borderDashStyle: 'shortdash',
             borderColor: '#544fc5'
           },
           {
             y: getDistrictTotal('total_head_count'),
-            color: "transparent",
+            color: "",
             borderWidth: 2,
             borderDashStyle: 'shortdash',
             borderColor: '#544fc5'
