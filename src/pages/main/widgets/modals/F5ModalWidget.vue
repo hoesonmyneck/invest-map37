@@ -55,10 +55,37 @@
           </div>
         </div>
         <div class="ml-4 pl-4 border-l border-gray-600 overflow-scroll">
+          <div class="flex items-center mb-2 gap-2">
+            <p>Поиск:</p>
+            <div class="flex items-center gap-2">
+              <a-input 
+                v-model:value="searchQuery" 
+                :placeholder="searchType === 'bin' ? 'Введите БИН' : 'Введите наименование'" 
+                class="bg-[#252A36] text-white   h-[26px]" 
+                @change="handleSearch"
+                @pressEnter="handleSearch"
+                style="width: 130px; margin: 0; padding: 0px; border: none;"
+                allowClear
+              >
+                <template #prefix>
+                  <SearchOutlined class="text-gray-400" />
+                </template>
+              </a-input>
+              <div class="btn h-[26px]" @click="clearSearch"> Сбросить</div>
+            </div>
+          </div>
           <div
-            class="head grid gap-1 grid-cols-[100px_100px_100px_100px_100px_100px_150px_130px_100px_] text-[10px] pt-4 pb-2 mb-2 border-b border-gray-600">
-            <p>НАИМЕНОВАНИЕ</p>
-            <p>БИН <br><br> {{ formatNumber(filteredBin) }}</p>
+            class="head grid gap-1 grid-cols-[250px_100px_100px_100px_100px_100px_150px_130px_100px_] text-[10px] pt-4 pb-2 mb-2 border-b border-gray-600">
+            <p class="cursor-pointer flex items-center gap-1" @click="toggleSort('full_name')">
+              НАИМЕНОВАНИЕ <br><br><br>
+              <SortAscendingOutlined v-if="sortField === 'full_name' && sortOrder === 'asc'" class="text-blue-400" />
+              <SortDescendingOutlined v-if="sortField === 'full_name' && sortOrder === 'desc'" class="text-blue-400" />
+            </p>
+            <p class="cursor-pointer flex items-center gap-1" @click="toggleSort('bin')">
+              БИН <br><br> {{ formatNumber(filteredBin) }}
+              <SortAscendingOutlined v-if="sortField === 'bin' && sortOrder === 'asc'" class="text-blue-400" />
+              <SortDescendingOutlined v-if="sortField === 'bin' && sortOrder === 'desc'" class="text-blue-400" />
+            </p>
             <p>ТИП</p>
             <p>ПОДТИП</p>
             <p>ПЛОЩАДЬ <br><br> <div v-if="tab === 1"> {{ formatNumber(filteredArea) }}</div></p>
@@ -69,15 +96,23 @@
           </div>
           <div class="overflow-y-auto h-[calc(40vh-50px)] w-full">
             <div
-              class="head gap-1 grid grid-cols-[100px_100px_100px_100px_100px_100px_150px_130px_100px_] text-[10px] mt-1"
-              v-for="item in dataListFiltered.slice(0, 30)" :key="item.area + item.full_name">
+              class="head gap-1 grid grid-cols-[250px_100px_100px_100px_100px_100px_150px_130px_100px_] text-[10px] mt-1"
+              v-for="item in displayedItems" :key="item.area + item.full_name">
               <a-tooltip placement="left" :title="item.full_name">
-                <p class="h-6 w-full px-1 flex items-center bg-[#252A36] rounded w-full truncate cursor-pointer" @click="openCompanyPopup(item)">
+                <p 
+                  class="h-6 w-full px-1 flex items-center bg-[#252A36] rounded w-full truncate cursor-pointer" 
+                  :class="{ 'bg-blue-800': searchType === 'name' && searchQuery && item.full_name && item.full_name.toLowerCase().includes(searchQuery.toLowerCase()) }"
+                  @click="openCompanyPopup(item)"
+                >
                   {{ item.full_name }}
                 </p>
               </a-tooltip>
               <a-tooltip placement="left" :title="item.bin">
-                <p class="h-6 w-full px-1 flex items-center bg-[#252A36] rounded w-full truncate cursor-pointer" @click="selectRegionAndDistrict(item)">
+                <p 
+                  class="h-6 w-full px-1 flex items-center bg-[#252A36] rounded w-full truncate cursor-pointer" 
+                  :class="{ 'bg-blue-800': searchType === 'bin' && searchQuery && item.bin && item.bin.toString().includes(searchQuery) }"
+                  @click="selectRegionAndDistrict(item)"
+                >
                   {{ item.bin }}
                 </p>
               </a-tooltip>
@@ -102,6 +137,12 @@
               <p class="h-6 w-full px-1 flex items-center bg-[#252A36] rounded w-full truncate">
                 {{ item.iin_sum }}
               </p>
+            </div>
+            
+            <div v-if="filteredItems.length > displayLimit" class="flex justify-center mt-4">
+              <a-button type="primary" size="small" @click="showMoreResults">
+                Показать больше ({{ displayedItems.length }} из {{ filteredItems.length }})
+              </a-button>
             </div>
           </div>
         </div>
@@ -312,7 +353,7 @@ import { getF5, getF5_1, getF7_total } from "../../../../entities/f/api";
 import { Numeral } from "../../../../shared/helpers/numeral";
 import { useRegionStore } from "../../../../entities/region/store";
 import { getColorFromGradient } from "../../../../shared/helpers/gradientColors";
-import { CloseOutlined } from "@ant-design/icons-vue";
+import { CloseOutlined, SearchOutlined, SortAscendingOutlined, SortDescendingOutlined, HistoryOutlined } from "@ant-design/icons-vue";
 import BaseMap from "../../../../shared/ui/BaseMap/BaseMap.vue";
 import BaseMapNoMarker from "../../../../shared/ui/BaseMap/BaseMapNoMarker.vue";
 import { createApp } from 'vue';
@@ -380,6 +421,11 @@ const f7Data = ref<F7Item[]>([]);
 const f5Data = ref<F5Item[]>([]);
 const selectedCompany = ref<F5_1Item | null>(null);
 const companyPopupVisible = ref(false);
+const searchQuery = ref('');
+const searchType = ref('bin');
+const sortField = ref('');
+const sortOrder = ref('asc');
+const displayLimit = ref(30);
 
 async function loadF5() {
   data.value = await getF5();
@@ -848,48 +894,6 @@ const filteredIinSum = computed(() => {
   }
 });
 
-const filteredBezrabotZero = computed(() => {
-  if (tab.value === 0) {
-    if (!currentRegion.value) {
-      return f7Data.value
-        .filter(item => item.tip === 0)
-        .reduce((acc, curr) => acc + (curr.bezrabot_zero || 0), 0);
-    } else if (currentRegion.value && !currentRaion.value) {
-      return f7Data.value
-        .filter(item => item.parent1_code === currentRegion.value && item.tip === 0)
-        .reduce((acc, curr) => acc + (curr.bezrabot_zero || 0), 0);
-    } else {
-      return f7Data.value
-        .filter(item => 
-          item.parent1_code === currentRegion.value && 
-          item.parent2_code === currentRaion.value && 
-          item.tip === 0
-        )
-        .reduce((acc, curr) => acc + (curr.bezrabot_zero || 0), 0);
-    }
-  }
-
-  const selectedTip = tab.value === 1 ? 1 : 2;
-
-  if (!currentRegion.value) {
-    return f7Data.value
-      .filter(item => +item.tip === selectedTip)
-      .reduce((acc, curr) => acc + (curr.bezrabot_zero || 0), 0);
-  } else if (currentRegion.value && !currentRaion.value) {
-    return f7Data.value
-      .filter(item => item.parent1_code === currentRegion.value && +item.tip === selectedTip)
-      .reduce((acc, curr) => acc + (curr.bezrabot_zero || 0), 0);
-  } else {
-    return f7Data.value
-      .filter(item => 
-        item.parent1_code === currentRegion.value && 
-        item.parent2_code === currentRaion.value && 
-        +item.tip === selectedTip
-      )
-      .reduce((acc, curr) => acc + (curr.bezrabot_zero || 0), 0);
-  }
-});
-
 const filteredWorkPlaces = computed(() => {
   if (tab.value === 0) {
     if (!currentRegion.value) {
@@ -1032,7 +1036,7 @@ const getCompanyChartOptions = () => {
         dataLabels: {
           enabled: true,
           color: "#fff",
-          formatter: function(): string {
+          formatter: function(this: any): string {
             return Numeral(this.y);
           }
         }
@@ -1059,7 +1063,7 @@ const getCompanyChartOptions = () => {
         dataLabels: {
           enabled: true,
           color: "#fff",
-          formatter: function(): string {
+          formatter: function(this: any): string {
             return Numeral(this.y);
           }
         }
@@ -1100,8 +1104,8 @@ const getCompanyType = () => {
   if (!selectedCompany.value || !selectedCompany.value.tip_list) return '';
   
   const company = selectedCompany.value;
-  const hasAnimalHusbandry = company.tip_list.some(tip => tip !== 1);
-  const hasCrops = company.tip_list.some(tip => tip === 1);
+  const hasAnimalHusbandry = company.tip_list?.some(tip => tip !== 1) || false;
+  const hasCrops = company.tip_list?.some(tip => tip === 1) || false;
   
   if (hasAnimalHusbandry && hasCrops) {
     return 'Животноводство и Растениеводство';
@@ -1124,7 +1128,7 @@ const getTotalLivestock = () => {
   
   const company = selectedCompany.value;
   let total = 0;
-  company.tip_list.forEach((tip, index) => {
+  company.tip_list?.forEach((tip, index) => {
     if (tip !== 1 && company.area_list) {
       total += company.area_list[index] || 0;
     }
@@ -1143,7 +1147,7 @@ const getTotalArea = () => {
   
   const company = selectedCompany.value;
   let total = 0;
-  company.tip_list.forEach((tip, index) => {
+  company.tip_list?.forEach((tip, index) => {
     if (tip === 1 && company.area_list) {
       total += company.area_list[index] || 0;
     }
@@ -1206,6 +1210,74 @@ const selectRegionAndDistrict = (item: F5_1Item) => {
     }, 500);
   }
 };
+
+
+
+
+
+const handleSearch = () => {
+  searchQuery.value = searchQuery.value.trim();
+  displayLimit.value = 30;
+};
+
+
+const clearSearch = () => {
+  searchQuery.value = '';
+};
+
+const toggleSort = (field: string) => {
+  if (sortField.value === field) {
+    sortOrder.value = sortOrder.value === 'asc' ? 'desc' : 'asc';
+  } else {
+    sortField.value = field;
+    sortOrder.value = 'asc';
+  }
+};
+
+const filteredItems = computed(() => {
+  let result = dataListFiltered.value;
+  if (searchQuery.value) {
+    if (searchType.value === 'bin') {
+      result = result.filter(item => 
+        item.bin && item.bin.toString().includes(searchQuery.value)
+      );
+    } else {
+      result = result.filter(item => 
+        item.full_name && item.full_name.toLowerCase().includes(searchQuery.value.toLowerCase())
+      );
+    }
+  }
+  
+  if (sortField.value) {
+    result = [...result].sort((a, b) => {
+      let valueA, valueB;
+      if (sortField.value === 'bin') {
+        valueA = a.bin ? a.bin.toString() : '';
+        valueB = b.bin ? b.bin.toString() : '';
+      } else if (sortField.value === 'full_name') {
+        valueA = a.full_name || '';
+        valueB = b.full_name || '';
+      } else {
+        return 0;
+      }
+      if (sortOrder.value === 'asc') {
+        return valueA.localeCompare(valueB);
+      } else {
+        return valueB.localeCompare(valueA);
+      }
+    });
+  }
+  
+  return result;
+});
+
+const showMoreResults = () => {
+  displayLimit.value += 30;
+};
+
+const displayedItems = computed(() => {
+  return filteredItems.value.slice(0, displayLimit.value);
+});
 </script>
 
 <style scoped lang="scss">
