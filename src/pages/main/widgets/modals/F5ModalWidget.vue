@@ -88,11 +88,29 @@
             </p>
             <p>ТИП</p>
             <p>ПОДТИП</p>
-            <p>ПЛОЩАДЬ <br><br> <div v-if="tab === 1"> {{ formatNumber(filteredArea) }}</div><div v-if="tab === 0"> {{ formatNumber(filteredAreaForPlants) }}</div></p>
-            <p>ГОЛОВ <br><br> <div v-if="tab === 2"> {{ formatNumber(filteredArea) }}</div><div v-if="tab === 0"> {{ formatNumber(filteredAreaForAnimals) }}</div></p>
-            <p>Фактические рабочие места <br><br> {{ formatNumber(filteredWorkPlaces) }}</p>
-            <p>Потребность в кадрах <br><br> {{ formatNumber(filteredTotalHeadCount) }}</p>
-            <p>Свободные резюме<br><br> {{ formatNumber(filteredIinSum) }}</p>
+            <p>ПЛОЩАДЬ <br><br> 
+              <div v-if="tab === 0">{{ formatNumber(filteredAreaForPlants) }}</div>
+              <div v-if="tab === 1">{{ formatNumber(filteredArea) }}</div>
+            </p>
+            <p>ГОЛОВ <br><br> 
+              <div v-if="tab === 0">{{ formatNumber(filteredAreaForAnimals) }}</div>
+              <div v-if="tab === 2">{{ formatNumber(filteredArea) }}</div>
+            </p>
+            <p>Фактические рабочие места <br><br> 
+              <div v-if="tab === 0">{{ formatNumber(getWorkPlacesForHeader()) }}</div>
+              <div v-if="tab === 1">{{ formatNumber(getWorkPlacesForTab(1)) }}</div>
+              <div v-if="tab === 2">{{ formatNumber(getWorkPlacesForTab(2)) }}</div>
+            </p>
+            <p>Потребность в кадрах <br><br> 
+              <div v-if="tab === 0">{{ formatNumber(getHeadCountForHeader()) }}</div>
+              <div v-if="tab === 1">{{ formatNumber(getHeadCountForTab(1)) }}</div>
+              <div v-if="tab === 2">{{ formatNumber(getHeadCountForTab(2)) }}</div>
+            </p>
+            <p>Свободные резюме<br><br> 
+              <div v-if="tab === 0">{{ formatNumber(getIinSumForHeader()) }}</div>
+              <div v-if="tab === 1">{{ formatNumber(getIinSumForTab(1)) }}</div>
+              <div v-if="tab === 2">{{ formatNumber(getIinSumForTab(2)) }}</div>
+            </p>
           </div>
           <div class="overflow-y-auto h-[calc(40vh-50px)] w-full">
             <div
@@ -173,7 +191,7 @@
         <BaseMap 
           v-if="!currentRegion"
           :current-region="0" 
-          :fill-color="(v) => {
+          :fill-color="(v: number) => {
             const workPlacesData = getWorkPlacesPercentage(+v);
             return workPlacesData.color;
           }" 
@@ -193,13 +211,19 @@
             <div class="flex items-center gap-2">
               <p>Фактические рабочие места:</p>
               <p class="font-bold">
-                {{ Numeral(getRegionWorkPlaces(+slotProps.data.parent1_code)) }}
+                {{ Numeral(filteredWorkPlaces(+slotProps.data.parent1_code, null)) }}
               </p>
             </div>
             <div class="flex items-center gap-2">
               <p>Потребность в кадрах:</p>
               <p class="font-bold">
-                {{ Numeral(getRegionHeadCount(+slotProps.data.parent1_code)) }}
+                {{ Numeral(filteredTotalHeadCount(+slotProps.data.parent1_code, null)) }}
+              </p>
+            </div>
+            <div class="flex items-center gap-2">
+              <p>Свободные резюме:</p>
+              <p class="font-bold">
+                {{ Numeral(filteredIinSum(+slotProps.data.parent1_code, null)) }}
               </p>
             </div>
           </div>
@@ -209,7 +233,7 @@
           v-else
           :current-region="currentRegion ? +currentRegion : 0"
           :current-raion="currentRaion ? +currentRaion : undefined"
-          :fill-color="(v) => {
+          :fill-color="(v: number) => {
             if (!groupByRaion()[+v] || groupByRaion()[+v]?.parent1_code !== Number(currentRegion)) {
               return '#222732'; 
             }
@@ -233,13 +257,19 @@
             <div class="flex items-center gap-2">
               <p>Фактические рабочие места:</p>
               <p class="font-bold">
-                {{ Numeral(getRaionWorkPlaces(+slotProps.data.parent2_code)) }}
+                {{ Numeral(filteredWorkPlaces(currentRegion, +slotProps.data.parent2_code)) }}
               </p>
             </div>
             <div class="flex items-center gap-2">
               <p>Потребность в кадрах:</p>
               <p class="font-bold">
-                {{ Numeral(getRaionHeadCount(+slotProps.data.parent2_code)) }}
+                {{ Numeral(filteredTotalHeadCount(currentRegion, +slotProps.data.parent2_code)) }}
+              </p>
+            </div>
+            <div class="flex items-center gap-2">
+              <p>Свободные резюме:</p>
+              <p class="font-bold">
+                {{ Numeral(filteredIinSum(currentRegion, +slotProps.data.parent2_code)) }}
               </p>
             </div>
           </div>
@@ -553,7 +583,7 @@ const groupByRegion = (): Record<number, F5Item> => data.value
 const getWorkPlacesPercentage = (regionCode: number): { percentage: number; color: string; text: string } => {
   const filteredData = f7Data.value.filter((item: F7Item) => 
     item.parent1_code === regionCode && 
-    (tab.value === 0 ? true : item.tip === (tab.value === 1 ? 1 : 2))
+    (tab.value === 0 ? item.tip === 0 : item.tip === (tab.value === 1 ? 1 : 2))
   );
   
   const workPlaces = filteredData.reduce((acc: number, curr: F7Item) => acc + (curr.work_places || 0), 0);
@@ -585,7 +615,7 @@ const getWorkPlacesPercentage = (regionCode: number): { percentage: number; colo
 const getWorkPlacesPercentageByRaion = (raionCode: number): { percentage: number; color: string; text: string } => {
   const filteredData = f7Data.value.filter((item: F7Item) => 
     item.parent2_code === raionCode && 
-    (tab.value === 0 ? true : item.tip === (tab.value === 1 ? 1 : 2))
+    (tab.value === 0 ? item.tip === 0 : item.tip === (tab.value === 1 ? 1 : 2))
   );
   
   const workPlaces = filteredData.reduce((acc: number, curr: F7Item) => acc + (curr.work_places || 0), 0);
@@ -870,131 +900,71 @@ const filteredArea = computed(() => {
   }
 });
 
-const filteredTotalHeadCount = computed(() => {
-  if (tab.value === 0) {
-    if (!currentRegion.value) {
-      return f7Data.value
-        .filter(item => item.tip === 0)
-        .reduce((acc, curr) => acc + (curr.total_head_count || 0), 0);
-    } else if (currentRegion.value && !currentRaion.value) {
-      return f7Data.value
-        .filter(item => item.parent1_code === currentRegion.value && item.tip === 0)
-        .reduce((acc, curr) => acc + (curr.total_head_count || 0), 0);
-    } else {
-      return f7Data.value
-        .filter(item => 
-          item.parent1_code === currentRegion.value && 
-          item.parent2_code === currentRaion.value && 
-          item.tip === 0
-        )
-        .reduce((acc, curr) => acc + (curr.total_head_count || 0), 0);
-    }
-  }
-
-  const selectedTip = tab.value === 1 ? 1 : 2;
-
-  if (!currentRegion.value) {
+const filteredTotalHeadCount = (regionCode: number | null, raionCode: number | null): number => {
+  const selectedTip = tab.value === 0 ? 0 : (tab.value === 1 ? 1 : 2);
+  
+  if (regionCode === null) {
     return f7Data.value
-      .filter(item => +item.tip === selectedTip)
+      .filter(item => item.tip === selectedTip)
       .reduce((acc, curr) => acc + (curr.total_head_count || 0), 0);
-  } else if (currentRegion.value && !currentRaion.value) {
+  } else if (regionCode && raionCode === null) {
     return f7Data.value
-      .filter(item => item.parent1_code === currentRegion.value && +item.tip === selectedTip)
+      .filter(item => item.parent1_code === regionCode && item.tip === selectedTip)
       .reduce((acc, curr) => acc + (curr.total_head_count || 0), 0);
   } else {
     return f7Data.value
       .filter(item => 
-        item.parent1_code === currentRegion.value && 
-        item.parent2_code === currentRaion.value && 
-        +item.tip === selectedTip
+        item.parent1_code === regionCode && 
+        item.parent2_code === raionCode && 
+        item.tip === selectedTip
       )
       .reduce((acc, curr) => acc + (curr.total_head_count || 0), 0);
   }
-});
+};
 
-const filteredIinSum = computed(() => {
-  if (tab.value === 0) {
-    if (!currentRegion.value) {
-      return f7Data.value
-        .filter(item => item.tip === 0)
-        .reduce((acc, curr) => acc + (curr.iin_sum || 0), 0);
-    } else if (currentRegion.value && !currentRaion.value) {
-      return f7Data.value
-        .filter(item => item.parent1_code === currentRegion.value && item.tip === 0)
-        .reduce((acc, curr) => acc + (curr.iin_sum || 0), 0);
-    } else {
-      return f7Data.value
-        .filter(item => 
-          item.parent1_code === currentRegion.value && 
-          item.parent2_code === currentRaion.value && 
-          item.tip === 0
-        )
-        .reduce((acc, curr) => acc + (curr.iin_sum || 0), 0);
-    }
-  }
-
-  const selectedTip = tab.value === 1 ? 1 : 2;
-
-  if (!currentRegion.value) {
+const filteredIinSum = (regionCode: number | null, raionCode: number | null): number => {
+  const selectedTip = tab.value === 0 ? 0 : (tab.value === 1 ? 1 : 2);
+  
+  if (regionCode === null) {
     return f7Data.value
-      .filter(item => +item.tip === selectedTip)
+      .filter(item => item.tip === selectedTip)
       .reduce((acc, curr) => acc + (curr.iin_sum || 0), 0);
-  } else if (currentRegion.value && !currentRaion.value) {
+  } else if (regionCode && raionCode === null) {
     return f7Data.value
-      .filter(item => item.parent1_code === currentRegion.value && +item.tip === selectedTip)
+      .filter(item => item.parent1_code === regionCode && item.tip === selectedTip)
       .reduce((acc, curr) => acc + (curr.iin_sum || 0), 0);
   } else {
     return f7Data.value
       .filter(item => 
-        item.parent1_code === currentRegion.value && 
-        item.parent2_code === currentRaion.value && 
-        +item.tip === selectedTip
+        item.parent1_code === regionCode && 
+        item.parent2_code === raionCode && 
+        item.tip === selectedTip
       )
       .reduce((acc, curr) => acc + (curr.iin_sum || 0), 0);
   }
-});
+};
 
-const filteredWorkPlaces = computed(() => {
-  if (tab.value === 0) {
-    if (!currentRegion.value) {
-      return f7Data.value
-        .filter(item => item.tip === 0)
-        .reduce((acc, curr) => acc + (curr.work_places || 0), 0);
-    } else if (currentRegion.value && !currentRaion.value) {
-      return f7Data.value
-        .filter(item => item.parent1_code === currentRegion.value && item.tip === 0)
-        .reduce((acc, curr) => acc + (curr.work_places || 0), 0);
-    } else {
-      return f7Data.value
-        .filter(item => 
-          item.parent1_code === currentRegion.value && 
-          item.parent2_code === currentRaion.value && 
-          item.tip === 0
-        )
-        .reduce((acc, curr) => acc + (curr.work_places || 0), 0);
-    }
-  }
-
-  const selectedTip = tab.value === 1 ? 1 : 2;
-
-  if (!currentRegion.value) {
+const filteredWorkPlaces = (regionCode: number | null, raionCode: number | null): number => {
+  const selectedTip = tab.value === 0 ? 0 : (tab.value === 1 ? 1 : 2);
+  
+  if (regionCode === null) {
     return f7Data.value
-      .filter(item => +item.tip === selectedTip)
+      .filter(item => item.tip === selectedTip)
       .reduce((acc, curr) => acc + (curr.work_places || 0), 0);
-  } else if (currentRegion.value && !currentRaion.value) {
+  } else if (regionCode && raionCode === null) {
     return f7Data.value
-      .filter(item => item.parent1_code === currentRegion.value && +item.tip === selectedTip)
+      .filter(item => item.parent1_code === regionCode && item.tip === selectedTip)
       .reduce((acc, curr) => acc + (curr.work_places || 0), 0);
   } else {
     return f7Data.value
       .filter(item => 
-        item.parent1_code === currentRegion.value && 
-        item.parent2_code === currentRaion.value && 
-        +item.tip === selectedTip
+        item.parent1_code === regionCode && 
+        item.parent2_code === raionCode && 
+        item.tip === selectedTip
       )
       .reduce((acc, curr) => acc + (curr.work_places || 0), 0);
   }
-});
+};
 
 const changeTab = (newTab: number) => {
   tab.value = newTab;
@@ -1339,30 +1309,6 @@ const displayedItems = computed(() => {
   return filteredItems.value.slice(0, displayLimit.value);
 });
 
-const getRegionWorkPlaces = (regionCode: number): number => {
-  return f7Data.value
-    .filter((item: F7Item) => item.parent1_code === regionCode)
-    .reduce((acc: number, curr: F7Item) => acc + (curr.work_places || 0), 0);
-};
-
-const getRegionHeadCount = (regionCode: number): number => {
-  return f7Data.value
-    .filter((item: F7Item) => item.parent1_code === regionCode)
-    .reduce((acc: number, curr: F7Item) => acc + (curr.total_head_count || 0), 0);
-};
-
-const getRaionWorkPlaces = (raionCode: number): number => {
-  return f7Data.value
-    .filter((item: F7Item) => item.parent2_code === raionCode)
-    .reduce((acc: number, curr: F7Item) => acc + (curr.work_places || 0), 0);
-};
-
-const getRaionHeadCount = (raionCode: number): number => {
-  return f7Data.value
-    .filter((item: F7Item) => item.parent2_code === raionCode)
-    .reduce((acc: number, curr: F7Item) => acc + (curr.total_head_count || 0), 0);
-};
-
 const filteredAreaForPlants = computed(() => {
   const selectedTip = 1; 
   
@@ -1418,6 +1364,84 @@ const getRaionName = (regionCode: number, raionCode: number): string => {
     item.parent2_code === raionCode
   );
   return raion ? raion.raion : `Район ${raionCode}`;
+};
+
+const getWorkPlacesForHeader = (): number => {
+  return filteredWorkPlaces(currentRegion.value, currentRaion.value);
+};
+
+const getHeadCountForHeader = (): number => {
+  return filteredTotalHeadCount(currentRegion.value, currentRaion.value);
+};
+
+const getIinSumForHeader = (): number => {
+  return filteredIinSum(currentRegion.value, currentRaion.value);
+};
+
+const getWorkPlacesForTab = (tabValue: number): number => {
+  const selectedTip = tabValue === 1 ? 1 : 2;
+  
+  if (!currentRegion.value) {
+    return f7Data.value
+      .filter(item => +item.tip === selectedTip)
+      .reduce((acc, curr) => acc + (curr.work_places || 0), 0);
+  } else if (currentRegion.value && !currentRaion.value) {
+    return f7Data.value
+      .filter(item => item.parent1_code === currentRegion.value && +item.tip === selectedTip)
+      .reduce((acc, curr) => acc + (curr.work_places || 0), 0);
+  } else {
+    return f7Data.value
+      .filter(item => 
+        item.parent1_code === currentRegion.value && 
+        item.parent2_code === currentRaion.value && 
+        +item.tip === selectedTip
+      )
+      .reduce((acc, curr) => acc + (curr.work_places || 0), 0);
+  }
+};
+
+const getHeadCountForTab = (tabValue: number): number => {
+  const selectedTip = tabValue === 1 ? 1 : 2;
+  
+  if (!currentRegion.value) {
+    return f7Data.value
+      .filter(item => +item.tip === selectedTip)
+      .reduce((acc, curr) => acc + (curr.total_head_count || 0), 0);
+  } else if (currentRegion.value && !currentRaion.value) {
+    return f7Data.value
+      .filter(item => item.parent1_code === currentRegion.value && +item.tip === selectedTip)
+      .reduce((acc, curr) => acc + (curr.total_head_count || 0), 0);
+  } else {
+    return f7Data.value
+      .filter(item => 
+        item.parent1_code === currentRegion.value && 
+        item.parent2_code === currentRaion.value && 
+        +item.tip === selectedTip
+      )
+      .reduce((acc, curr) => acc + (curr.total_head_count || 0), 0);
+  }
+};
+
+const getIinSumForTab = (tabValue: number): number => {
+  const selectedTip = tabValue === 1 ? 1 : 2;
+  
+  if (!currentRegion.value) {
+    return f7Data.value
+      .filter(item => +item.tip === selectedTip)
+      .reduce((acc, curr) => acc + (curr.iin_sum || 0), 0);
+  } else if (currentRegion.value && !currentRaion.value) {
+    return f7Data.value
+      .filter(item => item.parent1_code === currentRegion.value && +item.tip === selectedTip)
+      .reduce((acc, curr) => acc + (curr.iin_sum || 0), 0);
+  } else {
+    return f7Data.value
+      .filter(item => 
+        item.parent1_code === currentRegion.value && 
+        item.parent2_code === currentRaion.value && 
+        +item.tip === selectedTip
+      )
+      .reduce((acc, curr) => acc + (curr.iin_sum || 0), 0);
+  }
 };
 </script>
 
