@@ -131,19 +131,19 @@ const list = computed(() => [
   {
         title: "Наемные в ЮЛ",
         value: workingNaem.value,
-        percent: (workingNaem.value / trudo.value) * 100,
+        percent: (workingNaem.value / working.value) * 100,
         icon: "work",
     },
     {
         title: "Наемные в ИП",
         value: workingIpNaem.value,
-        percent: (workingIpNaem.value / trudo.value) * 100,
+        percent: (workingIpNaem.value / working.value) * 100,
         icon: "work",
     },
     {
         title: "Самозанятые",
         value: workingSam.value,
-        percent: (workingSam.value / trudo.value) * 100,
+        percent: (workingSam.value / working.value) * 100,
         icon: "work",
     },
   {

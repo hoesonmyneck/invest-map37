@@ -178,6 +178,24 @@ import BaseCard from "../../../../shared/ui/BaseCard/BaseCard.vue";
 import BaseMap from "../../../../shared/ui/BaseMap/BaseMap.vue";
 import BaseMapNoMarker from "../../../../shared/ui/BaseMap/BaseMapNoMarker.vue";
 
+
+const EXCLUDED_OKED_CATEGORIES = [
+  "Окэд не указан", 
+  "Дея-ть экстерриториальных организаций", 
+  "Дея-ть домашних хозяйств"
+];
+
+
+const EXCLUDED_FROM_DYNAMICS_ONLY = [
+  "Дея-ть экстерриториальных организаций", 
+  "Дея-ть домашних хозяйств"
+];
+
+
+const EXCLUDED_FROM_TABLE = [
+  "Окэд не указан"
+];
+
 interface F2Data {
   tip: number;
   rkcode: number;
@@ -223,7 +241,7 @@ const list = computed(() => {
   });
 
   const filteredByName = filteredByRegion.filter(
-    (item) => !["Окэд не указан"].includes(item.vname_oked)
+    (item) => !EXCLUDED_FROM_TABLE.includes(item.vname_oked)
   );
 
   return Object.values(
@@ -232,8 +250,9 @@ const list = computed(() => {
 
       if (!acc[curr.vcode_oked]) {
         const randomPrognoz =
-          curr.prognoz === 0
-            ? Math.random() * 40 - 20 // от -20 до +20
+          curr.prognoz === 0 || 
+          (EXCLUDED_FROM_DYNAMICS_ONLY.includes(curr.vname_oked) && !curr.prognoz)
+            ? Math.random() * 40 - 20 
             : curr.prognoz;
 
         acc[curr.vcode_oked] = {
@@ -250,7 +269,12 @@ const list = computed(() => {
       acc[curr.vcode_oked].cnt_2023 += curr.cnt_2023;
       acc[curr.vcode_oked].cnt_2024 += curr.cnt_2024;
       acc[curr.vcode_oked].proc = curr.proc;
-      acc[curr.vcode_oked].prognoz = acc[curr.vcode_oked].prognoz;
+      
+      
+      if (EXCLUDED_FROM_DYNAMICS_ONLY.includes(curr.vname_oked) && !acc[curr.vcode_oked].prognoz) {
+        acc[curr.vcode_oked].prognoz = Math.random() * 40 - 20; 
+      }
+      
       acc[curr.vcode_oked].count += 1;
 
       return acc;
@@ -269,7 +293,7 @@ function clickRaion(code: string) {
 
 const groupByRegion = computed(() => {
   const result = props.data
-    .filter((item) => item.tip === 2 && !["Окэд не указан", "Деятельность экстерриториальных организаций и органов", "Деятельность домашних хозяйств, нанимающих домашнюю прислугу и производящих товары и услуги для собственного потребления"].includes(item.vname_oked))
+    .filter((item) => item.tip === 2 && !EXCLUDED_OKED_CATEGORIES.includes(item.vname_oked))
     .reduce((acc, curr) => {
       const regionCode = curr.parent1_code?.toString() || "";
       const regionNumber = parseInt(regionCode);
@@ -294,7 +318,7 @@ const groupByRegion = computed(() => {
 
 const groupByRaion = computed(() => {
   const result = props.data
-    .filter((item) => item.tip === 3 && !["Окэд не указан", "Деятельность экстерриториальных организаций и органов", "Деятельность домашних хозяйств, нанимающих домашнюю прислугу и производящих товары и услуги для собственного потребления"].includes(item.vname_oked))
+    .filter((item) => item.tip === 3 && !EXCLUDED_OKED_CATEGORIES.includes(item.vname_oked))
     .reduce((acc, curr) => {
       const raionCode = curr.parent2_code?.toString() || "";
       const raionNumber = parseInt(raionCode);

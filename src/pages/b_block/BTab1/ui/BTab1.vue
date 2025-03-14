@@ -65,7 +65,7 @@
                 v-if="!currentRegion"
                 :current-region="currentRegion ? Number(currentRegion) : undefined" 
                 :fill-color="(v) => {
-                    const percentage = (+groupByRegion()[+v]?.nezaniat / allNezaniat) * 100;
+                    const percentage = getRegionUnemploymentRate(+v);
                     if (percentage <= 3.5) {
                         return '#109669';
                     }
@@ -88,7 +88,7 @@
                         <p class="font-bold">
                             {{
                                 Numeral(
-                                    ((groupByRegion()[+slotProps.data.parent1_code]?.nezaniat || 0) / nezaniat) * 100
+                                    getRegionUnemploymentRate(+slotProps.data.parent1_code)
                                 ) + "%"
                             }}
                         </p>
@@ -104,9 +104,8 @@
                     if (!groupByRaion()[+v] || groupByRaion()[+v]?.parent1_code !== Number(currentRegion)) {
                         return '#222732'; 
                     }
-                    const regionRaions = Object.values(groupByRaion()).filter((raion: any) => raion.parent1_code === Number(currentRegion));
-                    const totalRegionUnemployed = regionRaions.reduce((acc: number, raion: any) => acc + raion.nezaniat, 0);
-                    const percentage = (+groupByRaion()[+v]?.nezaniat / totalRegionUnemployed) * 100;
+                    
+                    const percentage = getRaionUnemploymentRate(+v);
                     
                     if (percentage <= 3.5) {
                         return '#109669'; 
@@ -130,11 +129,7 @@
                         <p>Незанятые:</p>
                         <p class="font-bold">
                             {{
-                                (() => {
-                                    const regionRaions = Object.values(groupByRaion()).filter((raion: any) => raion.parent1_code === Number(currentRegion));
-                                    const totalRegionUnemployed = regionRaions.reduce((acc: number, raion: any) => acc + raion.nezaniat, 0);
-                                    return Numeral(((groupByRaion()[+slotProps.data.parent2_code]?.nezaniat || 0) / totalRegionUnemployed) * 100) + "%";
-                                })()
+                                Numeral(getRaionUnemploymentRate(+slotProps.data.parent2_code)) + "%"
                             }}
                         </p>
                     </div>
@@ -208,6 +203,22 @@ const groupByRaion = () =>
         return acc;
     }, {} as any);
 
+const getRegionUnemploymentRate = (regionCode: number) => {
+    const regionData = data.value.filter(item => item.parent1_code === regionCode);
+    const regionTrudo = regionData.reduce((acc, curr) => acc + +curr.trud_vozrast, 0);
+    const regionNezaniat = regionData.reduce((acc, curr) => acc + +curr.nezaniat, 0);
+    
+    return regionTrudo > 0 ? (regionNezaniat / regionTrudo) * 100 : 0;
+};
+
+const getRaionUnemploymentRate = (raionCode: number) => {
+    const raionData = data.value.filter(item => item.parent2_code === raionCode);
+    const raionTrudo = raionData.reduce((acc, curr) => acc + +curr.trud_vozrast, 0);
+    const raionNezaniat = raionData.reduce((acc, curr) => acc + +curr.nezaniat, 0);
+    
+    return raionTrudo > 0 ? (raionNezaniat / raionTrudo) * 100 : 0;
+};
+
 const regionBezrabot = computed(() => {
     if (!currentRegion.value) return 0;
     return data.value
@@ -277,19 +288,19 @@ const list = computed(() => [
     {
         title: "Наемные в ЮЛ",
         value: workingNaem.value,
-        percent: (workingNaem.value / trudo.value) * 100,
+        percent: (workingNaem.value / working.value) * 100,
         icon: "work",
     },
     {
         title: "Наемные в ИП",
         value: workingIpNaem.value,
-        percent: (workingIpNaem.value / trudo.value) * 100,
+        percent: (workingIpNaem.value / working.value) * 100,
         icon: "work",
     },
     {
         title: "Самозанятые",
         value: workingSam.value,
-        percent: (workingSam.value / trudo.value) * 100,
+        percent: (workingSam.value / working.value) * 100,
         icon: "work",
     },
     {

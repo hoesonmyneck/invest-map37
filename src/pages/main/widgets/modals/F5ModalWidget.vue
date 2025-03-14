@@ -88,8 +88,8 @@
             </p>
             <p>ТИП</p>
             <p>ПОДТИП</p>
-            <p>ПЛОЩАДЬ <br><br> <div v-if="tab === 1"> {{ formatNumber(filteredArea) }}</div></p>
-            <p>ГОЛОВ <br><br> <div v-if="tab === 2"> {{ formatNumber(filteredArea) }}</div></p>
+            <p>ПЛОЩАДЬ <br><br> <div v-if="tab === 1"> {{ formatNumber(filteredArea) }}</div><div v-if="tab === 0"> {{ formatNumber(filteredAreaForPlants) }}</div></p>
+            <p>ГОЛОВ <br><br> <div v-if="tab === 2"> {{ formatNumber(filteredArea) }}</div><div v-if="tab === 0"> {{ formatNumber(filteredAreaForAnimals) }}</div></p>
             <p>Фактические рабочие места <br><br> {{ formatNumber(filteredWorkPlaces) }}</p>
             <p>Потребность в кадрах <br><br> {{ formatNumber(filteredTotalHeadCount) }}</p>
             <p>Свободные резюме<br><br> {{ formatNumber(filteredIinSum) }}</p>
@@ -149,14 +149,7 @@
       </div>
       <div class="map h-[calc(50vh)] relative">
         <div class="flex items-center justify-between w-full pr-10 mt-5">
-          <div class="flex gap-1 text-white">
-            <div :class="{ active: tabMapStatus === 0 }" @click="tabMapStatus = 0" class="btn mini">
-              Животноводство
-            </div>
-            <div :class="{ active: tabMapStatus === 1 }" @click="tabMapStatus = 1" class="btn mini">
-              Растениеводство
-            </div>
-          </div>
+          
           <div v-if="!!currentRegion || !!currentRaion"
             class="rounded absolute z-10 top-5 right-5 bg-[#252A36] w-8 h-8 flex items-center justify-center cursor-pointer"
             @click="() => {
@@ -169,11 +162,20 @@
             <CloseOutlined />
           </div>
         </div>
+        <div class="w-full flex justify-center text-white">
+          Выбрано: 
+          <span v-if="!currentRegion" class="ml-2">Республика Казахстан</span>
+          <span v-else class="ml-2">
+            {{ getRegionName(currentRegion) }}
+            <span v-if="currentRaion">, {{ getRaionName(currentRegion, currentRaion) }}</span>
+          </span>
+        </div>
         <BaseMap 
           v-if="!currentRegion"
           :current-region="0" 
           :fill-color="(v) => {
-            return getColorFromGradient((groupByRegion()[+v]?.area / maxCountGroupByRegion) * 100)
+            const workPlacesData = getWorkPlacesPercentage(+v);
+            return workPlacesData.color;
           }" 
           @click-polygon="clickPolygon" 
           v-slot="slotProps">
@@ -183,16 +185,21 @@
               <p class="font-bold">{{ slotProps.data.region }}</p>
             </div>
             <div class="flex items-center gap-2">
-              <p>{{ tabMapStatus === 1 ? "Площадь" : "Голов" }}:</p>
+              <p>Обеспеченность кадрами:</p>
+              <p class="font-bold" :style="{ color: getWorkPlacesPercentage(+slotProps.data.parent1_code).color }">
+                {{ getWorkPlacesPercentage(+slotProps.data.parent1_code).text }}
+              </p>
+            </div>
+            <div class="flex items-center gap-2">
+              <p>Фактические рабочие места:</p>
               <p class="font-bold">
-                {{
-                  (() => {
-                    const regionArea = groupByRegion()[+slotProps.data.parent1_code]?.area || 0;
-                    const totalArea = Object.values(groupByRegion()).reduce((acc, curr) => acc + curr.area, 0);
-                    const percentage = (regionArea / totalArea) * 100;
-                    return Numeral(percentage) + "% (" + Numeral(regionArea) + (tabMapStatus === 1 ? " га" : " голов") + ")";
-                  })()
-                }}
+                {{ Numeral(getRegionWorkPlaces(+slotProps.data.parent1_code)) }}
+              </p>
+            </div>
+            <div class="flex items-center gap-2">
+              <p>Потребность в кадрах:</p>
+              <p class="font-bold">
+                {{ Numeral(getRegionHeadCount(+slotProps.data.parent1_code)) }}
               </p>
             </div>
           </div>
@@ -206,21 +213,9 @@
             if (!groupByRaion()[+v] || groupByRaion()[+v]?.parent1_code !== Number(currentRegion)) {
               return '#222732'; 
             }
-            const regionRaions = Object.values(groupByRaion()).filter((raion: F5Item) => raion.parent1_code === Number(currentRegion));
-            const totalRegionArea = regionRaions.reduce((acc: number, raion: F5Item) => acc + raion.area, 0);
-            const areaValue = groupByRaion()[+v]?.area || 0;
-            const percentage = (areaValue / totalRegionArea) * 100;
             
-            if (percentage <= 3.5) {
-              return '#109669'; 
-            }
-            
-            return getColorFromGradient(
-              percentage,
-              true,
-              false,
-              10
-            );
+            const workPlacesData = getWorkPlacesPercentageByRaion(+v);
+            return workPlacesData.color;
           }"
           @click-polygon="clickRaion"
           v-slot="slotProps">
@@ -230,17 +225,21 @@
               <p class="font-bold">{{ slotProps.data.raion }}</p>
             </div>
             <div class="flex items-center gap-2">
-              <p>{{ tabMapStatus === 1 ? "Площадь" : "Голов" }}:</p>
+              <p>Обеспеченность кадрами:</p>
+              <p class="font-bold" :style="{ color: getWorkPlacesPercentageByRaion(+slotProps.data.parent2_code).color }">
+                {{ getWorkPlacesPercentageByRaion(+slotProps.data.parent2_code).text }}
+              </p>
+            </div>
+            <div class="flex items-center gap-2">
+              <p>Фактические рабочие места:</p>
               <p class="font-bold">
-                {{
-                  (() => {
-                    const regionRaions = Object.values(groupByRaion()).filter((raion: F5Item) => raion.parent1_code === Number(currentRegion));
-                    const totalRegionArea = regionRaions.reduce((acc: number, raion: F5Item) => acc + raion.area, 0);
-                    const areaValue = groupByRaion()[+slotProps.data.parent2_code]?.area || 0;
-                    const percentage = (areaValue / totalRegionArea) * 100;
-                    return Numeral(percentage) + "% (" + Numeral(areaValue) + (tabMapStatus === 1 ? " га" : " голов") + ")";
-                  })()
-                }}
+                {{ Numeral(getRaionWorkPlaces(+slotProps.data.parent2_code)) }}
+              </p>
+            </div>
+            <div class="flex items-center gap-2">
+              <p>Потребность в кадрах:</p>
+              <p class="font-bold">
+                {{ Numeral(getRaionHeadCount(+slotProps.data.parent2_code)) }}
               </p>
             </div>
           </div>
@@ -414,7 +413,6 @@ const loader = ref(true);
 const data = ref<F5Item[]>([]);
 const dataList = ref<F5_1Item[]>([]);
 const tab = ref(0);
-const tabMapStatus = ref(0);
 const currentRegion = ref<number | null>(null);
 const currentRaion = ref<number | null>(null);
 const f7Data = ref<F7Item[]>([]);
@@ -539,8 +537,7 @@ const totalArea = computed(() =>
 const groupByRegion = (): Record<number, F5Item> => data.value
   .filter(
     (item) =>
-      +item.tip ===
-      (tabMapStatus.value === 1 ? 1 : 2)
+      +item.tip === 2
   )
   ?.reduce((acc: Record<number, F5Item>, curr) => {
     if (!acc[curr.parent1_code]) {
@@ -553,11 +550,74 @@ const groupByRegion = (): Record<number, F5Item> => data.value
     return acc;
   }, {});
 
+const getWorkPlacesPercentage = (regionCode: number): { percentage: number; color: string; text: string } => {
+  const filteredData = f7Data.value.filter((item: F7Item) => 
+    item.parent1_code === regionCode && 
+    (tab.value === 0 ? true : item.tip === (tab.value === 1 ? 1 : 2))
+  );
+  
+  const workPlaces = filteredData.reduce((acc: number, curr: F7Item) => acc + (curr.work_places || 0), 0);
+  const headCount = filteredData.reduce((acc: number, curr: F7Item) => acc + (curr.total_head_count || 0), 0);
+  
+  if (headCount === 0) return { percentage: 0, color: '#FFA559', text: '0%' };
+  
+  const percentage = Math.round((workPlaces / headCount) * 100);
+  let color = '#0CCF89'; 
+  let text = `+${percentage - 100}%`;
+  
+  if (percentage < 100) {
+   
+    const redIntensity = Math.min(255, Math.max(100, 255 - (percentage * 1.5)));
+    color = `rgb(${redIntensity}, 89, 89)`;
+    text = `-${100 - percentage}%`;
+  } else if (percentage === 100) {
+    color = '#FFA559'; 
+    text = '0%';
+  } else if (percentage > 100) {
+    
+    const greenIntensity = Math.min(255, Math.max(100, 100 + (percentage - 100) * 1.5));
+    color = `rgb(12, ${greenIntensity}, 89)`;
+  }
+  
+  return { percentage, color, text };
+};
+
+const getWorkPlacesPercentageByRaion = (raionCode: number): { percentage: number; color: string; text: string } => {
+  const filteredData = f7Data.value.filter((item: F7Item) => 
+    item.parent2_code === raionCode && 
+    (tab.value === 0 ? true : item.tip === (tab.value === 1 ? 1 : 2))
+  );
+  
+  const workPlaces = filteredData.reduce((acc: number, curr: F7Item) => acc + (curr.work_places || 0), 0);
+  const headCount = filteredData.reduce((acc: number, curr: F7Item) => acc + (curr.total_head_count || 0), 0);
+  
+  if (headCount === 0) return { percentage: 0, color: '#FFA559', text: '0%' };
+  
+  const percentage = Math.round((workPlaces / headCount) * 100);
+  let color = '#0CCF89'; 
+  let text = `+${percentage - 100}%`;
+  
+  if (percentage < 100) {
+ 
+    const redIntensity = Math.min(255, Math.max(100, 255 - (percentage * 1.5)));
+    color = `rgb(${redIntensity}, 89, 89)`;
+    text = `-${100 - percentage}%`;
+  } else if (percentage === 100) {
+    color = '#FFA559'; 
+    text = '0%';
+  } else if (percentage > 100) {
+    
+    const greenIntensity = Math.min(255, Math.max(100, 100 + (percentage - 100) * 1.5));
+    color = `rgb(12, ${greenIntensity}, 89)`;
+  }
+  
+  return { percentage, color, text };
+};
+
 const groupByRaion = (): Record<number, F5Item> => data.value
   .filter(
     (item) =>
-      +item.tip ===
-      (tabMapStatus.value === 1 ? 1 : 2)
+      +item.tip === 2
   )
   ?.reduce((acc: Record<number, F5Item>, curr) => {
     if (!curr.parent2_code) return acc;
@@ -1278,6 +1338,87 @@ const showMoreResults = () => {
 const displayedItems = computed(() => {
   return filteredItems.value.slice(0, displayLimit.value);
 });
+
+const getRegionWorkPlaces = (regionCode: number): number => {
+  return f7Data.value
+    .filter((item: F7Item) => item.parent1_code === regionCode)
+    .reduce((acc: number, curr: F7Item) => acc + (curr.work_places || 0), 0);
+};
+
+const getRegionHeadCount = (regionCode: number): number => {
+  return f7Data.value
+    .filter((item: F7Item) => item.parent1_code === regionCode)
+    .reduce((acc: number, curr: F7Item) => acc + (curr.total_head_count || 0), 0);
+};
+
+const getRaionWorkPlaces = (raionCode: number): number => {
+  return f7Data.value
+    .filter((item: F7Item) => item.parent2_code === raionCode)
+    .reduce((acc: number, curr: F7Item) => acc + (curr.work_places || 0), 0);
+};
+
+const getRaionHeadCount = (raionCode: number): number => {
+  return f7Data.value
+    .filter((item: F7Item) => item.parent2_code === raionCode)
+    .reduce((acc: number, curr: F7Item) => acc + (curr.total_head_count || 0), 0);
+};
+
+const filteredAreaForPlants = computed(() => {
+  const selectedTip = 1; 
+  
+  if (!currentRegion.value) {
+    return Math.round(f7Data.value
+      .filter(item => +item.tip === selectedTip)
+      .reduce((acc, curr) => acc + (curr.area || 0), 0));
+  } else if (currentRegion.value && !currentRaion.value) {
+    return Math.round(f7Data.value
+      .filter(item => item.parent1_code === currentRegion.value && +item.tip === selectedTip)
+      .reduce((acc, curr) => acc + (curr.area || 0), 0));
+  } else {
+    return Math.round(f7Data.value
+      .filter(item => 
+        item.parent1_code === currentRegion.value && 
+        item.parent2_code === currentRaion.value && 
+        +item.tip === selectedTip
+      )
+      .reduce((acc, curr) => acc + (curr.area || 0), 0));
+  }
+});
+
+const filteredAreaForAnimals = computed(() => {
+  const selectedTip = 2; 
+  
+  if (!currentRegion.value) {
+    return Math.round(f7Data.value
+      .filter(item => +item.tip === selectedTip)
+      .reduce((acc, curr) => acc + (curr.area || 0), 0));
+  } else if (currentRegion.value && !currentRaion.value) {
+    return Math.round(f7Data.value
+      .filter(item => item.parent1_code === currentRegion.value && +item.tip === selectedTip)
+      .reduce((acc, curr) => acc + (curr.area || 0), 0));
+  } else {
+    return Math.round(f7Data.value
+      .filter(item => 
+        item.parent1_code === currentRegion.value && 
+        item.parent2_code === currentRaion.value && 
+        +item.tip === selectedTip
+      )
+      .reduce((acc, curr) => acc + (curr.area || 0), 0));
+  }
+});
+
+const getRegionName = (regionCode: number): string => {
+  const region = data.value.find(item => item.parent1_code === regionCode);
+  return region ? region.region : `Регион ${regionCode}`;
+};
+
+const getRaionName = (regionCode: number, raionCode: number): string => {
+  const raion = data.value.find(item => 
+    item.parent1_code === regionCode && 
+    item.parent2_code === raionCode
+  );
+  return raion ? raion.raion : `Район ${raionCode}`;
+};
 </script>
 
 <style scoped lang="scss">
