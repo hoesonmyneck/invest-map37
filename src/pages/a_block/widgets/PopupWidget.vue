@@ -51,6 +51,8 @@
                 <div class="flex gap-1 text-xs p-1 mt-10">
                     <p @click="active = 0" :class="active === 0 ? 'border-[#3090E8]' : 'border-gray-700'"
                         class="cursor-pointer h-6 px-4 flex items-center border">Общее</p>
+                    <p @click="active = 4" :class="active === 4 ? 'border-[#3090E8]' : 'border-gray-700'"
+                        class="cursor-pointer h-6 px-4 flex items-center border">График</p>    
                     <p @click="active = 1" :class="active === 1 ? 'border-[#3090E8]' : 'border-gray-700'"
                         class="cursor-pointer h-6 px-4 flex items-center border">Трудовой риск</p>
                     <p @click="active = 2" :class="active === 2 ? 'border-[#3090E8]' : 'border-gray-700'"
@@ -131,60 +133,55 @@
 
                 <div v-if="active === 3">
                     <div class="grid grid-cols-1 gap-2 text-xs my-5">
-                        <div class="flex mt-5 justify-between items-center">
-                            <p class="text-lg">Потребность</p>
-                            <p v-if="!!currentProfession" class="cursor-pointer" @click="currentProfession = undefined">
-                                <BaseIcon name="close" :width="10" :height="10" />
-                            </p>
-                        </div>
-                        <div class="border border-gray-700 rounded h-max">
-                            <div class="head grid grid-cols-2 gap-2 p-2 text-gray-400 text-[14px]">
+                        
+                        <p class="mt-5 text-lg">Потребность</p>
+                        <div class="border border-gray-700 rounded w-[110%]">
+                            <div class="head grid grid-cols-5 gap-2 p-2 text-gray-400 text-[14px]">
                                 <p class="border-r border-gray-700 mr-2 pr-2">Профессия</p>
-                                <p>Код</p>
-                            </div>
-                            <div class="item border-t border-gray-700 grid grid-cols-2 gap-2 p-2"
-                                v-for="(r, idx) in currentProjectPopup.nkz_code_2_name" :key="r.key">
-                                <p @click="currentProfession = r"
-                                    :class="currentProfession === r ? 'text-blue-500' : ''"
-                                    class="border-r border-gray-700 mr-2 cursor-pointer">{{ r }}</p>
-                                <p>{{ currentProjectPopup.nkz_code_2[idx] }}</p>
-                            </div>
-                        </div>
-                        <p class="mt-5 text-lg">ТиПО</p>
-                        <div class="border border-gray-700 rounded">
-                            <div class="head grid grid-cols-6 gap-2 p-2 text-gray-400 text-[14px]">
+                                <!-- <p class="border-r border-gray-700 mr-2 pr-2">Кол-во</p> -->
                                 <p class="border-r border-gray-700 mr-2 pr-2">ТиПО</p>
-                                <p>БИН</p>
-                                <p>Адрес</p>
-                                <p>Квалификация</p>
-                                <p>Специальность</p>
-                                <p>Профессия</p>
+                                <!-- <p class="border-r border-gray-700 mr-2 pr-2">Адрес</p> -->
+                                <p class="border-r border-gray-700 mr-2 pr-2">Квалификация</p>
+                                <p class="border-r border-gray-700 mr-2 pr-2">Специальность</p>
+                                <p>Кол-во выпускников в этом году</p>
                             </div>
-                            <div class="overflow-scroll h-[calc(20vh)]">
+                            <div class="overflow-scroll h-[calc(39vh)]">
                                 <template v-for="(r, idx) in currentProjectPopup.list_of_tipo" :key="r[0]">
                                     <template v-for="(a, index) in r" :key="a[0]">
                                         <div v-if="!currentProfession ? true : currentProfession === currentProjectPopup.nkz_code_2_name[idx]"
-                                            class="item border-t border-gray-700 grid grid-cols-6 gap-2 p-2">
-                                            <p class="border-r border-gray-700 mr-2">{{ a }}</p>
-                                            <p class="border-r border-gray-700 mr-2"> {{
-                                                currentProjectPopup.list_of_bin[idx][index] }} </p>
-                                            <p class="border-r border-gray-700 mr-2">
-                                                {{ currentProjectPopup.list_of_address[idx][index] }}
+                                            class="item border-t border-gray-700 grid grid-cols-5 gap-2 p-2">
+                                            <p class="border-r border-gray-700 mr-2 pr-2">
+                                                {{ currentProjectPopup.nkz_code_2_name[idx] }}
                                             </p>
-                                            <p class="border-r border-gray-700 mr-2">
+                                            <!-- <p class="border-r border-gray-700 mr-2 pr-2">
+                
+                                            </p> -->
+                                            <p class="border-r border-gray-700 mr-2 pr-2">
+                                                {{ a }}
+                                            </p>
+                                            <!-- <p class="border-r border-gray-700 mr-2 pr-2">
+                                                {{ currentProjectPopup.list_of_address[idx][index] }}
+                                            </p> -->
+                                            <p class="border-r border-gray-700 mr-2 pr-2">
                                                 {{ currentProjectPopup.list_of_qualifications[idx][index] }}
                                             </p>
-                                            <p class="border-r border-gray-700 mr-2">
+                                            <p class="border-r border-gray-700 mr-2 pr-2">
                                                 {{ currentProjectPopup.list_of_specializations[idx][index] }}
                                             </p>
-                                            <p class="2">
-                                                {{ currentProjectPopup.nkz_code_2_name[idx] }}
+                                            <p>
+                                                {{ currentProjectPopup.list_of_stu[idx][index] }}
                                             </p>
                                         </div>
                                     </template>
                                 </template>
                             </div>
                         </div>
+                    </div>
+                </div>
+                <div v-if="active === 4">
+                    <div class="mt-5 flex flex-col justify-center items-center  ">
+                        <p class="text-lg mb-4">Динамика рабочих мест</p>
+                        <highcharts :options="areaChartOptions" class="h-[300px] w-full"></highcharts>
                     </div>
                 </div>
             </div>
@@ -207,7 +204,7 @@ const active = ref(0)
 
 const currentProfession = ref()
 
-const risk_key = {
+const risk_key: { [key: string]: string } = {
     'k_': "Не определено",
     'k_0': "Отсутствует",
     'k_3': "Средний",
@@ -268,5 +265,122 @@ const chartOptions = (name: string, name2: string, percent: number, all: number,
             { name: name ?? '', data: [{ name: name2, radius: "80%", innerRadius: "100%", color: "#3090E8", y: +percent.toFixed(0), value: Numeral(value2) }] },
         ],
     }
+}
+
+const areaChartOptions = {
+    chart: {
+        type: 'area',
+        backgroundColor: 'transparent',
+    },
+    title: {
+        text: '',
+    },
+    xAxis: {
+        categories: currentProjectPopup.value.fact_year_value,
+        labels: {
+            style: {
+                color: '#fff'
+            }
+        },
+        lineColor: '#555',
+    },
+    yAxis: {
+        title: {
+            text: 'Количество рабочих мест',
+            style: {
+                color: '#fff'
+            }
+        },
+        labels: {
+            style: {
+                color: '#fff'
+            }
+        },
+        gridLineColor: 'rgba(255, 255, 255, 0.1)',
+    },
+    tooltip: {
+        shared: true,
+        valueSuffix: ' мест',
+        formatter: function(this: any): string {
+            const points = this.points || [];
+            let tooltipText = '<span style="font-size: 10px">' + this.x + '</span><br/>';
+            
+            points.forEach(function(point: any) {
+                if (point.series.name === 'Фактические рабочие места') {
+                    const firstYearValue = currentProjectPopup.value.fact_count_value[0] || 0;
+                    const currentValue = point.y;
+                    const difference = currentValue - firstYearValue;
+                    
+                    let differenceText = '';
+                    if (difference !== 0) {
+                        differenceText = difference < 0 ? difference.toString() : '' + difference;
+                    }
+                    
+                    tooltipText += '<span style="color:' + point.color + '">●</span> ' + 
+                        point.series.name + ': <b>' + 
+                        (differenceText ? differenceText + ' (' + currentValue + ' мест)' : currentValue + ' мест') + 
+                        '</b><br/>';
+                } else {
+                    tooltipText += '<span style="color:' + point.color + '">●</span> ' + 
+                        point.series.name + ': <b>' + point.y + ' мест</b><br/>';
+                }
+            });
+            
+            return tooltipText;
+        }
+    },
+    credits: {
+        enabled: false
+    },
+    legend: {
+        itemStyle: {
+            color: '#fff'
+        },
+        itemHoverStyle: {
+            color: '#ccc'
+        }
+    },
+    plotOptions: {
+        area: {
+            fillOpacity: 0.5,
+            marker: {
+                radius: 4,
+                lineWidth: 1
+            }
+        },
+        line: {
+            marker: {
+                enabled: false
+            }
+        }
+    },
+    series: [{
+        name: 'Фактические рабочие места',
+        type: 'area',
+        data: currentProjectPopup.value.fact_count_value,
+        color: '#3090E8',
+    }, {
+        name: 'Плановые рабочие места',
+        type: 'line',
+        data: Array(currentProjectPopup.value.fact_year_value.length).fill(
+            currentProjectPopup.value.work_places + 
+            (currentProjectPopup.value.fact_count_value[0] || 0)
+        ),
+        color: '#B85DDA',
+        dashStyle: 'solid',
+        lineWidth: 2
+    }, {
+        name: 'Начальное значение (2021)',
+        type: 'line',
+        data: Array(currentProjectPopup.value.fact_year_value.length).fill(
+            currentProjectPopup.value.fact_count_value[0] || 0
+        ),
+        color: 'rgba(150, 150, 150, 0.7)',
+        dashStyle: 'solid',
+        lineWidth: 2,
+        marker: {
+            enabled: false
+        }
+    }]
 }
 </script>
