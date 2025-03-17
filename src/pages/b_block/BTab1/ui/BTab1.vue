@@ -65,14 +65,8 @@
                 v-if="!currentRegion"
                 :current-region="currentRegion ? Number(currentRegion) : undefined" 
                 :fill-color="(v) => {
-                    const percentage = getRegionUnemploymentRate(+v);
-                    if (percentage <= 23) {
-                        return '#0CCF89'; // Зеленый
-                    } else if (percentage > 23 && percentage <= 27) {
-                        return '#F59D0E'; // Оранжевый
-                    } else {
-                        return '#DF173B'; // Красный
-                    }
+                    const regionColors = getRegionColorByRank();
+                    return regionColors[+v] || '#222732';
                 }" 
                 @click-polygon="clickPolygon" 
                 v-slot="slotProps">
@@ -103,15 +97,8 @@
                         return '#222732'; 
                     }
                     
-                    const percentage = getRaionUnemploymentRate(+v);
-                    
-                    if (percentage <= 23) {
-                        return '#0CCF89'; // Зеленый
-                    } else if (percentage > 23 && percentage <= 27) {
-                        return '#F59D0E'; // Оранжевый
-                    } else {
-                        return '#DF173B'; // Красный
-                    }
+                    const raionColors = getRaionColorByRank(Number(currentRegion));
+                    return raionColors[+v] || '#222732';
                 }"
                 @click-polygon="clickRaion"
                 v-slot="slotProps">
@@ -212,6 +199,124 @@ const getRaionUnemploymentRate = (raionCode: number) => {
     const raionNezaniat = raionData.reduce((acc, curr) => acc + +curr.nezaniat, 0);
     
     return raionTrudo > 0 ? (raionNezaniat / raionTrudo) * 100 : 0;
+};
+
+
+const getRegionColorByRank = (): Record<number, string> => {
+    
+    const regionsWithRates = Object.keys(groupByRegion())
+        .map(regionCode => ({
+            regionCode: +regionCode,
+            rate: getRegionUnemploymentRate(+regionCode)
+        }))
+        .filter(region => !isNaN(region.regionCode) && region.regionCode > 0);
+    
+    
+    regionsWithRates.sort((a, b) => a.rate - b.rate);
+    
+    
+    const regionColors: Record<number, string> = {};
+    
+  
+   
+    
+ 
+    const greenRegions = regionsWithRates.slice(0, 7);
+    console.log('Зеленые регионы (должно быть 7):', greenRegions);
+    greenRegions.forEach(region => {
+        regionColors[region.regionCode] = '#0CCF89'; 
+    });
+    
+    
+    const redRegions = regionsWithRates.slice(-6);
+    console.log('Красные регионы (должно быть 6):', redRegions);
+    redRegions.forEach(region => {
+        regionColors[region.regionCode] = '#DF173B'; 
+    });
+    
+    
+    const orangeRegions = regionsWithRates.slice(7, regionsWithRates.length - 6);
+    console.log('Оранжевые регионы:', orangeRegions);
+    orangeRegions.forEach(region => {
+        regionColors[region.regionCode] = '#F59D0E'; 
+    });
+    
+    
+    const greenCount = Object.entries(regionColors).filter(([_, color]) => color === '#0CCF89').length;
+    console.log('Итоговое количество зеленых регионов:', greenCount);
+    
+ 
+    if (greenCount < 7 && orangeRegions.length > 0) {
+        const neededCount = 7 - greenCount;
+        console.log(`Не хватает ${neededCount} зеленых регионов, добавляем из оранжевых`);
+        
+        for (let i = 0; i < Math.min(neededCount, orangeRegions.length); i++) {
+            regionColors[orangeRegions[i].regionCode] = '#0CCF89';
+        }
+    }
+    
+    return regionColors;
+};
+
+
+const getRaionColorByRank = (currentRegionCode: number): Record<number, string> => {
+   
+    const raionsWithRates = Object.values(groupByRaion())
+        .filter((raion: any) => raion.parent1_code === currentRegionCode)
+        .map((raion: any) => ({
+            raionCode: +raion.parent2_code,
+            rate: getRaionUnemploymentRate(+raion.parent2_code)
+        }))
+        .filter(raion => !isNaN(raion.raionCode) && raion.raionCode > 0);
+    
+    
+    raionsWithRates.sort((a, b) => a.rate - b.rate);
+    
+    
+    console.log('Все районы с процентами незанятых (после фильтрации):', raionsWithRates);
+    
+    
+    const raionColors: Record<number, string> = {};
+    
+   
+    const lowCount = Math.min(7, raionsWithRates.length);
+    const greenRaions = raionsWithRates.slice(0, lowCount);
+    console.log('Зеленые районы (должно быть до 7):', greenRaions);
+    greenRaions.forEach(raion => {
+        raionColors[raion.raionCode] = '#0CCF89'; // Зеленый
+    });
+    
+    
+    const highCount = Math.min(6, Math.max(0, raionsWithRates.length - lowCount));
+    const redRaions = raionsWithRates.slice(-highCount);
+    console.log('Красные районы (должно быть до 6):', redRaions);
+    if (highCount > 0) {
+        redRaions.forEach(raion => {
+            raionColors[raion.raionCode] = '#DF173B';
+        });
+    }
+    
+    
+    const orangeRaions = raionsWithRates.slice(lowCount, raionsWithRates.length - highCount);
+    console.log('Оранжевые районы:', orangeRaions);
+    orangeRaions.forEach(raion => {
+        raionColors[raion.raionCode] = '#F59D0E'; 
+    });
+    
+   
+    const greenCount = Object.entries(raionColors).filter(([_, color]) => color === '#0CCF89').length;
+    console.log('Итоговое количество зеленых районов:', greenCount);
+    
+    if (greenCount < 7 && orangeRaions.length > 0) {
+        const neededCount = Math.min(7 - greenCount, orangeRaions.length);
+        console.log(`Не хватает ${neededCount} зеленых районов, добавляем из оранжевых`);
+        
+        for (let i = 0; i < neededCount; i++) {
+            raionColors[orangeRaions[i].raionCode] = '#0CCF89';
+        }
+    }
+    
+    return raionColors;
 };
 
 const regionBezrabot = computed(() => {
