@@ -66,15 +66,13 @@
                 :current-region="currentRegion ? Number(currentRegion) : undefined" 
                 :fill-color="(v) => {
                     const percentage = getRegionUnemploymentRate(+v);
-                    if (percentage <= 3.5) {
-                        return '#109669';
+                    if (percentage <= 23) {
+                        return '#0CCF89'; // Зеленый
+                    } else if (percentage > 23 && percentage <= 27) {
+                        return '#F59D0E'; // Оранжевый
+                    } else {
+                        return '#DF173B'; // Красный
                     }
-                    return getColorFromGradient(
-                        percentage, 
-                        true,
-                        false,
-                        10
-                    );
                 }" 
                 @click-polygon="clickPolygon" 
                 v-slot="slotProps">
@@ -107,16 +105,13 @@
                     
                     const percentage = getRaionUnemploymentRate(+v);
                     
-                    if (percentage <= 3.5) {
-                        return '#109669'; 
+                    if (percentage <= 23) {
+                        return '#0CCF89'; // Зеленый
+                    } else if (percentage > 23 && percentage <= 27) {
+                        return '#F59D0E'; // Оранжевый
+                    } else {
+                        return '#DF173B'; // Красный
                     }
-                    
-                    return getColorFromGradient(
-                        percentage,
-                        true,
-                        false,
-                        10
-                    );
                 }"
                 @click-polygon="clickRaion"
                 v-slot="slotProps">
