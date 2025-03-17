@@ -283,6 +283,20 @@ const areaChartOptions = {
             }
         },
         lineColor: '#555',
+        plotLines: [{
+            color: 'rgba(150, 150, 150, 0.7)',
+            width: 2,
+            value: currentProjectPopup.value.fact_year_value.findIndex(
+                (year: number) => year === new Date(currentProjectPopup.value.project_start_date).getFullYear()
+            ),
+            zIndex: 3,
+            label: {
+                text: '',
+                style: {
+                    color: '#fff'
+                }
+            }
+        }]
     },
     yAxis: {
         title: {
@@ -370,7 +384,7 @@ const areaChartOptions = {
         dashStyle: 'solid',
         lineWidth: 2
     }, {
-        name: 'Начальное значение (2021)',
+        name: 'Начальное значение',
         type: 'line',
         data: Array(currentProjectPopup.value.fact_year_value.length).fill(
             currentProjectPopup.value.fact_count_value[0] || 0
