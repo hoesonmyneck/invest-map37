@@ -20,20 +20,20 @@
         <div class="body">
             <RecycleScroller class="scroller h-full" :min-item-size="10" :items="a1FilterByProject" :item-size="1"
                 key-field="id" v-slot="{ item }">
-                <div class="head mt-1">
+                <div class="head mt-1 min-h-[30px]">
                     <p class="w-full h-full flex items-center justify-center rounded bg-[#252A36] cursor-pointer">
                         <img src="/images/icons/map.png" alt="" class="w-[16px]" v-if="!!item.coordinates"
                             @click="aStore.setCurrentProject(item.id), aStore.setCurrentRegion(item.parent1_code), aStore.setCurrentRaion(item.parent2_code), aStore.setCurrentOtrasl(item.otrasl)">
                     </p>
                     <a-tooltip placement="left" :title="item.project_name">
-                        <p class="element truncate cur cursor-pointer"
+                        <p class="element break-words cursor-pointer"
                             :class="{ 'text-[#3090e8]': currentProject === item.id }"
                             @click="aStore.setCurrentProject(item.id), aStore.setProjectModalVisible(true)">
                             {{ item.project_name }}
                         </p>
                     </a-tooltip>
                     <p class="element truncate text-center">{{ Numeral(item.project_price) }}</p>
-                    <div>
+                    <div class="flex flex-col justify-center h-full">
                         <div class="w-full h-[14px] bg-[#252A36] rounded mt-[3px]">
                             <div class="progress h-[14px] flex justify-center rounded bg-[#3090e8]"
                                 :style="{ 'width': getProjectDatePrecent(item) + '%' }">
@@ -139,7 +139,13 @@ import { getColorFromGradient } from '../../../../shared/helpers/gradientColors'
 const aStore = useAStore()
 const { a1FilterByProject, currentProject } = storeToRefs(aStore);
 
-function getProjectDatePrecent(item) {
+interface ProjectItem {
+    project_start_date: string;
+    project_exploitation_date: string;
+    [key: string]: any;
+}
+
+function getProjectDatePrecent(item: ProjectItem) {
     let _start = new Date(item.project_start_date).getFullYear()
     let _end = new Date(item.project_exploitation_date).getFullYear()
     const _current = new Date().getFullYear()
@@ -165,8 +171,24 @@ function getProjectDatePrecent(item) {
     background: #252A36;
     border-radius: 6px;
     width: 100%;
-    height: 30px;
-    padding: 0 12px;
+    min-height: 30px;
+    height: auto;
+    padding: 4px 12px;
     align-items: center;
+}
+
+.element.break-words {
+    word-break: break-word;
+    white-space: normal;
+    overflow-wrap: break-word;
+    height: 100%;
+}
+
+
+.head > div {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    height: 100%;
 }
 </style>

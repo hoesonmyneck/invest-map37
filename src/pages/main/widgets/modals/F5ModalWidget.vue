@@ -75,46 +75,57 @@
             </div>
           </div>
           <div
-            class="head grid gap-1 grid-cols-[250px_100px_100px_100px_100px_100px_150px_130px_100px_] text-[10px] pt-4 pb-2 mb-2 border-b border-gray-600">
+            class="head grid gap-1 grid-cols-[250px_100px_100px_100px_100px_100px_160px_130px_] text-[10px] pt-4 pb-2 mb-2 border-b border-gray-600">
             <p class="cursor-pointer flex items-center gap-1" @click="toggleSort('full_name')">
               НАИМЕНОВАНИЕ <br><br><br>
-              <SortAscendingOutlined v-if="sortField === 'full_name' && sortOrder === 'asc'" class="text-blue-400" />
-              <SortDescendingOutlined v-if="sortField === 'full_name' && sortOrder === 'desc'" class="text-blue-400" />
+              <SortAscendingOutlined v-if="sortField === 'full_name' && sortOrder === 'asc'" class="text-blue-400 mb-8" />
+              <SortDescendingOutlined v-if="sortField === 'full_name' && sortOrder === 'desc'" class="text-blue-400 mb-8" />
             </p>
             <p class="cursor-pointer flex items-center gap-1" @click="toggleSort('bin')">
               БИН <br><br> {{ formatNumber(filteredBin) }}
-              <SortAscendingOutlined v-if="sortField === 'bin' && sortOrder === 'asc'" class="text-blue-400" />
-              <SortDescendingOutlined v-if="sortField === 'bin' && sortOrder === 'desc'" class="text-blue-400" />
+              <SortAscendingOutlined v-if="sortField === 'bin' && sortOrder === 'asc'" class="text-blue-400 mb-8" />
+              <SortDescendingOutlined v-if="sortField === 'bin' && sortOrder === 'desc'" class="text-blue-400 mb-8" />
             </p>
             <p>ТИП</p>
             <p>ПОДТИП</p>
-            <p>ПЛОЩАДЬ <br><br> 
+            <p @click="toggleSort('area')">
+              ПЛОЩАДЬ<SortAscendingOutlined v-if="sortField === 'area' && sortOrder === 'asc'" class="text-blue-400 ml-2" />
+              <SortDescendingOutlined v-if="sortField === 'area' && sortOrder === 'desc'" class="text-blue-400 ml-2" /><br><br> 
+              
               <div v-if="tab === 0">{{ formatNumber(filteredAreaForPlants) }}</div>
               <div v-if="tab === 1">{{ formatNumber(filteredArea) }}</div>
+              
             </p>
-            <p>ГОЛОВ <br><br> 
+            <p @click="toggleSort('area_animals')">
+              ГОЛОВ <SortAscendingOutlined v-if="sortField === 'area_animals' && sortOrder === 'asc'" class="text-blue-400 ml-2" />
+              <SortDescendingOutlined v-if="sortField === 'area_animals' && sortOrder === 'desc'" class="text-blue-400 ml-2" /><br><br> 
               <div v-if="tab === 0">{{ formatNumber(filteredAreaForAnimals) }}</div>
               <div v-if="tab === 2">{{ formatNumber(filteredArea) }}</div>
             </p>
-            <p>Фактические рабочие места <br><br> 
+            <p @click="toggleSort('work_places')">
+              Фактические рабочие места 
+              <SortAscendingOutlined v-if="sortField === 'work_places' && sortOrder === 'asc'" class="text-blue-400 ml-2" />
+              <SortDescendingOutlined v-if="sortField === 'work_places' && sortOrder === 'desc'" class="text-blue-400 ml-2" /><br><br> 
               <div v-if="tab === 0">{{ formatNumber(getWorkPlacesForHeader()) }}</div>
               <div v-if="tab === 1">{{ formatNumber(getWorkPlacesForTab(1)) }}</div>
               <div v-if="tab === 2">{{ formatNumber(getWorkPlacesForTab(2)) }}</div>
             </p>
-            <p>Потребность в кадрах <br><br> 
+            <p @click="toggleSort('total_head_count')">
+              Потребность в кадрах <SortAscendingOutlined v-if="sortField === 'total_head_count' && sortOrder === 'asc'" class="text-blue-400 ml-2" />
+              <SortDescendingOutlined v-if="sortField === 'total_head_count' && sortOrder === 'desc'" class="text-blue-400 ml-2" /><br><br> 
               <div v-if="tab === 0">{{ formatNumber(getHeadCountForHeader()) }}</div>
               <div v-if="tab === 1">{{ formatNumber(getHeadCountForTab(1)) }}</div>
               <div v-if="tab === 2">{{ formatNumber(getHeadCountForTab(2)) }}</div>
             </p>
-            <p>Свободные резюме<br><br> 
+            <!-- <p>Свободные резюме<br><br> 
               <div v-if="tab === 0">{{ formatNumber(getIinSumForHeader()) }}</div>
               <div v-if="tab === 1">{{ formatNumber(getIinSumForTab(1)) }}</div>
               <div v-if="tab === 2">{{ formatNumber(getIinSumForTab(2)) }}</div>
-            </p>
+            </p> -->
           </div>
           <div class="overflow-y-auto h-[calc(40vh-50px)] w-full">
             <div
-              class="head gap-1 grid grid-cols-[250px_100px_100px_100px_100px_100px_150px_130px_100px_] text-[10px] mt-1"
+              class="head gap-1 grid grid-cols-[250px_100px_100px_100px_100px_100px_160px_130px_] text-[10px] mt-1"
               v-for="item in displayedItems" :key="item.area + item.full_name">
               <a-tooltip placement="left" :title="item.full_name">
                 <p 
@@ -152,9 +163,9 @@
               <p class="h-6 w-full px-1 flex items-center bg-[#252A36] rounded w-full truncate">
                 {{ item.total_head_count }}
               </p>
-              <p class="h-6 w-full px-1 flex items-center bg-[#252A36] rounded w-full truncate">
+              <!-- <p class="h-6 w-full px-1 flex items-center bg-[#252A36] rounded w-full truncate">
                 {{ item.iin_sum }}
-              </p>
+              </p> -->
             </div>
             
             <div v-if="filteredItems.length > displayLimit" class="flex justify-center mt-4">
@@ -1280,21 +1291,37 @@ const filteredItems = computed(() => {
   
   if (sortField.value) {
     result = [...result].sort((a, b) => {
-      let valueA, valueB;
+      // Сортировка по наименованию (строковое значение)
+      if (sortField.value === 'full_name') {
+        const valueA = a.full_name || '';
+        const valueB = b.full_name || '';
+        return sortOrder.value === 'asc' 
+          ? valueA.localeCompare(valueB) 
+          : valueB.localeCompare(valueA);
+      }
+      
+      // Сортировка по числовым значениям
+      let numA = 0;
+      let numB = 0;
+      
       if (sortField.value === 'bin') {
-        valueA = a.bin ? a.bin.toString() : '';
-        valueB = b.bin ? b.bin.toString() : '';
-      } else if (sortField.value === 'full_name') {
-        valueA = a.full_name || '';
-        valueB = b.full_name || '';
-      } else {
-        return 0;
+        numA = a.bin ? Number(a.bin) : 0;
+        numB = b.bin ? Number(b.bin) : 0;
+      } else if (sortField.value === 'area') {
+        numA = Number(a.tip) === 1 ? Number(a.area || 0) : 0;
+        numB = Number(b.tip) === 1 ? Number(b.area || 0) : 0;
+      } else if (sortField.value === 'area_animals') {
+        numA = Number(a.tip) !== 1 ? Number(a.area || 0) : 0;
+        numB = Number(b.tip) !== 1 ? Number(b.area || 0) : 0;
+      } else if (sortField.value === 'work_places') {
+        numA = Number(a.work_places || 0);
+        numB = Number(b.work_places || 0);
+      } else if (sortField.value === 'total_head_count') {
+        numA = Number(a.total_head_count || 0);
+        numB = Number(b.total_head_count || 0);
       }
-      if (sortOrder.value === 'asc') {
-        return valueA.localeCompare(valueB);
-      } else {
-        return valueB.localeCompare(valueA);
-      }
+      
+      return sortOrder.value === 'asc' ? numA - numB : numB - numA;
     });
   }
   

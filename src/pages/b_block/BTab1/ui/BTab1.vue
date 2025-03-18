@@ -3,9 +3,10 @@
         <div class="flex pt-10 justify-center items-center w-full" v-if="loader">
             <a-spin />
         </div>
-        <div class="grid grid-cols-2 h-[25vh]">
-            <div class="text-white grid grid-cols-2 gap-2">
-                <div class="relative">
+        <div class="grid grid-cols-2">
+            <div class="flex items-center h-[100vh] w-[190%] ">
+                <div class="text-white grid grid-cols-2 gap-2">
+                    <div class="relative">
                     <highcharts :options="chartOptions" class="h-[350px] w-full m-auto"></highcharts>
                     <div class="absolute text-center top-[150px] m-auto left-1/2 -translate-x-1/2">
                         <p class="text-[24px] mx-3">
@@ -117,6 +118,7 @@
                     </div>
                 </div>
             </BaseMapNoMarker>
+        </div>
         </div>
     </div>
 </template>

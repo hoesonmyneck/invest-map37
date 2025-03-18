@@ -28,7 +28,7 @@
             :options="chartOptions"
             class="w-full m-auto h-[calc(100%-100px)]"
           ></highcharts>
-          <ul class="flex gap-4 flex-col text-[10px] justify-center">
+          <ul class="flex gap-3 flex-col text-[10px] justify-center">
             <li class="flex gap-2">
               <p
                 class="w-4 h-4 rounded-full"
@@ -50,6 +50,14 @@
               ></p>
               Рабочие профессии:
               <b>{{ Numeral(rab_prof) }}</b>
+            </li>
+            <li class="flex gap-2">
+              <p
+                class="w-4 h-4 rounded-full"
+                style="background-color: #54E9D7"
+              ></p>
+              Неквалифицированные профессии:
+              <b>{{ Numeral(nekval_prof) }}</b>
             </li>
           </ul>
         </template>
@@ -119,7 +127,7 @@
             :options="newChartOptions"
             class="w-full m-auto h-[calc(100%-100px)]"
           ></highcharts>
-          <ul class="flex gap-4 flex-col text-[10px] justify-center">
+          <ul class="flex gap-3 flex-col text-[10px] justify-center">
             <li class="flex gap-2">
               <p
                 class="w-4 h-4 rounded-full"
@@ -141,6 +149,14 @@
               ></p>
               Рабочие профессии:
               <b>{{ Numeral(rab_resume_prof) }}</b>
+            </li>
+            <li class="flex gap-2">
+              <p
+                class="w-4 h-4 rounded-full"
+                style="background-color: #FF5984"
+              ></p>
+              Неквалифицированные профессии:
+              <b>{{ Numeral(nekval_resume_prof) }}</b>
             </li>
           </ul>
         </template>
@@ -183,12 +199,30 @@ const vacancy_count = computed(() =>
   data.value.reduce((acc, curr) => (acc += curr.vacancy_count), 0)
 );
 
+const nekval_prof = computed(() =>
+  data.value.reduce((acc, curr) => {
+    if (curr.qual_prof === 0 && curr.vacancy_count) {
+      return acc + curr.vacancy_count;
+    }
+    return acc;
+  }, 0)
+);
+
 const qual_resume_prof = computed(() =>
   data.value.reduce((acc, curr) => (acc += curr.qual_resume), 0)
 );
 
 const rab_resume_prof = computed(() =>
   data.value.reduce((acc, curr) => (acc += curr.rab_resume), 0)
+);
+
+const nekval_resume_prof = computed(() =>
+  data.value.reduce((acc, curr) => {
+    if (curr.qual_resume === 0 && curr.resume_count) {
+      return acc + curr.resume_count;
+    }
+    return acc;
+  }, 0)
 );
 
 const resume_count = computed(() =>
@@ -254,6 +288,12 @@ const chartOptions = computed(() => ({
         outerRadius: "62%",
         innerRadius: "38%",
         backgroundColor: "#D15B3220",
+        borderWidth: 0,
+      },
+      {
+        outerRadius: "37%",
+        innerRadius: "13%",
+        backgroundColor: "#54E9D720",
         borderWidth: 0,
       },
     ],
@@ -329,6 +369,22 @@ const chartOptions = computed(() => ({
         iconColor: "#303030",
       },
     },
+    {
+      name: "Неквалифицированные профессии",
+      data: [
+        {
+          color: "#54E9D7",
+          radius: "37%",
+          innerRadius: "13%",
+          count: Numeral(nekval_prof.value),
+          y: (nekval_prof.value / vacancy_count.value) * 100,
+        },
+      ],
+      custom: {
+        icon: "commenting-o",
+        iconColor: "#303030",
+      },
+    },
   ],
 }));
 const newChartOptions = computed(() => ({
@@ -359,6 +415,12 @@ const newChartOptions = computed(() => ({
         outerRadius: "62%",
         innerRadius: "38%",
         backgroundColor: "#D15B3220",
+        borderWidth: 0,
+      },
+      {
+        outerRadius: "37%",
+        innerRadius: "13%",
+        backgroundColor: "#FF598420",
         borderWidth: 0,
       },
     ],
@@ -427,6 +489,22 @@ const newChartOptions = computed(() => ({
           innerRadius: "38%",
           count: Numeral(rab_resume_prof.value),
           y: (rab_resume_prof.value / resume_count.value) * 100,
+        },
+      ],
+      custom: {
+        icon: "commenting-o",
+        iconColor: "#303030",
+      },
+    },
+    {
+      name: "Неквалифицированные профессии",
+      data: [
+        {
+          color: "#FF5984",
+          radius: "37%",
+          innerRadius: "13%",
+          count: Numeral(nekval_resume_prof.value),
+          y: (nekval_resume_prof.value / resume_count.value) * 100,
         },
       ],
       custom: {

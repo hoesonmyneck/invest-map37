@@ -25,6 +25,11 @@
               Рабочие профессии:
               <b>{{ Numeral(rab_prof) }}</b>
             </li>
+            <li class="flex gap-2 mb-2">
+              <p class="w-4 h-4 rounded-full" style="background-color: #54E9D7"></p>
+              Неквалифицированные профессии:
+              <b>{{ Numeral(nekval_prof) }}</b>
+            </li>
           </ul>
           </div>
           <div>
@@ -44,6 +49,11 @@
               <p class="w-4 h-4 rounded-full" style="background-color: #FFA559"></p>
               Рабочие профессии:
               <b>{{ Numeral(rab_resume_prof) }}</b>
+            </li>
+            <li class="flex gap-2 mb-2">
+              <p class="w-4 h-4 rounded-full" style="background-color: #FF5984"></p>
+              Неквалифицированные профессии:
+              <b>{{ Numeral(nekval_resume_prof) }}</b>
             </li>
           </ul>
           </div>
@@ -273,6 +283,32 @@ const resume_count = computed(() =>
     .reduce((acc, curr) => (acc += curr.resume_count), 0)
 );
 
+const nekval_prof = computed(() =>
+  data.value
+    .filter((item) =>
+      !!currentRegion.value ? item.parent1_code === currentRegion.value : true
+    )
+    .reduce((acc, curr) => {
+      if (curr.qual_prof === 0 && curr.vacancy_count) {
+        return acc + curr.vacancy_count;
+      }
+      return acc;
+    }, 0)
+);
+
+const nekval_resume_prof = computed(() =>
+  data.value
+    .filter((item) =>
+      !!currentRegion.value ? item.parent1_code === currentRegion.value : true
+    )
+    .reduce((acc, curr) => {
+      if (curr.qual_resume === 0 && curr.resume_count) {
+        return acc + curr.resume_count;
+      }
+      return acc;
+    }, 0)
+);
+
 const chartOptions = computed(() => ({
   chart: {
     type: "solidgauge",
@@ -301,6 +337,12 @@ const chartOptions = computed(() => ({
         outerRadius: "62%",
         innerRadius: "38%",
         backgroundColor: "#D15B3220",
+        borderWidth: 0,
+      },
+      {
+        outerRadius: "37%",
+        innerRadius: "13%",
+        backgroundColor: "#54E9D720",
         borderWidth: 0,
       },
     ],
@@ -376,6 +418,22 @@ const chartOptions = computed(() => ({
         iconColor: "#303030",
       },
     },
+    {
+      name: "Неквалифицированные профессии",
+      data: [
+        {
+          color: "#54E9D7",
+          radius: "37%",
+          innerRadius: "13%",
+          count: Numeral(nekval_prof.value),
+          y: (nekval_prof.value / vacancy_count.value) * 100,
+        },
+      ],
+      custom: {
+        icon: "commenting-o",
+        iconColor: "#303030",
+      },
+    },
   ],
 }));
 
@@ -407,6 +465,12 @@ const resumeChartOptions = computed(() => ({
         outerRadius: "62%",
         innerRadius: "38%",
         backgroundColor: "#D15B3220",
+        borderWidth: 0,
+      },
+      {
+        outerRadius: "37%",
+        innerRadius: "13%",
+        backgroundColor: "#FF598420",
         borderWidth: 0,
       },
     ],
@@ -475,6 +539,22 @@ const resumeChartOptions = computed(() => ({
           innerRadius: "38%",
           count: Numeral(rab_resume_prof.value),
           y: (rab_resume_prof.value / resume_count.value) * 100,
+        },
+      ],
+      custom: {
+        icon: "commenting-o",
+        iconColor: "#303030",
+      },
+    },
+    {
+      name: "Неквалифицированные профессии",
+      data: [
+        {
+          color: "#FF5984",
+          radius: "37%",
+          innerRadius: "13%",
+          count: Numeral(nekval_resume_prof.value),
+          y: (nekval_resume_prof.value / resume_count.value) * 100,
         },
       ],
       custom: {
