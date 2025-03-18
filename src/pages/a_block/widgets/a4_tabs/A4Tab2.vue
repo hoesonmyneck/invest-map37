@@ -1,21 +1,21 @@
 <template>
     <div class="overflow-scroll h-[27vh] text-white text-[12px] pt-3">
-        <ul class="head text-white pb-1 mb-1 border-b border-gray-700 items-end w-min">
-            <li></li>
-            <li>Наименование</li>
-            <li>Стоимость проекта</li>
-            <li>Срок</li>
-            <li>План раб.мест</li>
-            <li>Факт раб.мест</li>
-            <li>%</li>
-            <li>План ФОТ</li>
-            <li>Факт ФОТ</li>
-            <li>%</li>
-            <li>СМЗ</li>
-            <li>Риски КТР</li>
-            <li>Высокий</li>
-            <li>Средний</li>
-            <li>Отсутствует</li>
+        <ul class="head text-white pb-1 mb-1 border-b border-gray-700 items-end w-[100%]">
+            <li class="w-[100%]"></li>
+            <li class="w-[100%]">Наименование</li>
+            <li class="w-[100%]">Стоимость проекта</li>
+            <li class="w-[100%]">Срок</li>
+            <li class="w-[100%]">План раб.мест</li>
+            <li class="w-[100%]">Факт раб.мест</li>
+            <li class="w-[100%]">%</li>
+            <li class="w-[100%]">План ФОТ</li>
+            <li class="w-[100%]">Факт ФОТ</li>
+            <li class="w-[100%]">%</li>
+            <li class="w-[100%]">СМЗ</li>
+            <li class="w-[100%]">Риски КТР</li>
+            <li class="w-[100%]">Высокий</li>
+            <li class="w-[100%]">Средний</li>
+            <li class="w-[100%]">Отсутствует</li>
         </ul>
         <div class="body">
             <RecycleScroller class="scroller h-full" :min-item-size="10" :items="a1FilterByProject" :item-size="1"
@@ -156,7 +156,7 @@ function getProjectDatePrecent(item) {
 .head {
     display: grid;
     grid-gap: 4px;
-    grid-template-columns: 30px 150px 120px 150px 120px 120px 50px 140px 110px 50px 120px 90px 90px 90px 90px;
+    grid-template-columns: 2% 26% 7% 8% 5% 5% 3% 6% 6% 3% 5% 5% 5% 5% 5%;
 }
 
 .element {
