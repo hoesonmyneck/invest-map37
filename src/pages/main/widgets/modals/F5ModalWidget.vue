@@ -75,7 +75,7 @@
             </div>
           </div>
           <div
-            class="head grid gap-1 grid-cols-[250px_100px_100px_100px_100px_100px_160px_130px_] text-[10px] pt-4 pb-2 mb-2 border-b border-gray-600">
+            class="head grid gap-1 grid-cols-[30%_8%_10%_10%_10%_10%_10%_9%_] text-[10px] pt-4 pb-2 mb-2 border-b border-gray-600">
             <p class="cursor-pointer flex items-center gap-1" @click="toggleSort('full_name')">
               НАИМЕНОВАНИЕ <br><br><br>
               <SortAscendingOutlined v-if="sortField === 'full_name' && sortOrder === 'asc'" class="text-blue-400 mb-8" />
@@ -125,7 +125,7 @@
           </div>
           <div class="overflow-y-auto h-[calc(40vh-50px)] w-full">
             <div
-              class="head gap-1 grid grid-cols-[250px_100px_100px_100px_100px_100px_160px_130px_] text-[10px] mt-1"
+              class="head gap-1 grid grid-cols-[30%_8%_10%_10%_10%_10%_10%_9%_] text-[10px] mt-1"
               v-for="item in displayedItems" :key="item.area + item.full_name">
               <a-tooltip placement="left" :title="item.full_name">
                 <p 
@@ -176,7 +176,7 @@
           </div>
         </div>
       </div>
-      <div class="map h-[calc(50vh)] relative">
+      <div class="map h-[calc(65vh)] relative">
         <div class="flex items-center justify-between w-full pr-10 mt-5">
           
           <div v-if="!!currentRegion || !!currentRaion"
@@ -244,6 +244,7 @@
           v-else
           :current-region="currentRegion ? +currentRegion : 0"
           :current-raion="currentRaion ? +currentRaion : undefined"
+          :zoom="getCityZoom(currentRegion)"
           :fill-color="(v: number) => {
             if (!groupByRaion()[+v] || groupByRaion()[+v]?.parent1_code !== Number(currentRegion)) {
               return '#222732'; 
@@ -1291,7 +1292,6 @@ const filteredItems = computed(() => {
   
   if (sortField.value) {
     result = [...result].sort((a, b) => {
-      // Сортировка по наименованию (строковое значение)
       if (sortField.value === 'full_name') {
         const valueA = a.full_name || '';
         const valueB = b.full_name || '';
@@ -1300,7 +1300,6 @@ const filteredItems = computed(() => {
           : valueB.localeCompare(valueA);
       }
       
-      // Сортировка по числовым значениям
       let numA = 0;
       let numB = 0;
       
@@ -1469,6 +1468,21 @@ const getIinSumForTab = (tabValue: number): number => {
       )
       .reduce((acc, curr) => acc + (curr.iin_sum || 0), 0);
   }
+};
+
+const getCityZoom = (regionCode: number | null): number => {
+  if (regionCode === null) return 7;
+  
+
+  if (
+    regionCode === 710000000 || 
+    regionCode === 750000000 || 
+    regionCode === 790000000    
+  ) {
+    return 10; 
+  }
+  
+  return 7; 
 };
 </script>
 

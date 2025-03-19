@@ -4,8 +4,8 @@
             <a-spin />
         </div>
         <div class="grid grid-cols-2">
-            <div class="flex items-center h-[100vh] w-[190%] ">
-                <div class="text-white grid grid-cols-2 gap-2">
+            <div class="flex items-center h-[100vh] w-[190%] ml-70">
+                <div class="text-white   gap-2 mb-50">
                     <div class="relative">
                     <highcharts :options="chartOptions" class="h-[350px] w-full m-auto"></highcharts>
                     <div class="absolute text-center top-[150px] m-auto left-1/2 -translate-x-1/2">
@@ -29,8 +29,8 @@
                 </div>
 
                 <div>
-                    <ul>
-                        <li class="flex text-[10px] items-center gap-2 mb-3 text-lg justify-between"
+                    <ul class="mt-10"   >
+                        <li class="flex text-[15px] items-center gap-10 mb-3 text-lg justify-between"
                             v-for="item in list" :key="item.title">
                             <div class="flex gap-2 items-center">
                                 <img :src="`/images/icons/${item.icon}.png`" alt="" class="h-4" />
@@ -93,6 +93,7 @@
                 v-else
                 :current-region="currentRegion ? Number(currentRegion) : undefined"
                 :current-raion="currentRaion ? Number(currentRaion) : undefined"
+                :zoom="getCityZoom(currentRegion)"
                 :fill-color="(v) => {
                     if (!groupByRaion()[+v] || groupByRaion()[+v]?.parent1_code !== Number(currentRegion)) {
                         return '#222732'; 
@@ -155,6 +156,20 @@ function clickRaion(code: string) {
 }
 
 loadF1();
+const getCityZoom = (regionCode: number | null): number => {
+  if (regionCode === null) return 7;
+  
+ 
+  if (
+    regionCode === 710000000 || 
+    regionCode === 750000000 || 
+    regionCode === 790000000    
+  ) {
+    return 10; 
+  }
+  
+  return 7; 
+};
 
 const groupByRegion = () =>
     [...data.value].reduce((acc, curr) => {

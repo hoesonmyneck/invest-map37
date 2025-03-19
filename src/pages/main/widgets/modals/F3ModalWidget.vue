@@ -21,14 +21,14 @@
               <b>{{ Numeral(qual_prof) }}</b>
             </li>
             <li class="flex gap-2 mb-2">
-              <p class="w-4 h-4 rounded-full" style="background-color: #0027E9"></p>
-              Рабочие профессии:
-              <b>{{ Numeral(rab_prof) }}</b>
-            </li>
-            <li class="flex gap-2 mb-2">
               <p class="w-4 h-4 rounded-full" style="background-color: #54E9D7"></p>
               Неквалифицированные профессии:
               <b>{{ Numeral(nekval_prof) }}</b>
+            </li>
+            <li class="flex gap-2 mb-2">
+              <p class="w-4 h-4 rounded-full" style="background-color: #0027E9"></p>
+              Рабочие профессии:
+              <b>{{ Numeral(rab_prof) }}</b>
             </li>
           </ul>
           </div>
@@ -46,14 +46,14 @@
               <b>{{ Numeral(qual_resume_prof) }}</b>
             </li>
             <li class="flex gap-2 mb-2">
-              <p class="w-4 h-4 rounded-full" style="background-color: #FFA559"></p>
-              Рабочие профессии:
-              <b>{{ Numeral(rab_resume_prof) }}</b>
-            </li>
-            <li class="flex gap-2 mb-2">
               <p class="w-4 h-4 rounded-full" style="background-color: #FF5984"></p>
               Неквалифицированные профессии:
               <b>{{ Numeral(nekval_resume_prof) }}</b>
+            </li>
+            <li class="flex gap-2 mb-2">
+              <p class="w-4 h-4 rounded-full" style="background-color: #FFA559"></p>
+              Рабочие профессии:
+              <b>{{ Numeral(rab_resume_prof) }}</b>
             </li>
           </ul>
           </div>
@@ -422,7 +422,7 @@ const chartOptions = computed(() => ({
       name: "Неквалифицированные профессии",
       data: [
         {
-          color: "#54E9D7",
+          color: "#434F8B",
           radius: "37%",
           innerRadius: "13%",
           count: Numeral(nekval_prof.value),
@@ -550,7 +550,7 @@ const resumeChartOptions = computed(() => ({
       name: "Неквалифицированные профессии",
       data: [
         {
-          color: "#FF5984",
+          color: "#925948",
           radius: "37%",
           innerRadius: "13%",
           count: Numeral(nekval_resume_prof.value),

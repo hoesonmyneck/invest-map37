@@ -21,7 +21,14 @@ import { reverseCoordinates } from "../../helpers/reverseCoordinates";
 
 // Constants
 const MAP_CENTER = [49.213962, 67.109173] as [number, number];
-const MAP_OPTIONS = { zoomControl: false };
+const MAP_OPTIONS = { 
+  zoomControl: false,
+  dragging: false, 
+  doubleClickZoom: false,
+  scrollWheelZoom: false,
+  touchZoom: false,
+  boxZoom: false
+};
 const DEFAULT_POLYGON_STYLES = {
   color: "white",
   opacity: 1,

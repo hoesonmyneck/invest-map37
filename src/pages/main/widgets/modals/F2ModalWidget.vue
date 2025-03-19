@@ -125,6 +125,7 @@
             v-else
             :current-region="currentRegion"
             :current-raion="currentRaion"
+            :zoom="getCityZoom(currentRegion)"
             :fill-color="(v) => {
               if (!groupByRaion[v] || groupByRaion[v].parent1_code !== currentRegion) {
                 return '#222732'; 
@@ -221,6 +222,21 @@ defineEmits(["close"]);
 const props = defineProps<{
   data: F2Data[];
 }>();
+
+const getCityZoom = (regionCode: number | null): number => {
+  if (regionCode === null) return 7;
+  
+ 
+  if (
+    regionCode === 710000000 || 
+    regionCode === 750000000 || 
+    regionCode === 790000000    
+  ) {
+    return 10; 
+  }
+  
+  return 7; 
+};
 
 const list = computed(() => {
   const filtered = props.data.filter((item) => {

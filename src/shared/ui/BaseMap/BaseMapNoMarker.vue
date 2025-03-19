@@ -31,7 +31,14 @@
   
   // Constants
   const MAP_CENTER = () => regionStore.regionCenteroid?.find((item) => +item.parent1_code === +props.currentRegion)?.centroid.reverse();
-  const MAP_OPTIONS = { zoomControl: false };
+  const MAP_OPTIONS = { 
+  zoomControl: false,
+  dragging: false, 
+  doubleClickZoom: false,
+  scrollWheelZoom: false,
+  touchZoom: false,
+  boxZoom: false
+};
   const DEFAULT_POLYGON_STYLES = {
     color: "white",
     opacity: 1,
