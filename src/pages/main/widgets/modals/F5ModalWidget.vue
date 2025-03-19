@@ -1482,7 +1482,7 @@ const getCityZoom = (regionCode: number | null): number => {
     return 10; 
   }
   
-  return 7; 
+  return 6; 
 };
 </script>
 
