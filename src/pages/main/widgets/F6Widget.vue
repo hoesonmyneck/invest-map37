@@ -144,7 +144,7 @@ const chartOptions = computed(() => {
         
         return `<b>${x}</b><br/>
                 Качественные: ${Numeral(qualityCount)} (${((qualityCount / totalCount) * 100).toFixed(1)}%)<br/>
-                Рабочие места: ${Numeral(notQualityCount)} (${((notQualityCount / totalCount) * 100).toFixed(1)}%)<br/>
+                Некачественные: ${Numeral(notQualityCount)} (${((notQualityCount / totalCount) * 100).toFixed(1)}%)<br/>
                 Всего: ${Numeral(totalCount)}`;
       }
     },
@@ -259,7 +259,7 @@ const chartOptionsRegions = computed(() => {
         
         return `<b>${x}</b><br/>
                 Качественные: ${Numeral(qualityCount)} (${((qualityCount / totalCount) * 100).toFixed(1)}%)<br/>
-                Рабочие места: ${Numeral(notQualityCount)} (${((notQualityCount / totalCount) * 100).toFixed(1)}%)<br/>
+                Некачественные: ${Numeral(notQualityCount)} (${((notQualityCount / totalCount) * 100).toFixed(1)}%)<br/>
                 Всего: ${Numeral(totalCount)}`;
       }
     },
