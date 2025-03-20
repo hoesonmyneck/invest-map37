@@ -170,11 +170,11 @@
 
   defineEmits(['close']);
 
-  // Функция для определения уровня масштабирования карты
+  
   const getCityZoom = (regionCode: string | null): number => {
     if (regionCode === null) return 7;
     
-    // Коды регионов, требующих большего увеличения
+    
     const regionNumber = Number(regionCode);
     if (
       regionNumber === 710000000 || 
@@ -187,7 +187,7 @@
     return 7; 
   };
 
-  // Обработчики кликов по карте
+
   function clickPolygon(code: string) {
     console.log('Выбран регион с кодом:', code);
     currentRegion.value = code;
@@ -197,14 +197,14 @@
   function clickRaion(code: string) {
     console.log('Выбран район с кодом:', code);
     
-    // Находим район в данных
+    
     const raionData = props.data.find(item => 
       item.tp === 4 && safeCompare(item.parent2_code, code)
     );
     
-    // Если район найден и у него есть родительский регион
+   
     if (raionData && raionData.parent1_code) {
-      // Устанавливаем текущий регион, если он еще не установлен
+     
       if (!currentRegion.value) {
         currentRegion.value = raionData.parent1_code.toString();
       }
@@ -216,72 +216,58 @@
 
  
 
-  // Исключение определенных категорий ОКЭД из анализа
+ 
   const EXCLUDED_OKED_CATEGORIES = [
     "Окэд не указан", 
     "Дея-ть экстерриториальных организаций", 
     "Дея-ть домашних хозяйств"
   ];
 
-  // Функция для безопасного сравнения идентификаторов разных типов
   function safeCompare(value1: string | number | null | undefined, value2: string | number | null | undefined): boolean {
-    // Если одно из значений отсутствует, возвращаем false
     if (value1 === null || value1 === undefined || value2 === null || value2 === undefined) {
       return false;
     }
     
-    // Преобразуем оба значения к строкам для корректного сравнения
     const str1 = String(value1).trim();
     const str2 = String(value2).trim();
     
-    // Прямое сравнение
     if (str1 === str2) {
       return true;
     }
     
-    // Сравнение при удалении ведущих нулей (для кодов)
     const norm1 = str1.replace(/^0+/, '');
     const norm2 = str2.replace(/^0+/, '');
     
     return norm1 === norm2;
   }
 
-  // Фильтрация данных в зависимости от выбранного региона или района
   const filteredData = computed(() => {
     let filtered = props.data;
     console.log('Всего записей:', props.data.length);
 
     if (currentRaion.value) {
-      // Фильтрация по району (tp = 4 для районного уровня)
       filtered = filtered.filter(item => {
-        // Используем безопасное сравнение для parent2_code
         const matchCode = safeCompare(item.parent2_code, currentRaion.value);
         const match = (item.tp === 4) && matchCode;
         return match;
       });
       console.log('После фильтрации по району:', filtered.length);
     } else if (currentRegion.value) {
-      // Фильтрация по региону (tp = 3 для регионального уровня)
       filtered = filtered.filter(item => {
-        // Используем безопасное сравнение для parent1_code
         const matchCode = safeCompare(item.parent1_code, currentRegion.value);
         
-        // Проверка по типу записи (tp=3 или tp=1) и коду региона
         const match = (item.tp === 3 || item.tp === 1) && matchCode;
         return match;
       });
       console.log('После фильтрации по региону:', filtered.length);
       
-      // Если данных мало, попробуем альтернативный подход
       if (filtered.length < 3) {
         console.log('Мало данных, пробуем альтернативный подход');
         
-        // Ищем соответствующий регион
         const regionInfo = props.data.find(item => 
           item.parent1_code?.toString() === currentRegion.value && item.reg_ru
         );
         
-        // Если нашли информацию о регионе, пробуем фильтровать по названию региона
         if (regionInfo && regionInfo.reg_ru) {
           console.log('Пробуем фильтровать по имени региона:', regionInfo.reg_ru);
           
@@ -290,7 +276,6 @@
             (item.tp === 3 || item.tp === 1) && item.reg_ru === regionName
           );
           
-          // Если нашли записи, используем их
           if (regionRecords.length > 0) {
             filtered = regionRecords;
             console.log('Найдено записей по имени региона:', filtered.length);
@@ -298,10 +283,8 @@
         }
       }
     } else {
-      // Общереспубликанские данные (tp = 3, или если нет, то tp = 1)
       filtered = filtered.filter(item => item.tp === 3);
       
-      // Если данных нет, пробуем tp = 1
       if (filtered.length === 0) {
         filtered = props.data.filter(item => item.tp === 1);
         console.log('Используем данные tp=1:', filtered.length);
@@ -310,31 +293,24 @@
       console.log('Общие данные:', filtered.length);
     }
 
-    // Исключаем нежелательные категории
     filtered = filtered.filter(item => !EXCLUDED_OKED_CATEGORIES.includes(item.vname_oked));
     console.log('После исключения категорий:', filtered.length);
     
-    // Если после всех попыток данных нет, используем все данные для выбранного tp
     if (filtered.length === 0) {
       console.warn('Данных не найдено, используем запасной вариант');
       
       if (currentRaion.value) {
-        // Для района берем все записи с tp=4
         filtered = props.data.filter(item => item.tp === 4);
       } else if (currentRegion.value) {
-        // Для региона берем все записи с tp=3 или tp=1
         filtered = props.data.filter(item => item.tp === 3 || item.tp === 1);
       } else {
-        // В остальных случаях берем все данные
         filtered = props.data;
       }
       
-      // Исключаем нежелательные категории
       filtered = filtered.filter(item => !EXCLUDED_OKED_CATEGORIES.includes(item.vname_oked));
       console.log('Запасной вариант, записей:', filtered.length);
     }
 
-    // Группировка данных по коду ОКЭД
     const grouped = filtered.reduce((acc, curr) => {
       if (!curr.vcode_oked) return acc;
 
@@ -348,7 +324,6 @@
         return acc;
       }
 
-      // Суммируем значения для одинаковых кодов ОКЭД
       acc[curr.vcode_oked].cnt += curr.cnt;
       acc[curr.vcode_oked].cnt_quality += curr.cnt_quality;
       acc[curr.vcode_oked].cnt_not_quality += curr.cnt_not_quality;
@@ -356,11 +331,9 @@
       return acc;
     }, {} as Record<string, F6Data>);
 
-    // Сортировка по общему количеству
     return Object.values(grouped).sort((a, b) => b.cnt - a.cnt);
   });
 
-  // Группировка данных по регионам для отображения динамики на карте
   const groupByRegion = computed(() => {
     const result = props.data
       .filter(item => item.tp === 3 && !EXCLUDED_OKED_CATEGORIES.includes(item.vname_oked))
@@ -368,9 +341,8 @@
         const regionCode = curr.parent1_code?.toString() || "";
         
         if (!acc[regionCode]) {
-          // Расчет процента качественных рабочих мест
           const qualityPercent = curr.cnt > 0 
-            ? (curr.cnt_quality / curr.cnt) * 100 - 50 // Нормализация значения для отображения цветом
+            ? (curr.cnt_quality / curr.cnt) * 100 - 50 
             : 0;
             
           acc[regionCode] = { 
@@ -380,16 +352,14 @@
           return acc;
         }
 
-        // Обновляем суммарные значения
         acc[regionCode].cnt += curr.cnt;
         acc[regionCode].cnt_quality += curr.cnt_quality;
         acc[regionCode].cnt_not_quality += curr.cnt_not_quality;
         
-        // Пересчитываем процент качественных рабочих мест
         const totalCnt = acc[regionCode].cnt;
         const qualityCnt = acc[regionCode].cnt_quality;
         acc[regionCode].totalProc = totalCnt > 0 
-          ? (qualityCnt / totalCnt) * 100 - 50 // Нормализация для цветового отображения
+          ? (qualityCnt / totalCnt) * 100 - 50 
           : 0;
         
         return acc;
@@ -398,19 +368,16 @@
     return result;
   });
 
-  // Группировка данных по районам
   const groupByRaion = computed(() => {
     const result = props.data
       .filter(item => item.tp === 4 && !EXCLUDED_OKED_CATEGORIES.includes(item.vname_oked))
       .reduce((acc, curr) => {
         const raionCode = curr.parent2_code?.toString() || "";
-        // Сохраняем parent1_code как number для корректного сравнения
         const parent1Code = curr.parent1_code ? Number(curr.parent1_code) : null;
         
         if (!acc[raionCode]) {
-          // Расчет процента качественных рабочих мест
           const qualityPercent = curr.cnt > 0 
-            ? (curr.cnt_quality / curr.cnt) * 100 - 50 // Нормализация значения для отображения цветом
+            ? (curr.cnt_quality / curr.cnt) * 100 - 50 
             : 0;
             
           acc[raionCode] = { 
@@ -421,16 +388,14 @@
           return acc;
         }
 
-        // Обновляем суммарные значения
         acc[raionCode].cnt += curr.cnt;
         acc[raionCode].cnt_quality += curr.cnt_quality;
         acc[raionCode].cnt_not_quality += curr.cnt_not_quality;
         
-        // Пересчитываем процент качественных рабочих мест
         const totalCnt = acc[raionCode].cnt;
         const qualityCnt = acc[raionCode].cnt_quality;
         acc[raionCode].totalProc = totalCnt > 0 
-          ? (qualityCnt / totalCnt) * 100 - 50 // Нормализация для цветового отображения
+          ? (qualityCnt / totalCnt) * 100 - 50 
           : 0;
         
         return acc;
@@ -439,20 +404,17 @@
     return result;
   });
 
-  // Вычисляемое свойство для суммарной статистики по выбранному региону/району
   const selectedAreaStats = computed(() => {
     let qualityTotal = 0;
     let notQualityTotal = 0;
     let allTotal = 0;
     
-    // Фильтруем данные в зависимости от выбора
     filteredData.value.forEach(item => {
       qualityTotal += item.cnt_quality;
       notQualityTotal += item.cnt_not_quality;
       allTotal += item.cnt;
     });
     
-    // Вычисляем проценты
     const qualityPercent = allTotal > 0 ? (qualityTotal / allTotal) * 100 : 0;
     const notQualityPercent = allTotal > 0 ? (notQualityTotal / allTotal) * 100 : 0;
     
@@ -465,7 +427,6 @@
     };
   });
 
-  // Получение имени выбранного региона
   const selectedRegionName = computed(() => {
     if (!currentRegion.value) return '';
     
@@ -476,7 +437,6 @@
     return regionData?.reg_ru || '';
   });
 
-  // Получение имени выбранного района
   const selectedRaionName = computed(() => {
     if (!currentRaion.value) return '';
     
@@ -487,7 +447,6 @@
     return raionData?.rai_ru || '';
   });
 
-  // Получение полного пути территории (область + район)
   const getFullTerritoryName = computed(() => {
     if (currentRaion.value && selectedRaionName.value) {
       if (selectedRegionName.value) {
@@ -502,7 +461,6 @@
   });
 
   const chartOptions = computed(() => {
-    // Формируем заголовок графика в зависимости от выбранного региона или района
     let chartTitle = getFullTerritoryName.value;
     
     return {
@@ -626,12 +584,10 @@
     };
   });
 
-  // Проверка активности карты
   const isMapActive = computed(() => {
     return props.data.some(item => item.parent1_code || item.parent2_code);
   });
 
-  // Проверка наличия данных для отображения
   const hasChartData = computed(() => {
     return filteredData.value.length > 0;
   });

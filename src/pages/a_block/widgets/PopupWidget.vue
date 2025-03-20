@@ -3,7 +3,22 @@
         :visible="true">
         <BaseCard title="" number="F1" :close="true"
             @close="aStore.setCurrentProject(null), aStore.setProjectModalVisible(false)" :show-close-button="true">
-            <div class="grid grid-cols-3 gap-1 w-max m-auto items-end text-white">
+            <div class="grid grid-cols-4 gap-1 w-max m-auto items-end text-white">
+                <div class="text-center relative">
+                    <p class="absolute top-[130px] left-1/2 -translate-x-1/2 text-3xl">
+                        {{ Numeral(currentProjectPopup.data_project_temporaryworkplacescount / currentProjectPopup.work_places * 100) }}%
+                    </p>
+                    <highcharts
+                        :options="chartOptions('ПЛАНОВЫЕ РАБОЧИЕ МЕСТА', 'Фактический рабочие места', currentProjectPopup.data_project_temporaryworkplacescount / currentProjectPopup.work_places * 100, currentProjectPopup.work_places, currentProjectPopup.work_places, currentProjectPopup.data_project_temporaryworkplacescount)"
+                        class="h-[200px] w-[250px] m-auto mt-5"></highcharts>
+                    <div class="-mt-7">
+                        <p class="text-gray-400 text-[12px] flex justify-center">
+                            <img src="/images/a_block/a1-1.png" alt="" class="w-[14px] h-[14px] mr-1 mb-2">
+                            {{ Numeral(currentProjectPopup.data_project_temporaryworkplacescount) }}
+                        </p>
+                        <p class="text-[12px]">ВРЕМЕННЫЕ РАБОЧИЕ МЕСТА</p>
+                    </div>
+                </div>
                 <div class="text-center relative">
                     <p class="absolute top-[130px] left-1/2 -translate-x-1/2 text-3xl">
                         {{ Numeral(currentProjectPopup.fact_work / currentProjectPopup.work_places * 100) }}%
@@ -16,13 +31,13 @@
                             <img src="/images/a_block/a1-1.png" alt="" class="w-[14px] h-[14px] mr-1 mb-2">
                             {{ Numeral(currentProjectPopup.work_places) }}
                         </p>
-                        <p class="text-[12px]">РАБОЧИЕ МЕСТА</p>
+                        <p class="text-[12px]">ПОСТОЯННЫЕ РАБОЧИЕ МЕСТА</p>
                     </div>
                 </div>
                 <div class="text-center relative">
                     <highcharts
                         :options="chartOptions('СТОИМОСТЬ ПРОЕКТА', 'СТОИМОСТЬ ПРОЕКТА', 100, 100, currentProjectPopup.project_price, currentProjectPopup.project_price)"
-                        class="h-[250px] w-[300px] m-auto mt-5">
+                        class="h-[210px] w-[250px] m-auto mt-5">
                     </highcharts>
                     <p class="absolute top-[130px] left-1/2 -translate-x-1/2 text-3xl">{{
                         Numeral(currentProjectPopup.project_price) }}
@@ -187,9 +202,149 @@
                     </div>
                 </div>
                 <div v-if="active === 5 ">
-                    <div class="mt-5 flex flex-col justify-center items-center  ">
-                        <p class="text-lg mb-4">Динамика рабочих мест</p>
-                        <highcharts :options="areaChartOptions" class="h-[300px] w-full"></highcharts>
+                    <div class="mt-5 flex flex-col justify-center">
+                        <div class="text-white">
+                            <!-- Преинвестиционная стадия -->
+                            <div class="mb-6">
+                                <div class="flex items-center cursor-pointer" @click="toggleSection('preinvest')">
+                                    <div class="mr-2">
+                                        <svg width="12" height="12" viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                            <path d="M6 12L0 6L6 0L7.05 1.05L2.85 5.25H12V6.75H2.85L7.05 10.95L6 12Z" fill="white" :transform="`rotate(${isOpenSection.preinvest ? 90 : 270} 6 6)`"/>
+                                        </svg>
+                                    </div>
+                                    <span class="uppercase text-sm font-medium">ПРЕИНВЕСТИЦИОННАЯ СТАДИЯ</span>
+                                </div>
+                                
+                                <div v-if="isOpenSection.preinvest" class="ml-6 mt-2">
+                                    <div class="grid grid-cols-4 text-[11px] text-gray-400 mb-1">
+                                        <div>Дата начала</div>
+                                        <div>Задача</div>
+                                        <div>Дата завершения</div>
+                                        <div>Статус</div>
+                                    </div>
+                                    
+                                    <!-- Элементы преинвестиционной стадии -->
+                                    <div v-for="(item, index) in preInvestStages" :key="'pre-'+index" class="grid grid-cols-4 text-[12px] mb-4 items-center">
+                                        <div>
+                                            <div class="flex items-center">
+                                                <div class="py-[2px] px-[4px] bg-[#189D19] text-white text-[10px]">ПЛАН</div>
+                                                <div class="ml-1">{{ item.startDate }}</div>
+                                            </div>
+                                            <div v-if="item.hasStartFact" class="flex items-center mt-1">
+                                                <div class="py-[2px] px-[4px] bg-[#41A0F5] text-white text-[10px]">ФАКТ</div>
+                                                <div class="ml-1">{{ item.factStartDate }}</div>
+                                            </div>
+                                        </div>
+                                        <div class="flex items-center justify-start h-full">{{ item.task }}</div>
+                                        <div>
+                                            <div class="flex items-center">
+                                                <div class="py-[2px] px-[4px] bg-[#189D19] text-white text-[10px]">ПЛАН</div>
+                                                <div class="ml-1">{{ item.endDate }}</div>
+                                            </div>
+                                            <div v-if="item.hasEndFact" class="flex items-center mt-1">
+                                                <div class="py-[2px] px-[4px] bg-[#41A0F5] text-white text-[10px]">ФАКТ</div>
+                                                <div class="ml-1">{{ item.factEndDate }}</div>
+                                            </div>
+                                        </div>
+                                        <div :class="getStatusClass(item.status)" class="flex items-center">{{ item.status }}</div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Инвестиционная стадия -->
+                            <div class="mb-6">
+                                <div class="flex items-center cursor-pointer" @click="toggleSection('invest')">
+                                    <div class="mr-2">
+                                        <svg width="12" height="12" viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                            <path d="M6 12L0 6L6 0L7.05 1.05L2.85 5.25H12V6.75H2.85L7.05 10.95L6 12Z" fill="white" :transform="`rotate(${isOpenSection.invest ? 90 : 270} 6 6)`"/>
+                                        </svg>
+                                    </div>
+                                    <span class="uppercase text-sm font-medium">ИНВЕСТИЦИОННАЯ СТАДИЯ</span>
+                                </div>
+                                
+                                <div v-if="isOpenSection.invest" class="ml-6 mt-2">
+                                    <div class="grid grid-cols-4 text-[11px] text-gray-400 mb-1">
+                                        <div>Дата начала</div>
+                                        <div>Задача</div>
+                                        <div>Дата завершения</div>
+                                        <div>Статус</div>
+                                    </div>
+                                    
+                                    <!-- Элементы инвестиционной стадии -->
+                                    <div v-for="(item, index) in investStages" :key="'inv-'+index" class="grid grid-cols-4 text-[12px] mb-4 items-center">
+                                        <div>
+                                            <div class="flex items-center">
+                                                <div class="py-[2px] px-[4px] bg-[#189D19] text-white text-[10px]">ПЛАН</div>
+                                                <div class="ml-1">{{ item.startDate }}</div>
+                                            </div>
+                                            <div v-if="item.hasStartFact" class="flex items-center mt-1">
+                                                <div class="py-[2px] px-[4px] bg-[#41A0F5] text-white text-[10px]">ФАКТ</div>
+                                                <div class="ml-1">{{ item.factStartDate }}</div>
+                                            </div>
+                                        </div>
+                                        <div class="flex items-center justify-start h-full">{{ item.task }}</div>
+                                        <div>
+                                            <div class="flex items-center">
+                                                <div class="py-[2px] px-[4px] bg-[#189D19] text-white text-[10px]">ПЛАН</div>
+                                                <div class="ml-1">{{ item.endDate }}</div>
+                                            </div>
+                                            <div v-if="item.hasEndFact" class="flex items-center mt-1">
+                                                <div class="py-[2px] px-[4px] bg-[#41A0F5] text-white text-[10px]">ФАКТ</div>
+                                                <div class="ml-1">{{ item.factEndDate }}</div>
+                                            </div>
+                                        </div>
+                                        <div :class="getStatusClass(item.status)" class="flex items-center">{{ item.status }}</div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Постинвестиционная стадия -->
+                            <div>
+                                <div class="flex items-center cursor-pointer" @click="toggleSection('postinvest')">
+                                    <div class="mr-2">
+                                        <svg width="12" height="12" viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                            <path d="M6 12L0 6L6 0L7.05 1.05L2.85 5.25H12V6.75H2.85L7.05 10.95L6 12Z" fill="white" :transform="`rotate(${isOpenSection.postinvest ? 90 : 270} 6 6)`"/>
+                                        </svg>
+                                    </div>
+                                    <span class="uppercase text-sm font-medium">ПОСТИНВЕСТИЦИОННАЯ СТАДИЯ</span>
+                                </div>
+                                
+                                <div v-if="isOpenSection.postinvest" class="ml-6 mt-2">
+                                    <div class="grid grid-cols-4 text-[11px] text-gray-400 mb-1">
+                                        <div>Дата начала</div>
+                                        <div>Задача</div>
+                                        <div>Дата завершения</div>
+                                        <div>Статус</div>
+                                    </div>
+                                    
+                                    <!-- Элементы постинвестиционной стадии -->
+                                    <div v-for="(item, index) in postInvestStages" :key="'post-'+index" class="grid grid-cols-4 text-[12px] mb-4 items-center">
+                                        <div>
+                                            <div class="flex items-center">
+                                                <div class="py-[2px] px-[4px] bg-[#189D19] text-white text-[10px]">ПЛАН</div>
+                                                <div class="ml-1">{{ item.startDate }}</div>
+                                            </div>
+                                            <div v-if="item.hasStartFact" class="flex items-center mt-1">
+                                                <div class="py-[2px] px-[4px] bg-[#41A0F5] text-white text-[10px]">ФАКТ</div>
+                                                <div class="ml-1">{{ item.factStartDate }}</div>
+                                            </div>
+                                        </div>
+                                        <div class="flex items-center justify-start h-full">{{ item.task }}</div>
+                                        <div>
+                                            <div class="flex items-center">
+                                                <div class="py-[2px] px-[4px] bg-[#189D19] text-white text-[10px]">ПЛАН</div>
+                                                <div class="ml-1">{{ item.endDate }}</div>
+                                            </div>
+                                            <div v-if="item.hasEndFact" class="flex items-center mt-1">
+                                                <div class="py-[2px] px-[4px] bg-[#41A0F5] text-white text-[10px]">ФАКТ</div>
+                                                <div class="ml-1">{{ item.factEndDate }}</div>
+                                            </div>
+                                        </div>
+                                        <div :class="getStatusClass(item.status)" class="flex items-center">{{ item.status }}</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -405,4 +560,131 @@ const areaChartOptions = {
         }
     }]
 }
+
+const isOpenSection = ref({
+    preinvest: true,
+    invest: true,
+    postinvest: true
+})
+
+const toggleSection = (section: string) => {
+    isOpenSection.value[section as keyof typeof isOpenSection.value] = !isOpenSection.value[section as keyof typeof isOpenSection.value]
+}
+
+
+const getStatusClass = (status: string) => {
+    switch(status) {
+        case 'Завершено':
+        case 'DONE':
+            return 'text-[#00B212]'
+        case 'Не начато':
+        case 'CREATED':
+            return 'text-[#B2B2B2]'
+        case 'В процессе':
+        case 'IN_PROGRESS':
+            return 'text-[#3090E8]'
+        default:
+            return ''
+    }
+}
+
+
+const mapStatus = (status: string) => {
+    switch(status) {
+        case 'DONE':
+            return 'Завершено'
+        case 'CREATED': 
+            return 'Не начато'
+        case 'IN_PROGRESS':
+            return 'В процессе'
+        default:
+            return ''
+    }
+}
+
+
+const formatDate = (dateString: string | null) => {
+    if (!dateString) return '';
+    
+    const parts = dateString.split('-');
+    if (parts.length !== 3) return dateString;
+    
+    return `${parts[2]}.${parts[1]}.${parts[0]}`;
+}
+
+
+const formatTimestamp = (timestamp: number | null) => {
+    if (!timestamp) return '';
+    
+    const date = new Date(timestamp);
+    const day = date.getDate().toString().padStart(2, '0');
+    const month = (date.getMonth() + 1).toString().padStart(2, '0');
+    const year = date.getFullYear();
+    
+    return `${day}.${month}.${year}`;
+}
+
+
+const processProjectStagesData = (apiData: any) => {
+    if (!apiData) return { preInvestStages: [], investStages: [], postInvestStages: [] };
+    
+   
+    interface Task {
+        stage_id: number;
+        task_name: string;
+        startDate: string | null;
+        finishDate: string | null;
+        startedAt: string | null;
+        executedAt: string | null;
+        status: string;
+        governmentAgency_name?: string;
+    }
+    
+    const tasks = apiData.data_project_roadmap_tasks || [] as Task[];
+    
+   
+    const preInvestTasks = tasks.filter((task: Task) => task.stage_id === 1);
+    const investTasks = tasks.filter((task: Task) => task.stage_id === 2);
+    const postInvestTasks = tasks.filter((task: Task) => task.stage_id === 3);
+    
+
+    const mapTaskToViewModel = (task: Task) => {
+        return {
+            startDate: formatDate(task.startDate),
+            factStartDate: formatDate(task.startedAt),
+            task: task.task_name,
+            endDate: formatDate(task.finishDate),
+            factEndDate: formatDate(task.executedAt),
+            status: mapStatus(task.status),
+            hasStartFact: !!task.startedAt,
+            hasEndFact: !!task.executedAt,
+            rawStartDate: task.startDate
+        };
+    };
+    
+    const sortByStartDate = (a: Task, b: Task) => {
+        if (!a.startDate) return 1;
+        if (!b.startDate) return -1;
+        
+        const dateA = new Date(a.startDate);
+        const dateB = new Date(b.startDate);
+        
+        return dateA.getTime() - dateB.getTime();
+    };
+    
+    const sortedPreInvestTasks = [...preInvestTasks].sort(sortByStartDate);
+    const sortedInvestTasks = [...investTasks].sort(sortByStartDate);
+    const sortedPostInvestTasks = [...postInvestTasks].sort(sortByStartDate);
+    
+    return {
+        preInvestStages: sortedPreInvestTasks.map(mapTaskToViewModel),
+        investStages: sortedInvestTasks.map(mapTaskToViewModel),
+        postInvestStages: sortedPostInvestTasks.map(mapTaskToViewModel)
+    };
+};
+
+
+const { preInvestStages, investStages, postInvestStages } = processProjectStagesData(currentProjectPopup.value);
+
+
 </script>
