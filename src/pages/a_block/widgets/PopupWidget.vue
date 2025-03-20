@@ -52,7 +52,9 @@
                     <p @click="active = 0" :class="active === 0 ? 'border-[#3090E8]' : 'border-gray-700'"
                         class="cursor-pointer h-6 px-4 flex items-center border">Общее</p>
                     <p @click="active = 4" :class="active === 4 ? 'border-[#3090E8]' : 'border-gray-700'"
-                        class="cursor-pointer h-6 px-4 flex items-center border">График</p>    
+                        class="cursor-pointer h-6 px-4 flex items-center border">График</p> 
+                    <p @click="active = 5" :class="active === 5 ? 'border-[#3090E8]' : 'border-gray-700'"
+                        class="cursor-pointer h-6 px-4 flex items-center border">Стадия проекта</p>   
                     <p @click="active = 1" :class="active === 1 ? 'border-[#3090E8]' : 'border-gray-700'"
                         class="cursor-pointer h-6 px-4 flex items-center border">Трудовой риск</p>
                     <p @click="active = 2" :class="active === 2 ? 'border-[#3090E8]' : 'border-gray-700'"
@@ -179,6 +181,12 @@
                     </div>
                 </div>
                 <div v-if="active === 4">
+                    <div class="mt-5 flex flex-col justify-center items-center  ">
+                        <p class="text-lg mb-4">Динамика рабочих мест</p>
+                        <highcharts :options="areaChartOptions" class="h-[300px] w-full"></highcharts>
+                    </div>
+                </div>
+                <div v-if="active === 5 ">
                     <div class="mt-5 flex flex-col justify-center items-center  ">
                         <p class="text-lg mb-4">Динамика рабочих мест</p>
                         <highcharts :options="areaChartOptions" class="h-[300px] w-full"></highcharts>

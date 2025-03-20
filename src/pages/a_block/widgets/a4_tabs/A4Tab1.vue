@@ -1,21 +1,21 @@
 <template>
     <div class="overflow-scroll h-[27vh] text-white text-[12px]">
-        <ul class="head text-white pb-1 mb-1 border-b border-gray-700 items-end w-min">
-            <li>Отрасль</li>
-            <li>К-во проектов</li>
-            <li>Стоимость проекта</li>
-            <li>% завершенных по сроку</li>
-            <li>План раб.мест</li>
-            <li>Факт раб.мест</li>
-            <li>%</li>
-            <li>План ФОТ</li>
-            <li>Факт ФОТ</li>
-            <li>%</li>
-            <li>СМЗ</li>
-            <li>Риски КТР</li>
-            <li>Высокий</li>
-            <li>Средний</li>
-            <li>Отсутствует</li>
+        <ul class="head text-white pb-1 mb-1 border-b border-gray-700 items-end w-[100%]">
+            <li class="w-[100%]">Отрасль</li>
+            <li class="w-[100%]">К-во проектов</li>
+            <li class="w-[100%]">Стоимость проекта</li>
+            <li class="w-[100%]">% завершенных по сроку</li>
+            <li class="w-[100%]">План раб.мест</li>
+            <li class="w-[100%]">Факт раб.мест</li>
+            <li class="w-[100%]">%</li>
+            <li class="w-[100%]">План ФОТ</li>
+            <li class="w-[100%]">Факт ФОТ</li>
+            <li class="w-[100%]">%</li>
+            <li class="w-[100%]">СМЗ</li>
+            <li class="w-[100%]">Риски КТР</li>
+            <li class="w-[100%]">Высокий</li>
+            <li class="w-[100%]">Средний</li>
+            <li class="w-[100%]">Отсутствует</li>
         </ul>
         <div class="body">
             <template v-for="item in Object.values(groupByOtrasl).sort((a, b) => b.count - a.count)" :key="item">
@@ -41,7 +41,7 @@
                     <p class="element truncate text-center">{{ Numeral(item.work_places) }}</p>
                     <p class="element truncate text-center">{{ Numeral(item.fact_work) }}</p>
                     <p class="element truncate text-center"
-                        :style="{ background: getColorFromGradient(item.fact_work / item.work_places * 100) }">
+                        :style="{ background: item.fact_work === 0 ? '#dc2626' : getColorFromGradient(item.fact_work / item.work_places * 100) }">
                         {{ Numeral(item.fact_work / item.work_places * 100) }}%
                     </p>
 
@@ -49,7 +49,7 @@
                     <p class="element truncate text-center">{{ Numeral(item.fact_fot) }}</p>
 
                     <p class="element truncate text-center"
-                        :style="{ background: getColorFromGradient(item.fact_fot / item.plan_fot * 100) }">
+                        :style="{ background: item.fact_fot === 0 ? '#dc2626' : getColorFromGradient(item.fact_fot / item.plan_fot * 100) }">
                         {{ Numeral(item.fact_fot / item.plan_fot * 100) }}%
                     </p>
 
@@ -113,7 +113,7 @@ const groupByOtrasl = computed(() => Object.values(a1Filter.value.reduce((acc, c
 .head {
     display: grid;
     grid-gap: 4px;
-    grid-template-columns: 150px 100px 120px 120px 120px 100px 50px 140px 110px 50px 120px 90px 90px 90px 90px;
+    grid-template-columns: 20% 6% 6% 6% 7% 7% 3% 6% 6% 3% 6% 5% 5% 5% 5% ;
 }
 
 .element {

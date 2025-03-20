@@ -465,7 +465,7 @@ const searchQuery = ref('');
 const searchType = ref('bin');
 const sortField = ref('');
 const sortOrder = ref('asc');
-const displayLimit = ref(30);
+const displayLimit = ref(500);
 
 async function loadF5() {
   data.value = await getF5();
@@ -1259,7 +1259,7 @@ const selectRegionAndDistrict = (item: F5_1Item) => {
 
 const handleSearch = () => {
   searchQuery.value = searchQuery.value.trim();
-  displayLimit.value = 30;
+  displayLimit.value = 500;
 };
 
 
@@ -1328,7 +1328,7 @@ const filteredItems = computed(() => {
 });
 
 const showMoreResults = () => {
-  displayLimit.value += 30;
+  displayLimit.value += 500;
 };
 
 const displayedItems = computed(() => {

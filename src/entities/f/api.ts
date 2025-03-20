@@ -30,6 +30,11 @@ export const getF5_1 = async () => {
   return res.data;
 };
 
+export const getF6 = async () => {
+  const res = await api.get(`data/f/f6.json`);
+  return res.data;
+};
+
 export const getF7_total = async () => {
   const res = await api.get(`data/f/f7_total.json`);
   return res.data;

@@ -171,7 +171,6 @@
   </a-modal>
 </template>
 <script setup lang="ts">
-import { Numeral } from "../../../../shared/helpers/numeral";
 import { getColorFromGradient } from "../../../../shared/helpers/gradientColors";
 import { CloseOutlined } from "@ant-design/icons-vue";
 import { computed, ref } from "vue";

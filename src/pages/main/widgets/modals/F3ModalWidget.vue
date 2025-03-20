@@ -21,7 +21,7 @@
               <b>{{ Numeral(qual_prof) }}</b>
             </li>
             <li class="flex gap-2 mb-2">
-              <p class="w-4 h-4 rounded-full" style="background-color: #54E9D7"></p>
+              <p class="w-4 h-4 rounded-full" style="background-color: #434F8B"></p>
               Неквалифицированные профессии:
               <b>{{ Numeral(nekval_prof) }}</b>
             </li>
@@ -46,7 +46,7 @@
               <b>{{ Numeral(qual_resume_prof) }}</b>
             </li>
             <li class="flex gap-2 mb-2">
-              <p class="w-4 h-4 rounded-full" style="background-color: #FF5984"></p>
+              <p class="w-4 h-4 rounded-full" style="background-color: #925948"></p>
               Неквалифицированные профессии:
               <b>{{ Numeral(nekval_resume_prof) }}</b>
             </li>

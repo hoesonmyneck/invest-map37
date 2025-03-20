@@ -46,7 +46,7 @@
             <li class="flex gap-2">
               <p
                 class="w-4 h-4 rounded-full"
-                style="background-color: #54E9D7"
+                style="background-color: #434F8B"
               ></p>
               Неквалифицированные профессии:
               <b>{{ Numeral(nekval_prof) }}</b>
@@ -145,7 +145,7 @@
             <li class="flex gap-2">
               <p
                 class="w-4 h-4 rounded-full"
-                style="background-color: #FF5984"
+                style="background-color: #925948"
               ></p>
               Неквалифицированные профессии:
               <b>{{ Numeral(nekval_resume_prof) }}</b>

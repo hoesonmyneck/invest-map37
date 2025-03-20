@@ -4,6 +4,7 @@ import F2Widget from "../widgets/F2Widget.vue";
 import F3Widget from "../widgets/F3Widget.vue";
 import F4Widget from "../widgets/F4Widget.vue";
 import F5Widget from "../widgets/F5Widget.vue";
+import F6Widget from "../widgets/F6Widget.vue";
 </script>
 
 <template>
@@ -13,5 +14,6 @@ import F5Widget from "../widgets/F5Widget.vue";
     <F3Widget />
     <F4Widget />
     <F5Widget />
+    <F6Widget />
   </div>
 </template>
