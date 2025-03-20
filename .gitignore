@@ -22,3 +22,8 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+echo "public/data/f/f5-1.json" >> .gitignore
+git add .gitignore
+git commit -m "Ignore large JSON file"
+git push origin main
