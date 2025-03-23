@@ -439,7 +439,9 @@ const areaChartOptions = {
         text: '',
     },
     xAxis: {
-        categories: currentProjectPopup.value.fact_year_value,
+        categories: currentProjectPopup.value.fact_year_value.filter(
+            (year: number) => year >= new Date(currentProjectPopup.value.project_start_date).getFullYear()
+        ),
         labels: {
             style: {
                 color: '#fff'
@@ -449,9 +451,7 @@ const areaChartOptions = {
         plotLines: [{
             color: 'rgba(150, 150, 150, 0.7)',
             width: 2,
-            value: currentProjectPopup.value.fact_year_value.findIndex(
-                (year: number) => year === new Date(currentProjectPopup.value.project_start_date).getFullYear()
-            ),
+            value: 0,
             zIndex: 3,
             label: {
                 text: '',
@@ -534,14 +534,24 @@ const areaChartOptions = {
     series: [{
         name: 'Фактические рабочие места',
         type: 'area',
-        data: currentProjectPopup.value.fact_count_value,
+        data: currentProjectPopup.value.fact_count_value.filter(
+            (_: unknown, index: number): boolean => 
+                currentProjectPopup.value.fact_year_value[index] >= 
+                new Date(currentProjectPopup.value.project_start_date).getFullYear()
+        ),
         color: '#3090E8',
     }, {
         name: 'Плановые рабочие места',
         type: 'line',
-        data: Array(currentProjectPopup.value.fact_year_value.length).fill(
+        data: Array(currentProjectPopup.value.fact_year_value.filter(
+            (year: number) => year >= new Date(currentProjectPopup.value.project_start_date).getFullYear()
+        ).length).fill(
             currentProjectPopup.value.work_places + 
-            (currentProjectPopup.value.fact_count_value[0] || 0)
+            (currentProjectPopup.value.fact_count_value[
+                currentProjectPopup.value.fact_year_value.findIndex(
+                    (year: number) => year >= new Date(currentProjectPopup.value.project_start_date).getFullYear()
+                )
+            ] || 0)
         ),
         color: '#B85DDA',
         dashStyle: 'solid',
@@ -549,8 +559,14 @@ const areaChartOptions = {
     }, {
         name: 'Начальное значение',
         type: 'line',
-        data: Array(currentProjectPopup.value.fact_year_value.length).fill(
-            currentProjectPopup.value.fact_count_value[0] || 0
+        data: Array(currentProjectPopup.value.fact_year_value.filter(
+            (year: number) => year >= new Date(currentProjectPopup.value.project_start_date).getFullYear()
+        ).length).fill(
+            currentProjectPopup.value.fact_count_value[
+                currentProjectPopup.value.fact_year_value.findIndex(
+                    (year: number) => year >= new Date(currentProjectPopup.value.project_start_date).getFullYear()
+                )
+            ] || 0
         ),
         color: 'rgba(150, 150, 150, 0.7)',
         dashStyle: 'solid',
