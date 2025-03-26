@@ -156,14 +156,15 @@ function clickRaion(code: string) {
 }
 
 loadF1();
-const getCityZoom = (regionCode: number | null): number => {
+const getCityZoom = (regionCode: string | null): number => {
   if (regionCode === null) return 7;
   
- 
+  const regionCodeNum = Number(regionCode);
+  
   if (
-    regionCode === 710000000 || 
-    regionCode === 750000000 || 
-    regionCode === 790000000    
+    regionCodeNum === 710000000 || // Астана
+    regionCodeNum === 750000000 || // Алматы
+    regionCodeNum === 790000000    // Шымкент
   ) {
     return 10; 
   }
@@ -289,47 +290,72 @@ const getRaionColorByRank = (currentRegionCode: number): Record<number, string> 
     
     raionsWithRates.sort((a, b) => a.rate - b.rate);
     
-    
     console.log('Все районы с процентами незанятых (после фильтрации):', raionsWithRates);
     
-    
     const raionColors: Record<number, string> = {};
-    
+
    
-    const lowCount = Math.min(7, raionsWithRates.length);
-    const greenRaions = raionsWithRates.slice(0, lowCount);
-    console.log('Зеленые районы (должно быть до 7):', greenRaions);
-    greenRaions.forEach(raion => {
-        raionColors[raion.raionCode] = '#0CCF89'; // Зеленый
-    });
-    
-    
-    const highCount = Math.min(6, Math.max(0, raionsWithRates.length - lowCount));
-    const redRaions = raionsWithRates.slice(-highCount);
-    console.log('Красные районы (должно быть до 6):', redRaions);
-    if (highCount > 0) {
-        redRaions.forEach(raion => {
-            raionColors[raion.raionCode] = '#DF173B';
-        });
-    }
-    
-    
-    const orangeRaions = raionsWithRates.slice(lowCount, raionsWithRates.length - highCount);
-    console.log('Оранжевые районы:', orangeRaions);
-    orangeRaions.forEach(raion => {
-        raionColors[raion.raionCode] = '#F59D0E'; 
-    });
-    
-   
-    const greenCount = Object.entries(raionColors).filter(([_, color]) => color === '#0CCF89').length;
-    console.log('Итоговое количество зеленых районов:', greenCount);
-    
-    if (greenCount < 7 && orangeRaions.length > 0) {
-        const neededCount = Math.min(7 - greenCount, orangeRaions.length);
-        console.log(`Не хватает ${neededCount} зеленых районов, добавляем из оранжевых`);
+    if (currentRegionCode === 710000000 || // Астана 
+        currentRegionCode === 750000000 || // Алматы
+        currentRegionCode === 790000000) { // Шымкент
         
-        for (let i = 0; i < neededCount; i++) {
-            raionColors[orangeRaions[i].raionCode] = '#0CCF89';
+       
+        const greenCount = Math.min(2, raionsWithRates.length);
+        const greenRaions = raionsWithRates.slice(0, greenCount);
+        console.log('Зеленые районы для города (топ 2):', greenRaions);
+        greenRaions.forEach(raion => {
+            raionColors[raion.raionCode] = '#0CCF89'; // Зеленый
+        });
+        
+      
+        const redCount = Math.min(2, Math.max(0, raionsWithRates.length - greenCount));
+        const redRaions = raionsWithRates.slice(-redCount);
+        console.log('Красные районы для города (нижние 2):', redRaions);
+        redRaions.forEach(raion => {
+            raionColors[raion.raionCode] = '#DF173B'; // Красный
+        });
+        
+       
+        const orangeRaions = raionsWithRates.slice(greenCount, raionsWithRates.length - redCount);
+        console.log('Оранжевые районы для города (остальные):', orangeRaions);
+        orangeRaions.forEach(raion => {
+            raionColors[raion.raionCode] = '#F59D0E'; // Оранжевый
+        });
+    } 
+    else {
+        
+        const lowCount = Math.min(7, raionsWithRates.length);
+        const greenRaions = raionsWithRates.slice(0, lowCount);
+        console.log('Зеленые районы (должно быть до 7):', greenRaions);
+        greenRaions.forEach(raion => {
+            raionColors[raion.raionCode] = '#0CCF89'; // Зеленый
+        });
+        
+        const highCount = Math.min(6, Math.max(0, raionsWithRates.length - lowCount));
+        const redRaions = raionsWithRates.slice(-highCount);
+        console.log('Красные районы (должно быть до 6):', redRaions);
+        if (highCount > 0) {
+            redRaions.forEach(raion => {
+                raionColors[raion.raionCode] = '#DF173B';
+            });
+        }
+        
+        const orangeRaions = raionsWithRates.slice(lowCount, raionsWithRates.length - highCount);
+        console.log('Оранжевые районы:', orangeRaions);
+        orangeRaions.forEach(raion => {
+            raionColors[raion.raionCode] = '#F59D0E'; 
+        });
+        
+        const greenCount = Object.entries(raionColors).filter(([_, color]) => color === '#0CCF89').length;
+        console.log('Итоговое количество зеленых районов:', greenCount);
+        
+        if (greenCount < 7 && orangeRaions.length > 0) {
+            const neededCount = Math.min(7 - greenCount, orangeRaions.length);
+            console.log(`Не хватает ${neededCount} зеленых районов, добавляем из оранжевых`);
+            
+            for (let i = 0; i < neededCount; i++) {
+                raionColors[orangeRaions[i].raionCode] = '#0CCF89';
+            }
         }
     }
     

@@ -77,7 +77,7 @@
                 <p>Процент качественных рабочих мест:</p>
                 <p class="font-bold" :style="`color: ${
                   (groupByRegion[slotProps.data.parent1_code?.toString()]?.totalProc || 0) >= 0 
-                    ? '#109669' 
+                    ? QUALITY_COLOR 
                     : '#FE6A35'
                 }`">
                   {{ ((groupByRegion[slotProps.data.parent1_code?.toString()]?.totalProc || 0) + 50).toFixed(1) }}%
@@ -122,7 +122,7 @@
                 <p>Процент качественных рабочих мест:</p>
                 <p class="font-bold" :style="`color: ${
                   (groupByRaion[slotProps.data.parent2_code?.toString()]?.totalProc || 0) >= 0 
-                    ? '#109669' 
+                    ? QUALITY_COLOR 
                     : '#FE6A35'
                 }`">
                   {{ ((groupByRaion[slotProps.data.parent2_code?.toString()]?.totalProc || 0) + 50).toFixed(1) }}%
@@ -143,6 +143,11 @@
   import BaseMap from "../../../../shared/ui/BaseMap/BaseMap.vue";
   import BaseMapNoMarker from "../../../../shared/ui/BaseMap/BaseMapNoMarker.vue";
   import { Numeral } from "../../../../shared/helpers/numeral";
+
+  // Константы цветов для использования в компоненте
+  const QUALITY_COLOR = '#109669'; // Зеленый
+  const NOT_QUALITY_COLOR = '#3090E8'; // Синий
+  const TOTAL_COLOR = '#9370DB'; // Фиолетовый
 
   interface F6Data {
     tp: number;
@@ -513,6 +518,7 @@
         }
       },
       tooltip: {
+        useHTML: true,
         formatter: function(this: Highcharts.TooltipFormatterContextObject): string {
           const series = this.series;
           const point = this.point;
@@ -524,10 +530,23 @@
           const notQualityCount = categoryData ? categoryData.cnt_not_quality : 0;
           const totalCount = qualityCount + notQualityCount;
           
-          return `<b>${x}</b><br/>
-                  Качественные: ${Numeral(qualityCount)} (${((qualityCount / totalCount) * 100).toFixed(1)}%)<br/>
-                  Некачественные: ${Numeral(notQualityCount)} (${((notQualityCount / totalCount) * 100).toFixed(1)}%)<br/>
-                  Всего: ${Numeral(totalCount)}`;
+         
+          const colorCircle = (color: string) => 
+            `<div style="display:inline-block; width:12px; height:12px; border-radius:50%; background-color:${color}; margin-right:6px; vertical-align:middle;"></div>`;
+            
+          return `<div><b>${x}</b><br/>
+                  <div style="display:flex; align-items:center; margin-top:5px;">
+                    ${colorCircle(QUALITY_COLOR)}
+                    <span>Качественные: ${Numeral(qualityCount)} (${((qualityCount / totalCount) * 100).toFixed(1)}%)</span>
+                  </div>
+                  <div style="display:flex; align-items:center; margin-top:3px;">
+                    ${colorCircle(NOT_QUALITY_COLOR)}
+                    <span>Некачественные: ${Numeral(notQualityCount)} (${((notQualityCount / totalCount) * 100).toFixed(1)}%)</span>
+                  </div>
+                  <div style="display:flex; align-items:center; margin-top:3px;">
+                    ${colorCircle(TOTAL_COLOR)}
+                    <span>Всего: ${Numeral(totalCount)}</span>
+                  </div></div>`;
         }
       },
       plotOptions: {
@@ -560,7 +579,7 @@
           }
         }
       },
-      colors: ['#109669', '#3090E8'],
+      colors: [QUALITY_COLOR, NOT_QUALITY_COLOR],
       series: [
         {
           name: 'Качественные',
