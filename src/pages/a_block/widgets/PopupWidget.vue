@@ -6,10 +6,10 @@
             <div class="grid grid-cols-4 gap-1 w-max m-auto items-end text-white">
                 <div class="text-center relative">
                     <p class="absolute top-[130px] left-1/2 -translate-x-1/2 text-3xl">
-                        {{ Numeral(currentProjectPopup.data_project_temporaryworkplacescount / currentProjectPopup.work_places * 100) }}%
+                        {{ Numeral(Math.min(currentProjectPopup.data_project_temporaryworkplacescount / currentProjectPopup.work_places * 100, 100)) }}%
                     </p>
                     <highcharts
-                        :options="chartOptions('ПЛАНОВЫЕ РАБОЧИЕ МЕСТА', 'Фактический рабочие места', currentProjectPopup.data_project_temporaryworkplacescount / currentProjectPopup.work_places * 100, currentProjectPopup.work_places, currentProjectPopup.work_places, currentProjectPopup.data_project_temporaryworkplacescount)"
+                        :options="chartOptions('ПЛАНОВЫЕ РАБОЧИЕ МЕСТА', 'Фактический рабочие места', Math.min(currentProjectPopup.data_project_temporaryworkplacescount / currentProjectPopup.work_places * 100, 100), currentProjectPopup.work_places, currentProjectPopup.work_places, currentProjectPopup.data_project_temporaryworkplacescount)"
                         class="h-[200px] w-[250px] m-auto mt-5"></highcharts>
                     <div class="-mt-7">
                         <p class="text-gray-400 text-[12px] flex justify-center">
@@ -21,10 +21,10 @@
                 </div>
                 <div class="text-center relative">
                     <p class="absolute top-[130px] left-1/2 -translate-x-1/2 text-3xl">
-                        {{ Numeral(currentProjectPopup.fact_work / currentProjectPopup.work_places * 100) }}%
+                        {{ Numeral(Math.min(currentProjectPopup.fact_work / currentProjectPopup.work_places * 100, 100)) }}%
                     </p>
                     <highcharts
-                        :options="chartOptions('ПЛАНОВЫЕ РАБОЧИЕ МЕСТА', 'Фактический рабочие места', currentProjectPopup.fact_work / currentProjectPopup.work_places * 100, currentProjectPopup.work_places, currentProjectPopup.work_places, currentProjectPopup.fact_work)"
+                        :options="chartOptions('ПЛАНОВЫЕ РАБОЧИЕ МЕСТА', 'Фактический рабочие места', Math.min(currentProjectPopup.fact_work / currentProjectPopup.work_places * 100, 100), currentProjectPopup.work_places, currentProjectPopup.work_places, currentProjectPopup.fact_work)"
                         class="h-[200px] w-[250px] m-auto mt-5"></highcharts>
                     <div class="-mt-7">
                         <p class="text-gray-400 text-[12px] flex justify-center">
@@ -199,6 +199,10 @@
                     <div class="mt-5 flex flex-col justify-center items-center  ">
                         <p class="text-lg mb-4">Динамика рабочих мест</p>
                         <highcharts :options="areaChartOptions" class="h-[300px] w-full"></highcharts>
+                    </div>
+                    <div class="mt-5 flex flex-col justify-center items-center  ">
+                        <p class="text-lg mb-4">Динамика постоянных рабочих мест</p>
+                        <highcharts :options="permanentChartOptions" class="h-[300px] w-full"></highcharts>
                     </div>
                 </div>
                 <div v-if="active === 5 ">
@@ -409,6 +413,20 @@ const getColorRisk = (risk: string) => {
     return 'white'
 }
 
+
+const calculateKrmValues = (factValues: number[], krmValue: number) => {
+    if (!factValues.length || !krmValue) return Array(factValues.length).fill(0);
+    
+    
+    const firstFactValue = factValues[0] || 1;
+    
+  
+    const ratio = krmValue / firstFactValue;
+    
+    
+    return factValues.map(factValue => Math.round(factValue * ratio * 100) / 100);
+}
+
 const chartOptions = (name: string, name2: string, percent: number, all: number, value: number, value2: number) => {
     return {
         chart: { type: "solidgauge", backgroundColor: "transparent", height: "100%" },
@@ -447,19 +465,7 @@ const areaChartOptions = {
                 color: '#fff'
             }
         },
-        lineColor: '#555',
-        plotLines: [{
-            color: 'rgba(150, 150, 150, 0.7)',
-            width: 2,
-            value: 0,
-            zIndex: 3,
-            label: {
-                text: '',
-                style: {
-                    color: '#fff'
-                }
-            }
-        }]
+        lineColor: '#555'
     },
     yAxis: {
         title: {
@@ -484,7 +490,13 @@ const areaChartOptions = {
             
             points.forEach(function(point: any) {
                 if (point.series.name === 'Фактические рабочие места') {
-                    const firstYearValue = currentProjectPopup.value.fact_count_value[0] || 0;
+                    
+                    const firstYearIndex = currentProjectPopup.value.fact_year_value.findIndex(
+                        (year: number) => year >= new Date(currentProjectPopup.value.project_start_date).getFullYear()
+                    );
+                    
+                    
+                    const firstYearValue = currentProjectPopup.value.fact_count_value[firstYearIndex] || 0;
                     const currentValue = point.y;
                     const difference = currentValue - firstYearValue;
                     
@@ -546,7 +558,7 @@ const areaChartOptions = {
         data: Array(currentProjectPopup.value.fact_year_value.filter(
             (year: number) => year >= new Date(currentProjectPopup.value.project_start_date).getFullYear()
         ).length).fill(
-            currentProjectPopup.value.work_places + 
+            currentProjectPopup.value.data_project_temporaryworkplacescount + 
             (currentProjectPopup.value.fact_count_value[
                 currentProjectPopup.value.fact_year_value.findIndex(
                     (year: number) => year >= new Date(currentProjectPopup.value.project_start_date).getFullYear()
@@ -557,23 +569,19 @@ const areaChartOptions = {
         dashStyle: 'solid',
         lineWidth: 2
     }, {
-        name: 'Начальное значение',
+        name: 'Качественные рабочие места',
         type: 'line',
-        data: Array(currentProjectPopup.value.fact_year_value.filter(
-            (year: number) => year >= new Date(currentProjectPopup.value.project_start_date).getFullYear()
-        ).length).fill(
-            currentProjectPopup.value.fact_count_value[
-                currentProjectPopup.value.fact_year_value.findIndex(
-                    (year: number) => year >= new Date(currentProjectPopup.value.project_start_date).getFullYear()
-                )
-            ] || 0
+        data: calculateKrmValues(
+            currentProjectPopup.value.fact_count_value.filter(
+                (_: unknown, index: number): boolean => 
+                    currentProjectPopup.value.fact_year_value[index] >= 
+                    new Date(currentProjectPopup.value.project_start_date).getFullYear()
+            ),
+            currentProjectPopup.value.cnt_krm || 0
         ),
-        color: 'rgba(150, 150, 150, 0.7)',
-        dashStyle: 'solid',
-        lineWidth: 2,
-        marker: {
-            enabled: false
-        }
+        color: '#FF9B42',
+        dashStyle: 'shortdot',
+        lineWidth: 2
     }]
 }
 
@@ -702,5 +710,185 @@ const processProjectStagesData = (apiData: any) => {
 
 const { preInvestStages, investStages, postInvestStages } = processProjectStagesData(currentProjectPopup.value);
 
+
+const isExploitationComplete = () => {
+    const allStages = [...preInvestStages, ...investStages, ...postInvestStages];
+    const exploitationTask = allStages.find(task => 
+        task.task && task.task.toLowerCase().includes('ввод в эксплуатацию') && 
+        (task.status === 'Завершено' || task.status === 'DONE')
+    );
+    return !!exploitationTask;
+}
+
+const getExploitationYear = () => {
+    if (currentProjectPopup.value.project_exploitation_date) {
+        return new Date(currentProjectPopup.value.project_exploitation_date).getFullYear();
+    }
+    
+    return new Date().getFullYear();
+}
+
+const permanentChartOptions = {
+    chart: {
+        type: 'area',
+        backgroundColor: 'transparent',
+    },
+    title: {
+        text: '',
+    },
+    xAxis: {
+        categories: isExploitationComplete() 
+            ? currentProjectPopup.value.fact_year_value.filter(
+                (year: number) => year >= getExploitationYear()
+              )
+            : currentProjectPopup.value.fact_year_value.filter(
+                (year: number) => year >= new Date(currentProjectPopup.value.project_start_date).getFullYear()
+              ),
+        labels: {
+            style: {
+                color: '#fff'
+            }
+        },
+        lineColor: '#555'
+    },
+    yAxis: {
+        title: {
+            text: 'Количество рабочих мест',
+            style: {
+                color: '#fff'
+            }
+        },
+        labels: {
+            style: {
+                color: '#fff'
+            }
+        },
+        gridLineColor: 'rgba(255, 255, 255, 0.1)',
+    },
+    tooltip: {
+        shared: true,
+        valueSuffix: ' мест',
+        formatter: function(this: any): string {
+            const points = this.points || [];
+            let tooltipText = '<span style="font-size: 10px">' + this.x + '</span><br/>';
+            
+            points.forEach(function(point: any) {
+                if (point.series.name === 'Фактические рабочие места') {
+                    const firstYearToShow = isExploitationComplete() ? getExploitationYear() : 
+                        new Date(currentProjectPopup.value.project_start_date).getFullYear();
+                    
+                    const firstYearIndex = currentProjectPopup.value.fact_year_value.findIndex(
+                        (year: number) => year >= firstYearToShow
+                    );
+                    
+                    const firstYearValue = currentProjectPopup.value.fact_count_value[firstYearIndex] || 0;
+                    const currentValue = point.y;
+                    const difference = currentValue - firstYearValue;
+                    
+                    let differenceText = '';
+                    if (difference !== 0) {
+                        differenceText = difference < 0 ? difference.toString() : '+' + difference;
+                    }
+                    
+                    tooltipText += '<span style="color:' + point.color + '">●</span> ' + 
+                        point.series.name + ': <b>' + 
+                        (differenceText ? differenceText + ' (' + currentValue + ' мест)' : currentValue + ' мест') + 
+                        '</b><br/>';
+                } else {
+                    tooltipText += '<span style="color:' + point.color + '">●</span> ' + 
+                        point.series.name + ': <b>' + point.y + ' мест</b><br/>';
+                }
+            });
+            
+            return tooltipText;
+        }
+    },
+    credits: {
+        enabled: false
+    },
+    legend: {
+        itemStyle: {
+            color: '#fff'
+        },
+        itemHoverStyle: {
+            color: '#ccc'
+        }
+    },
+    plotOptions: {
+        area: {
+            fillOpacity: 0.5,
+            marker: {
+                radius: 4,
+                lineWidth: 1
+            }
+        },
+        line: {
+            marker: {
+                enabled: false
+            }
+        }
+    },
+    series: [{
+        name: 'Фактические рабочие места',
+        type: 'area',
+        data: isExploitationComplete()
+            ? currentProjectPopup.value.fact_count_value.filter(
+                (_: unknown, index: number): boolean => 
+                    currentProjectPopup.value.fact_year_value[index] >= getExploitationYear()
+              )
+            : currentProjectPopup.value.fact_count_value.filter(
+                (_: unknown, index: number): boolean => 
+                    currentProjectPopup.value.fact_year_value[index] >= 
+                    new Date(currentProjectPopup.value.project_start_date).getFullYear()
+              ),
+        color: '#3090E8',
+    }, {
+        name: 'Плановые рабочие места',
+        type: 'line',
+        data: isExploitationComplete()
+            ? Array(currentProjectPopup.value.fact_year_value.filter(
+                (year: number) => year >= getExploitationYear()
+              ).length).fill(
+                currentProjectPopup.value.work_places + 
+                (currentProjectPopup.value.fact_count_value[
+                    currentProjectPopup.value.fact_year_value.findIndex(
+                        (year: number) => year >= getExploitationYear()
+                    )
+                ] || 0)
+              )
+            : Array(currentProjectPopup.value.fact_year_value.filter(
+                (year: number) => year >= new Date(currentProjectPopup.value.project_start_date).getFullYear()
+              ).length).fill(
+                currentProjectPopup.value.work_places + 
+                (currentProjectPopup.value.fact_count_value[
+                    currentProjectPopup.value.fact_year_value.findIndex(
+                        (year: number) => year >= new Date(currentProjectPopup.value.project_start_date).getFullYear()
+                    )
+                ] || 0)
+              ),
+        color: '#B85DDA',
+        dashStyle: 'solid',
+        lineWidth: 2
+    }, {
+        name: 'Качественные рабочие места',
+        type: 'line',
+        data: calculateKrmValues(
+            isExploitationComplete()
+                ? currentProjectPopup.value.fact_count_value.filter(
+                    (_: unknown, index: number): boolean => 
+                        currentProjectPopup.value.fact_year_value[index] >= getExploitationYear()
+                  )
+                : currentProjectPopup.value.fact_count_value.filter(
+                    (_: unknown, index: number): boolean => 
+                        currentProjectPopup.value.fact_year_value[index] >= 
+                        new Date(currentProjectPopup.value.project_start_date).getFullYear()
+                  ),
+            currentProjectPopup.value.cnt_krm || 0
+        ),
+        color: '#FF9B42',
+        dashStyle: 'shortdot',
+        lineWidth: 2
+    }]
+}
 
 </script>
