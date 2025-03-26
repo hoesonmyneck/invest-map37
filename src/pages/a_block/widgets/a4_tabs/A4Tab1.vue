@@ -1,6 +1,6 @@
 <template>
     <div class="overflow-scroll h-[27vh] text-white text-[12px]">
-        <ul class="head text-white pb-1 mb-1 border-b border-gray-700 items-end w-[100%]">
+        <ul class="head text-white pb-1 mb-1 border-b border-gray-700 items-end w-[100%] sticky top-0 z-10 bg-[#1E2028]">
             <li class="w-[100%]">Отрасль</li>
             <li class="w-[100%]">К-во проектов</li>
             <li class="w-[100%]">Стоимость проекта</li>

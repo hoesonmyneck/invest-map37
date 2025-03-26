@@ -200,7 +200,7 @@
                         <p class="text-lg mb-4">Динамика рабочих мест</p>
                         <highcharts :options="areaChartOptions" class="h-[300px] w-full"></highcharts>
                     </div>
-                    <div class="mt-5 flex flex-col justify-center items-center  ">
+                    <div v-if="isExploitationComplete()" class="mt-5 flex flex-col justify-center items-center  ">
                         <p class="text-lg mb-4">Динамика постоянных рабочих мест</p>
                         <highcharts :options="permanentChartOptions" class="h-[300px] w-full"></highcharts>
                     </div>
