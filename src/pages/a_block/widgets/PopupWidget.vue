@@ -6,25 +6,25 @@
             <div class="grid grid-cols-4 gap-1 w-max m-auto items-end text-white">
                 <div class="text-center relative">
                     <p class="absolute top-[130px] left-1/2 -translate-x-1/2 text-3xl">
-                        {{ Numeral(Math.min(currentProjectPopup.data_project_temporaryworkplacescount / currentProjectPopup.work_places * 100, 100)) }}%
+                        {{ isExploitationComplete() ? '0%' : Numeral(Math.min(currentProjectPopup.data_project_temporaryworkplacescount / currentProjectPopup.work_places * 100, 100)) + '%' }}
                     </p>
                     <highcharts
-                        :options="chartOptions('ПЛАНОВЫЕ РАБОЧИЕ МЕСТА', 'Фактический рабочие места', Math.min(currentProjectPopup.data_project_temporaryworkplacescount / currentProjectPopup.work_places * 100, 100), currentProjectPopup.work_places, currentProjectPopup.work_places, currentProjectPopup.data_project_temporaryworkplacescount)"
+                        :options="chartOptions('ПЛАНОВЫЕ РАБОЧИЕ МЕСТА', 'Фактический рабочие места', isExploitationComplete() ? 0 : Math.min(currentProjectPopup.data_project_temporaryworkplacescount / currentProjectPopup.work_places * 100, 100), currentProjectPopup.work_places, currentProjectPopup.work_places, isExploitationComplete() ? 0 : currentProjectPopup.data_project_temporaryworkplacescount)"
                         class="h-[200px] w-[250px] m-auto mt-5"></highcharts>
                     <div class="-mt-7">
                         <p class="text-gray-400 text-[12px] flex justify-center">
                             <img src="/images/a_block/a1-1.png" alt="" class="w-[14px] h-[14px] mr-1 mb-2">
-                            {{ Numeral(currentProjectPopup.data_project_temporaryworkplacescount) }}
+                            {{ Numeral(isExploitationComplete() ? 0 : currentProjectPopup.data_project_temporaryworkplacescount) }}
                         </p>
                         <p class="text-[12px]">ВРЕМЕННЫЕ РАБОЧИЕ МЕСТА</p>
                     </div>
                 </div>
                 <div class="text-center relative">
                     <p class="absolute top-[130px] left-1/2 -translate-x-1/2 text-3xl">
-                        {{ Numeral(Math.min(currentProjectPopup.fact_work / currentProjectPopup.work_places * 100, 100)) }}%
+                        {{ !isExploitationComplete() ? '0%' : Numeral(Math.min(currentProjectPopup.fact_work / currentProjectPopup.work_places * 100, 100)) + '%' }}
                     </p>
                     <highcharts
-                        :options="chartOptions('ПЛАНОВЫЕ РАБОЧИЕ МЕСТА', 'Фактический рабочие места', Math.min(currentProjectPopup.fact_work / currentProjectPopup.work_places * 100, 100), currentProjectPopup.work_places, currentProjectPopup.work_places, currentProjectPopup.fact_work)"
+                        :options="chartOptions('ПЛАНОВЫЕ РАБОЧИЕ МЕСТА', 'Фактический рабочие места', !isExploitationComplete() ? 0 : Math.min(currentProjectPopup.fact_work / currentProjectPopup.work_places * 100, 100), currentProjectPopup.work_places, currentProjectPopup.work_places, !isExploitationComplete() ? 0 : currentProjectPopup.fact_work)"
                         class="h-[200px] w-[250px] m-auto mt-5"></highcharts>
                     <div class="-mt-7">
                         <p class="text-gray-400 text-[12px] flex justify-center">
@@ -197,7 +197,7 @@
                 </div>
                 <div v-if="active === 4">
                     <div class="mt-5 flex flex-col justify-center items-center  ">
-                        <p class="text-lg mb-4">Динамика рабочих мест</p>
+                        <p class="text-lg mb-4">Динамика временных рабочих мест</p>
                         <highcharts :options="areaChartOptions" class="h-[300px] w-full"></highcharts>
                     </div>
                     <div v-if="isExploitationComplete()" class="mt-5 flex flex-col justify-center items-center  ">
