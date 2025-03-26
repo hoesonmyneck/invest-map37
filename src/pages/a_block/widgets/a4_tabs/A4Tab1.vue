@@ -41,16 +41,16 @@
                     <p class="element truncate text-center">{{ Numeral(item.work_places) }}</p>
                     <p class="element truncate text-center">{{ Numeral(item.fact_work) }}</p>
                     <p class="element truncate text-center"
-                        :style="{ background: item.fact_work === 0 ? '#dc2626' : getColorFromGradient(item.fact_work / item.work_places * 100) }">
-                        {{ Numeral(item.fact_work / item.work_places * 100) }}%
+                        :style="{ background: item.fact_work === 0 ? '#dc2626' : getColorFromGradient(Math.min(item.fact_work / item.work_places * 100, 100)) }">
+                        {{ Numeral(Math.min(item.fact_work / item.work_places * 100, 100)) }}%
                     </p>
 
                     <p class="element truncate text-center">{{ Numeral(item.plan_fot) }}</p>
                     <p class="element truncate text-center">{{ Numeral(item.fact_fot) }}</p>
 
                     <p class="element truncate text-center"
-                        :style="{ background: item.fact_fot === 0 ? '#dc2626' : getColorFromGradient(item.fact_fot / item.plan_fot * 100) }">
-                        {{ Numeral(item.fact_fot / item.plan_fot * 100) }}%
+                        :style="{ background: item.fact_fot === 0 ? '#dc2626' : getColorFromGradient(Math.min(item.fact_fot / item.plan_fot * 100, 100)) }">
+                        {{ Numeral(Math.min(item.fact_fot / item.plan_fot * 100, 100)) }}%
                     </p>
 
                     <p class="element truncate text-center">{{ Numeral(item.smz_12mes) }}</p>
