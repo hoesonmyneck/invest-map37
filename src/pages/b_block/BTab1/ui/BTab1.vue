@@ -240,33 +240,28 @@ const getRegionColorByRank = (): Record<number, string> => {
     
  
     const greenRegions = regionsWithRates.slice(0, 7);
-    console.log('Зеленые регионы (должно быть 7):', greenRegions);
     greenRegions.forEach(region => {
         regionColors[region.regionCode] = '#0CCF89'; 
     });
     
     
     const redRegions = regionsWithRates.slice(-6);
-    console.log('Красные регионы (должно быть 6):', redRegions);
     redRegions.forEach(region => {
         regionColors[region.regionCode] = '#DF173B'; 
     });
     
     
     const orangeRegions = regionsWithRates.slice(7, regionsWithRates.length - 6);
-    console.log('Оранжевые регионы:', orangeRegions);
     orangeRegions.forEach(region => {
         regionColors[region.regionCode] = '#F59D0E'; 
     });
     
     
     const greenCount = Object.entries(regionColors).filter(([_, color]) => color === '#0CCF89').length;
-    console.log('Итоговое количество зеленых регионов:', greenCount);
     
  
     if (greenCount < 7 && orangeRegions.length > 0) {
         const neededCount = 7 - greenCount;
-        console.log(`Не хватает ${neededCount} зеленых регионов, добавляем из оранжевых`);
         
         for (let i = 0; i < Math.min(neededCount, orangeRegions.length); i++) {
             regionColors[orangeRegions[i].regionCode] = '#0CCF89';
@@ -290,50 +285,42 @@ const getRaionColorByRank = (currentRegionCode: number): Record<number, string> 
     
     raionsWithRates.sort((a, b) => a.rate - b.rate);
     
-    console.log('Все районы с процентами незанятых (после фильтрации):', raionsWithRates);
     
     const raionColors: Record<number, string> = {};
 
    
-    if (currentRegionCode === 710000000 || // Астана 
-        currentRegionCode === 750000000 || // Алматы
-        currentRegionCode === 790000000) { // Шымкент
+    if (currentRegionCode === 710000000 || 
+        currentRegionCode === 750000000 || 
+        currentRegionCode === 790000000 ||
+        currentRegionCode === 620000000 ||
+        currentRegionCode === 470000000) {
         
-       
         const greenCount = Math.min(2, raionsWithRates.length);
         const greenRaions = raionsWithRates.slice(0, greenCount);
-        console.log('Зеленые районы для города (топ 2):', greenRaions);
         greenRaions.forEach(raion => {
-            raionColors[raion.raionCode] = '#0CCF89'; // Зеленый
+            raionColors[raion.raionCode] = '#0CCF89';
         });
         
-      
         const redCount = Math.min(2, Math.max(0, raionsWithRates.length - greenCount));
         const redRaions = raionsWithRates.slice(-redCount);
-        console.log('Красные районы для города (нижние 2):', redRaions);
         redRaions.forEach(raion => {
-            raionColors[raion.raionCode] = '#DF173B'; // Красный
+            raionColors[raion.raionCode] = '#DF173B';
         });
         
-       
         const orangeRaions = raionsWithRates.slice(greenCount, raionsWithRates.length - redCount);
-        console.log('Оранжевые районы для города (остальные):', orangeRaions);
         orangeRaions.forEach(raion => {
-            raionColors[raion.raionCode] = '#F59D0E'; // Оранжевый
+            raionColors[raion.raionCode] = '#F59D0E';
         });
     } 
     else {
-        
         const lowCount = Math.min(7, raionsWithRates.length);
         const greenRaions = raionsWithRates.slice(0, lowCount);
-        console.log('Зеленые районы (должно быть до 7):', greenRaions);
         greenRaions.forEach(raion => {
-            raionColors[raion.raionCode] = '#0CCF89'; // Зеленый
+            raionColors[raion.raionCode] = '#0CCF89';
         });
         
         const highCount = Math.min(6, Math.max(0, raionsWithRates.length - lowCount));
         const redRaions = raionsWithRates.slice(-highCount);
-        console.log('Красные районы (должно быть до 6):', redRaions);
         if (highCount > 0) {
             redRaions.forEach(raion => {
                 raionColors[raion.raionCode] = '#DF173B';
@@ -341,17 +328,14 @@ const getRaionColorByRank = (currentRegionCode: number): Record<number, string> 
         }
         
         const orangeRaions = raionsWithRates.slice(lowCount, raionsWithRates.length - highCount);
-        console.log('Оранжевые районы:', orangeRaions);
         orangeRaions.forEach(raion => {
-            raionColors[raion.raionCode] = '#F59D0E'; 
+            raionColors[raion.raionCode] = '#F59D0E';
         });
         
         const greenCount = Object.entries(raionColors).filter(([_, color]) => color === '#0CCF89').length;
-        console.log('Итоговое количество зеленых районов:', greenCount);
         
         if (greenCount < 7 && orangeRaions.length > 0) {
             const neededCount = Math.min(7 - greenCount, orangeRaions.length);
-            console.log(`Не хватает ${neededCount} зеленых районов, добавляем из оранжевых`);
             
             for (let i = 0; i < neededCount; i++) {
                 raionColors[orangeRaions[i].raionCode] = '#0CCF89';

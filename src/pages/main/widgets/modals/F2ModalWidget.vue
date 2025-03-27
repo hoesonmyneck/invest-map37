@@ -137,12 +137,26 @@
                 .sort((a, b) => b.totalProc - a.totalProc);
               const index = sortedRaions.findIndex(raion => raion === groupByRaion[v]);
 
-              if (index < 6) {
-                return getColorFromGradient(100); // Зеленый
-              } else if (index >= sortedRaions.length - 6) {
-                return getColorFromGradient(10); // Красный
+              if (currentRegion === 710000000 || 
+                  currentRegion === 750000000 || 
+                  currentRegion === 790000000 ||
+                  currentRegion === 620000000 ||
+                  currentRegion === 470000000) {
+                if (index < 2) {
+                  return getColorFromGradient(100);
+                } else if (index >= sortedRaions.length - 2) {
+                  return getColorFromGradient(10);
+                } else {
+                  return getColorFromGradient(50);
+                }
               } else {
-                return getColorFromGradient(50); // Оранжевый
+                if (index < 6) {
+                  return getColorFromGradient(100);
+                } else if (index >= sortedRaions.length - 6) {
+                  return getColorFromGradient(10);
+                } else {
+                  return getColorFromGradient(50);
+                }
               }
             }"
             @click-polygon="clickRaion"
@@ -225,7 +239,6 @@ const props = defineProps<{
 const getCityZoom = (regionCode: number | null): number => {
   if (regionCode === null) return 7;
   
- 
   if (
     regionCode === 710000000 || 
     regionCode === 750000000 || 

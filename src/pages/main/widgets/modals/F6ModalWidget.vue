@@ -102,12 +102,26 @@
                 .sort((a, b) => b.totalProc - a.totalProc);
               const index = sortedRaions.findIndex(raion => raion === groupByRaion[v]);
 
-              if (index < 6) {
-                return getColorFromGradient(100); // Зеленый
-              } else if (index >= sortedRaions.length - 6) {
-                return getColorFromGradient(10); // Красный
+              if (Number(currentRegion) === 710000000 || 
+                  Number(currentRegion) === 750000000 || 
+                  Number(currentRegion) === 790000000 ||
+                  Number(currentRegion) === 620000000 ||
+                  Number(currentRegion) === 470000000) {
+                if (index < 2) {
+                  return getColorFromGradient(100);
+                } else if (index >= sortedRaions.length - 2) {
+                  return getColorFromGradient(10);
+                } else {
+                  return getColorFromGradient(50);
+                }
               } else {
-                return getColorFromGradient(50); // Оранжевый
+                if (index < 6) {
+                  return getColorFromGradient(100);
+                } else if (index >= sortedRaions.length - 6) {
+                  return getColorFromGradient(10);
+                } else {
+                  return getColorFromGradient(50);
+                }
               }
             }"
             @click-polygon="clickRaion"
