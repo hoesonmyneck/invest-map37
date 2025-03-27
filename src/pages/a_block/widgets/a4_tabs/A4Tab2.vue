@@ -18,8 +18,8 @@
             <li class="w-[100%]">Отсутствует</li>
         </ul>
         <div class="body">
-            <RecycleScroller class="scroller h-full" :min-item-size="10" :items="a1FilterByProject" :item-size="1"
-                key-field="id" v-slot="{ item }">
+            <RecycleScroller class="scroller h-full" :min-item-size="1" :items="a1FilterByProject" :item-size="1"
+                key-field="id" v-slot="{ item }" page-mode="contain">
                 <div class="head mt-1 min-h-[30px]">
                     <p class="w-full h-full flex items-center justify-center rounded bg-[#252A36] cursor-pointer">
                         <img src="/images/icons/map.png" alt="" class="w-[16px]" v-if="!!item.coordinates"
