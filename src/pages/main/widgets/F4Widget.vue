@@ -14,8 +14,8 @@
 
       <div class="overflow-y-scroll h-[calc(50vh-65px)]">
         <ul>
-          <li class="flex text-[10px] items-center gap-2 mb-1 text-xs justify-between min-w-[200px]" v-for="item in Object.values(list).sort(
-            (a, b) => b.count - a.count
+          <li class="flex text-[10px] items-center gap-2 mb-1 text-xs justify-between min-w-[200px]" v-for="item in Object.values(list).filter((item: any) => item.otrasl && item.otrasl.trim() !== '').sort(
+            (a: any, b: any) => b.count - a.count
 )" :key="item.otrasl">
             <div class="flex gap-2 items-center">
               <p class="min-w-4 w-4 h-4 rounded-full" :style="{ backgroundColor: item.color }"></p>
