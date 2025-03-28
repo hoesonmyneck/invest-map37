@@ -6,15 +6,15 @@
             <div class="grid grid-cols-4 gap-1 w-max m-auto items-end text-white">
                 <div class="text-center relative">
                     <p class="absolute top-[130px] left-1/2 -translate-x-1/2 text-3xl">
-                        {{ isExploitationComplete() ? '0%' : Numeral(Math.min(currentProjectPopup.data_project_temporaryworkplacescount / currentProjectPopup.work_places * 100, 100)) + '%' }}
+                        {{ !isSMRActiveOrComplete() ? '0%' : Numeral(Math.min(currentProjectPopup.data_project_temporaryworkplacescount / currentProjectPopup.work_places * 100, 100)) + '%' }}
                     </p>
                     <highcharts
-                        :options="chartOptions('ПЛАНОВЫЕ РАБОЧИЕ МЕСТА', 'Фактический рабочие места', isExploitationComplete() ? 0 : Math.min(currentProjectPopup.data_project_temporaryworkplacescount / currentProjectPopup.work_places * 100, 100), currentProjectPopup.work_places, currentProjectPopup.work_places, isExploitationComplete() ? 0 : currentProjectPopup.data_project_temporaryworkplacescount)"
+                        :options="chartOptions('ПЛАНОВЫЕ РАБОЧИЕ МЕСТА', 'Фактический рабочие места', !isSMRActiveOrComplete() ? 0 : Math.min(currentProjectPopup.data_project_temporaryworkplacescount / currentProjectPopup.work_places * 100, 100), currentProjectPopup.work_places, currentProjectPopup.work_places, !isSMRActiveOrComplete() ? 0 : currentProjectPopup.data_project_temporaryworkplacescount)"
                         class="h-[200px] w-[250px] m-auto mt-5"></highcharts>
                     <div class="-mt-7">
                         <p class="text-gray-400 text-[12px] flex justify-center">
                             <img src="/images/a_block/a1-1.png" alt="" class="w-[14px] h-[14px] mr-1 mb-2">
-                            {{ Numeral(isExploitationComplete() ? 0 : currentProjectPopup.data_project_temporaryworkplacescount) }}
+                            {{ Numeral(!isSMRActiveOrComplete() ? 0 : currentProjectPopup.data_project_temporaryworkplacescount) }}
                         </p>
                         <p class="text-[12px]">ВРЕМЕННЫЕ РАБОЧИЕ МЕСТА</p>
                     </div>
@@ -715,9 +715,23 @@ const isExploitationComplete = () => {
     const allStages = [...preInvestStages, ...investStages, ...postInvestStages];
     const exploitationTask = allStages.find(task => 
         task.task && task.task.toLowerCase().includes('ввод в эксплуатацию') && 
-        (task.status === 'Завершено' || task.status === 'DONE')
+        (task.status === 'Завершено' || task.status === 'DONE' || 
+         task.status === 'В процессе' || task.status === 'IN_PROGRESS')
     );
     return !!exploitationTask;
+}
+
+const isSMRActiveOrComplete = () => {
+    const allStages = [...preInvestStages, ...investStages, ...postInvestStages];
+    const smrTask = allStages.find(task => 
+        task.task && (
+            task.task.toLowerCase().includes('смр') || 
+            task.task.toLowerCase().includes('строительно-монтажные работы')
+        ) && 
+        (task.status === 'Завершено' || task.status === 'DONE' || 
+         task.status === 'В процессе' || task.status === 'IN_PROGRESS')
+    );
+    return !!smrTask;
 }
 
 const getExploitationYear = () => {

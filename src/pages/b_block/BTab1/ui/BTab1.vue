@@ -22,7 +22,7 @@
                                 {{ Numeral((trudo / naselenie) * 100) }}%
                             </li>
                             <li class="border-t-2 border-[#0CCF89] pt-1">
-                                {{ Numeral((working / trudo) * 100) }}%
+                                {{ Numeral((working / naselenie) * 100) }}%
                             </li>
                         </ul>
                     </div>
@@ -535,7 +535,7 @@ const chartOptions = computed(() => {
                         radius: "80%",
                         innerRadius: "90%",
                         color: "#0CCF89",
-                        y: (working.value / trudo.value) * 100,
+                        y: (working.value / naselenie.value) * 100,
                     },
                 ],
             },
