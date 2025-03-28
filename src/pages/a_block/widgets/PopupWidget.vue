@@ -9,7 +9,7 @@
                         {{ !isSMRActiveOrComplete() ? '0%' : Numeral(Math.min(currentProjectPopup.data_project_temporaryworkplacescount / currentProjectPopup.work_places * 100, 100)) + '%' }}
                     </p>
                     <highcharts
-                        :options="chartOptions('ПЛАНОВЫЕ РАБОЧИЕ МЕСТА', 'Фактический рабочие места', !isSMRActiveOrComplete() ? 0 : Math.min(currentProjectPopup.data_project_temporaryworkplacescount / currentProjectPopup.work_places * 100, 100), currentProjectPopup.work_places, currentProjectPopup.work_places, !isSMRActiveOrComplete() ? 0 : currentProjectPopup.data_project_temporaryworkplacescount)"
+                        :options="chartOptions2('ПЛАНОВЫЕ РАБОЧИЕ МЕСТА', 'Фактический рабочие места', !isSMRActiveOrComplete() ? 0 : Math.min(currentProjectPopup.data_project_temporaryworkplacescount / currentProjectPopup.work_places * 100, 100), currentProjectPopup.work_places, currentProjectPopup.work_places, !isSMRActiveOrComplete() ? 0 : currentProjectPopup.data_project_temporaryworkplacescount)"
                         class="h-[200px] w-[250px] m-auto mt-5"></highcharts>
                     <div class="-mt-7">
                         <p class="text-gray-400 text-[12px] flex justify-center">
@@ -437,7 +437,48 @@ const chartOptions = (name: string, name2: string, percent: number, all: number,
             background: [{ outerRadius: 0, innerRadius: 0, borderWidth: 0 }],
         },
         tooltip: {
-            format: '{point.name}: {point.value}',
+            formatter: function() {
+                const isTemporary = value2 === (!isSMRActiveOrComplete() ? 0 : currentProjectPopup.value.data_project_temporaryworkplacescount);
+                
+                if (isTemporary) {
+                    return '<b>ПЛАНОВЫЕ РАБОЧИЕ МЕСТА:</b> ' + Numeral(currentProjectPopup.value.work_places) 
+            
+                } else {
+                    return '<b>' + name + ':</b> ' + Numeral(value) 
+                    
+                }
+            }
+        },
+        yAxis: { min: 0, max: 100, lineWidth: 0, tickPositions: [] },
+        plotOptions: { solidgauge: { dataLabels: { enabled: false, showInLegend: false } } },
+        series: [
+            { name: "", data: [{ name, radius: "80%", innerRadius: "100%", color: "rgba(48,144,232,0.2)", y: 100, value: Numeral(value) }] },
+            { name: name ?? '', data: [{ name: name2, radius: "80%", innerRadius: "100%", color: "#3090E8", y: +percent.toFixed(0), value: Numeral(value2) }] },
+        ],
+    }
+}
+const chartOptions2 = (name: string, name2: string, percent: number, all: number, value: number, value2: number) => {
+    return {
+        chart: { type: "solidgauge", backgroundColor: "transparent", height: "100%" },
+        title: { text: "" },
+        pane: {
+            startAngle: -125,
+            endAngle: 125,
+            background: [{ outerRadius: 0, innerRadius: 0, borderWidth: 0 }],
+        },
+        tooltip: {
+            formatter: function() {
+                const isTemporary = value2 === (!isSMRActiveOrComplete() ? 0 : currentProjectPopup.value.data_project_temporaryworkplacescount);
+                
+                if (isTemporary) {
+                    return '<b>ВРЕМЕННЫЕ РАБОЧИЕ МЕСТА:</b> ' + Numeral(!isSMRActiveOrComplete() ? 0 : currentProjectPopup.value.data_project_temporaryworkplacescount) 
+            
+                } else {
+                    return '<b>' + name + ':</b> ' + Numeral(value) + 
+                    '<br/><b>' + name2 + ':</b> ' + Numeral(value2);
+                    
+                }
+            }
         },
         yAxis: { min: 0, max: 100, lineWidth: 0, tickPositions: [] },
         plotOptions: { solidgauge: { dataLabels: { enabled: false, showInLegend: false } } },
