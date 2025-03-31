@@ -196,7 +196,7 @@
                     </div>
                 </div>
                 <div v-if="active === 4">
-                    <div class="mt-5 flex flex-col justify-center items-center  ">
+                    <div v-if="!isSMRActiveOrComplete() ? 0 : currentProjectPopup.data_project_temporaryworkplacescount > 0" class="mt-5 flex flex-col justify-center items-center  ">
                         <p class="text-lg mb-4">Динамика временных рабочих мест</p>
                         <highcharts :options="areaChartOptions" class="h-[300px] w-full"></highcharts>
                     </div>
