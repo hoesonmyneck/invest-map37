@@ -47,10 +47,10 @@
                         </div>
                     </div>
                     <p class="element truncate text-center">{{ Numeral(item.work_places) }}</p>
-                    <p class="element truncate text-center">{{ Numeral(item.fact_work) }}</p>
+                    <p class="element truncate text-center">{{ Numeral(isExploitationCompleteForItem(item) ? item.fact_work : (!isSMRActiveOrCompleteForItem(item) ? 0 : item.data_project_temporaryworkplacescount || 0)) }}</p>
                     <p class="element truncate text-center"
-                        :style="{ background: item.fact_work === 0 ? '#dc2626' : getColorFromGradient(item.work_places === 0 ? 0 : Math.min(100, (item.fact_work / item.work_places * 100))) }">
-                        {{ item.work_places === 0 ? '0%' : Numeral(Math.min(100, item.fact_work / item.work_places * 100)) + '%' }}
+                        :style="{ background: getPercentBackgroundColor(item) }">
+                        {{ getPercentText(item) }}
                     </p>
 
                     <p class="element truncate text-center">{{ Numeral(item.plan_fot) }}</p>
@@ -142,6 +142,18 @@ const { a1FilterByProject, currentProject } = storeToRefs(aStore);
 interface ProjectItem {
     project_start_date: string;
     project_exploitation_date: string;
+    work_places: number;
+    fact_work: number;
+    data_project_temporaryworkplacescount?: number;
+    data_project_roadmap_tasks?: Array<{
+        stage_id: number;
+        task_name: string;
+        startDate: string | null;
+        finishDate: string | null;
+        startedAt: string | null;
+        executedAt: string | null;
+        status: string;
+    }>;
     [key: string]: any;
 }
 
@@ -155,6 +167,45 @@ function getProjectDatePrecent(item: ProjectItem) {
 
     const _year = Math.abs((_current - _start) / (_start - _end) * 100)
     return Numeral(_year > 100 ? 100 : _year)
+}
+
+function isExploitationCompleteForItem(item: ProjectItem) {
+    const tasks = item.data_project_roadmap_tasks || [];
+    const exploitationTask = tasks.find(task => 
+        task.task_name && task.task_name.toLowerCase().includes('ввод в эксплуатацию') && 
+        (task.status === 'DONE' || task.status === 'IN_PROGRESS')
+    );
+    return !!exploitationTask;
+}
+
+function isSMRActiveOrCompleteForItem(item: ProjectItem) {
+    const tasks = item.data_project_roadmap_tasks || [];
+    const smrTask = tasks.find(task => 
+        task.task_name && (
+            task.task_name.toLowerCase().includes('смр') || 
+            task.task_name.toLowerCase().includes('строительно-монтажные работы')
+        ) && 
+        (task.status === 'DONE' || task.status === 'IN_PROGRESS')
+    );
+    return !!smrTask;
+}
+
+function getPercentBackgroundColor(item: ProjectItem) {
+    if (isExploitationCompleteForItem(item)) {
+        return item.fact_work === 0 ? '#dc2626' : getColorFromGradient(item.work_places === 0 ? 0 : Math.min(100, (item.fact_work / item.work_places * 100)));
+    } else {
+        const tempValue = !isSMRActiveOrCompleteForItem(item) ? 0 : (item.data_project_temporaryworkplacescount || 0);
+        return tempValue === 0 ? '#dc2626' : getColorFromGradient(item.work_places === 0 ? 0 : Math.min(100, (tempValue / item.work_places * 100)));
+    }
+}
+
+function getPercentText(item: ProjectItem) {
+    if (isExploitationCompleteForItem(item)) {
+        return item.work_places === 0 ? '0%' : Numeral(Math.min(100, item.fact_work / item.work_places * 100)) + '%';
+    } else {
+        const tempValue = !isSMRActiveOrCompleteForItem(item) ? 0 : (item.data_project_temporaryworkplacescount || 0);
+        return item.work_places === 0 ? '0%' : Numeral(Math.min(100, tempValue / item.work_places * 100)) + '%';
+    }
 }
 
 </script>
