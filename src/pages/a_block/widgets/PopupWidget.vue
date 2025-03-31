@@ -437,15 +437,12 @@ const chartOptions = (name: string, name2: string, percent: number, all: number,
             background: [{ outerRadius: 0, innerRadius: 0, borderWidth: 0 }],
         },
         tooltip: {
-            formatter: function() {
-                const isTemporary = value2 === (!isSMRActiveOrComplete() ? 0 : currentProjectPopup.value.data_project_temporaryworkplacescount);
-                
-                if (isTemporary) {
-                    return '<b>ПЛАНОВЫЕ РАБОЧИЕ МЕСТА:</b> ' + Numeral(currentProjectPopup.value.work_places) 
-            
+            formatter: function(this: any) {
+                const isFilled = this.point.series.index === 1;
+                if (isFilled) {
+                    return '<b>Фактические рабочие места:</b> ' + Numeral(value2);
                 } else {
-                    return '<b>' + name + ':</b> ' + Numeral(value) 
-                    
+                    return '<b>Плановые рабочие места:</b> ' + Numeral(value);
                 }
             }
         },
@@ -467,16 +464,17 @@ const chartOptions2 = (name: string, name2: string, percent: number, all: number
             background: [{ outerRadius: 0, innerRadius: 0, borderWidth: 0 }],
         },
         tooltip: {
-            formatter: function() {
-                const isTemporary = value2 === (!isSMRActiveOrComplete() ? 0 : currentProjectPopup.value.data_project_temporaryworkplacescount);
+            formatter: function(this: any) {
+                // Определяем, на какую серию навели (заполненная или незаполненная)
+                const isFilled = this.point.series.index === 1;
+                const temporaryWorkplaces = !isSMRActiveOrComplete() ? 0 : currentProjectPopup.value.data_project_temporaryworkplacescount;
                 
-                if (isTemporary) {
-                    return '<b>ВРЕМЕННЫЕ РАБОЧИЕ МЕСТА:</b> ' + Numeral(!isSMRActiveOrComplete() ? 0 : currentProjectPopup.value.data_project_temporaryworkplacescount) 
-            
+                if (isFilled) {
+                    // Если навели на заполненную шкалу (синюю)
+                    return '<b>Временные рабочие места:</b> ' + Numeral(temporaryWorkplaces);
                 } else {
-                    return '<b>' + name + ':</b> ' + Numeral(value) + 
-                    '<br/><b>' + name2 + ':</b> ' + Numeral(value2);
-                    
+                    // Если навели на незаполненную шкалу (серую)
+                    return '<b>Плановые рабочие места:</b> ' + Numeral(currentProjectPopup.value.work_places);
                 }
             }
         },

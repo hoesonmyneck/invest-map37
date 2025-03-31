@@ -4,20 +4,33 @@
       <div class="flex pt-5 justify-center items-center w-full" v-if="loader">
         <a-spin />
       </div>
-      <div v-else class="overflow-auto h-[calc(50vh-66px)]">
+      <div class="flex gap-1 text-white mt-1 mb-1">
+        <div :class="{ active: tab === 0 }" @click="tab = 0" class="btn">
+          По отраслям
+        </div>
+        <div :class="{ active: tab === 1 }" @click="tab = 1" class="btn">
+          Качественные рабочие места
+        </div>
+      </div>
+      <div class="overflow-auto h-[calc(42vh-66px)]" v-if="tab === 0">
         <highcharts :options="chartOptions" class="w-full m-auto h-max"></highcharts>
       </div>
+      <div v-if="tab === 1" class="overflow-auto h-[calc(42vh-66px)]">
+          <highcharts :options="chartOptions2" class="w-full m-auto h-max"></highcharts>
+        </div> 
     </BaseCard>
 
-    <F2ModalWidget :data="data" :visible="visible" @close="visible = false" />
+    <F2ModalWidget :data="data" :visible="visible" :dataF6="dataF6" @close="visible = false" />
   </div>
 </template>
 <script setup lang="ts">
-import { computed, ref } from "vue";
+import { computed, ref, onMounted } from "vue";
 import BaseCard from "../../../shared/ui/BaseCard/BaseCard.vue";
-import { getF2_new } from "../../../entities/f/api";
+import { getF2_new, getF6 } from "../../../entities/f/api";
 import { Numeral } from "../../../shared/helpers/numeral";
 import F2ModalWidget from "./modals/F2ModalWidget.vue";
+
+const tab = ref(0);
 
 interface F2Data {
   tip: number;
@@ -33,18 +46,191 @@ interface F2Data {
   prognoz: number;
   region: string | null;
   parent1_code: string | null;
+  parent2_code: string | null;
+}
+
+interface F6Data {
+  tp: number;
+  id_reg: number | null;
+  reg_ru: string | null;
+  id_rai: number | null;
+  rai_ru: string | null;
+  vcode_oked: string;
+  vname_oked: string;
+  cnt: number;
+  cnt_quality: number;
+  cnt_not_quality: number;
+  parent1_code: number | string | null;
+  parent2_code: number | string | null;
 }
 
 const loader = ref(true);
 const data = ref<F2Data[]>([]);
+const dataF6 = ref<F6Data[]>([]);
 const visible = ref(false);
 const currentRegion = ref("");
 
 async function loadF2() {
-  data.value = await getF2_new().finally(() => {
+  try {
+    const [f2Data, f6Data] = await Promise.all([
+      getF2_new(),
+      getF6()
+    ]);
+    
+    data.value = f2Data;
+    dataF6.value = f6Data;
+  } catch (error) {
+    console.error("Ошибка загрузки данных:", error);
+  } finally {
     loader.value = false;
-  });
+  }
 }
+
+const QUALITY_COLOR = '#109669'; // Зеленый
+const NOT_QUALITY_COLOR = '#3090E8'; // Синий
+const TOTAL_COLOR = '#9370DB'; // Фиолетовый
+
+const EXCLUDED_OKED_CATEGORIES = [
+  "Окэд не указан", 
+  "Дея-ть экстерриториальных организаций", 
+  "Дея-ть домашних хозяйств"
+];
+
+const filteredData = computed(() => {
+  return dataF6.value
+    .filter(item => item.tp === 2)
+    .filter(item => !EXCLUDED_OKED_CATEGORIES.includes(item.vname_oked))
+    .sort((a, b) => b.cnt_not_quality - a.cnt_not_quality);
+});
+
+const chartOptions2 = computed(() => {
+  return {
+    chart: {
+      type: "bar",
+      height: "150%",
+      backgroundColor: "transparent",
+      spacingLeft: 10,
+      spacingRight: 10,
+      marginTop: 50,
+      marginBottom: 50
+    },
+    title: {
+      text: "",
+    },
+    xAxis: {
+      categories: filteredData.value.slice(0, 19).map(item => item.vname_oked),
+      labels: {
+        style: {
+          color: "#fff",
+          fontSize: "10px",
+        },
+      },
+    },
+    yAxis: {
+      min: 0,
+      title: {
+        text: null
+      },
+      labels: {
+        enabled: false,
+      },
+      gridLineWidth: 0,
+    },
+    legend: {
+      enabled: false,
+      align: 'right',
+      verticalAlign: 'middle',
+      layout: 'vertical',
+      itemStyle: {
+        color: '#fff',
+        fontWeight: 'normal'
+      }
+    },
+    tooltip: {
+      useHTML: true,
+      formatter: function(this: Highcharts.TooltipFormatterContextObject): string {
+        const series = this.series;
+        const point = this.point;
+        const x = this.x;
+        const y = this.y || 0;
+        
+        const categoryData = filteredData.value.find(item => item.vname_oked === x);
+        const qualityCount = categoryData ? categoryData.cnt_quality : 0;
+        const notQualityCount = categoryData ? categoryData.cnt_not_quality : 0;
+        const totalCount = qualityCount + notQualityCount;
+        
+       
+        const colorCircle = (color: string) => 
+          `<div style="display:inline-block; width:12px; height:12px; border-radius:50%; background-color:${color}; margin-right:6px; vertical-align:middle;"></div>`;
+          
+        return `<div><b>${x}</b><br/>
+                <div style="display:flex; align-items:center; margin-top:5px;">
+                  ${colorCircle(QUALITY_COLOR)}
+                  <span>Качественные: ${Numeral(qualityCount)} (${((qualityCount / totalCount) * 100).toFixed(1)}%)</span>
+                </div>
+                <div style="display:flex; align-items:center; margin-top:3px;">
+                  ${colorCircle(NOT_QUALITY_COLOR)}
+                  <span>Некачественные: ${Numeral(notQualityCount)} (${((notQualityCount / totalCount) * 100).toFixed(1)}%)</span>
+                </div>
+                <div style="display:flex; align-items:center; margin-top:3px;">
+                  ${colorCircle(TOTAL_COLOR)}
+                  <span>Всего: ${Numeral(totalCount)}</span>
+                </div></div>`;
+      }
+    },
+    plotOptions: {
+      series: {
+        stacking: 'normal',
+        borderWidth: 0,
+        pointWidth: 30,
+        minPointLength: 50,
+        groupPadding: 0.1,
+        pointPadding: 0.05,
+        dataLabels: {
+          enabled: true,
+          formatter: function(this: Highcharts.PointLabelObject): string {
+            if (this.y && this.y > 1000) {
+              return Numeral(this.y);
+            } else if (this.y && this.y > 0) {
+              return this.y > 500 ? Numeral(this.y) : '';
+            }
+            return '';
+          },
+          style: {
+            color: '#fff',
+            textOutline: 'none',
+            fontSize: '11px',
+            fontWeight: 'normal'
+          },
+          inside: true,
+          crop: false,
+          overflow: 'allow'
+        }
+      }
+    },
+    colors: [QUALITY_COLOR, NOT_QUALITY_COLOR],
+    series: [
+      {
+        name: 'Качественные',
+        data: filteredData.value.slice(0, 19).map(item => ({
+          y: item.cnt_quality,
+          dataLabels: {
+            enabled: item.cnt_quality > 500
+          }
+        })),
+      },
+      {
+        name: 'Рабочие места',
+        data: filteredData.value.slice(0, 19).map(item => ({
+          y: item.cnt_not_quality,
+          dataLabels: {
+            enabled: item.cnt_not_quality > 500
+          }
+        })),
+      }
+    ]
+  };
+});
 
 const list = computed(() =>
   Object.values(
