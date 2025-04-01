@@ -62,7 +62,7 @@
                 </div>
             </div>
 
-            <div class=" mt-10 w-[800px] m-auto text-white">
+            <div class=" mt-10 w-[850px] m-auto text-white">
                 <div class="flex gap-1 text-xs p-1 mt-10">
                     <p @click="active = 0" :class="active === 0 ? 'border-[#3090E8]' : 'border-gray-700'"
                         class="cursor-pointer h-6 px-4 flex items-center border">Общее</p>
@@ -76,6 +76,16 @@
                         class="cursor-pointer h-6 px-4 flex items-center border">Финансовый риск</p>
                     <p @click="active = 3" :class="active === 3 ? 'border-[#3090E8]' : 'border-gray-700'"
                         class="cursor-pointer h-6 px-4 flex items-center border">ТиПО</p>
+                    <div class="h-6 px-4 flex items-center gap-1">
+                        <span class="text-xs w-[70px]">Подрядчик</span>
+                        <div class="relative inline-flex h-5 w-10 items-center rounded-full" 
+                             :class="toggleEnabled ? 'bg-[#3090E8]' : 'bg-gray-700'"
+                             @click="toggleEnabled = !toggleEnabled">
+                            <span class="h-4 w-4 transform rounded-full bg-white transition-transform"
+                                  :class="toggleEnabled ? 'translate-x-5' : 'translate-x-1'"></span>
+                        </div>
+                        <span class="text-xs w-[50px] ml-3">Заказчик</span>
+                    </div>
                 </div>
                 <div v-if="active === 0" class="mt-5 grid grid-cols-[300px_1fr] gap-3">
                     <div>
@@ -368,8 +378,8 @@ defineEmits(['clear']);
 const aStore = useAStore();
 const { currentProjectPopup } = storeToRefs(aStore);
 const active = ref(0)
-
 const currentProfession = ref()
+const toggleEnabled = ref(false)
 
 const risk_key: { [key: string]: string } = {
     'k_': "Не определено",
