@@ -14,16 +14,29 @@
       <p class="h-6 px-4 flex items-center border cursor-pointer" @click="aStore.setCurrentLabel(3)"
         :class="`${currentLabel === 3 ? 'border-[#3090e8]' : 'border-gray-600'}`">
         К-Инвест</p>
-      <p class="h-6 px-4 flex items-center border cursor-pointer" @click="aStore.setCurrentLabel(1)"
-        :class="`${currentLabel === 1 ? 'border-[#3090e8]' : 'border-gray-600'}`">
-        МинПром</p>
-      <p class="h-6 px-4 flex items-center border cursor-pointer" @click="aStore.setCurrentLabel(4)"
-        :class="`${currentLabel === 4 ? 'border-[#3090e8]' : 'border-gray-600'}`">
-        МинЭнерго</p>
-      <p class="h-6 px-4 flex items-center border cursor-pointer"
-        :class="`${currentLabel === 2 ? 'border-[#3090e8]' : 'border-gray-600'}`">
-        СГП</p>
+      
+     
+      <div class="relative dropdown-container w-[170px]">
+        <p class="h-6 px-4 flex items-center justify-around border cursor-pointer select-none" @click="toggleDropdown"
+          :class="`${[1, 2, 4].includes(currentLabel) ? 'border-[#3090e8]' : 'border-gray-600'}`">
+          {{ getSelectedLabel + (isDropdownOpen ? ' ▲' : ' ▼') }}
+        </p>
+        <transition name="dropdown">
+          <div v-if="isDropdownOpen" class="absolute left-0 mt-1 bg-gray-800 border border-gray-600 rounded w-full z-10 shadow-lg overflow-hidden">
+            <p class="px-4 py-2 hover:bg-gray-700 cursor-pointer transition-colors duration-150" 
+               :class="{'bg-gray-700': currentLabel === 1}"
+               @click="selectLabel(1)">МинПром</p>
+            <p class="px-4 py-2 hover:bg-gray-700 cursor-pointer transition-colors duration-150" 
+               :class="{'bg-gray-700': currentLabel === 4}"
+               @click="selectLabel(4)">МинЭнерго</p>
+            <p class="px-4 py-2 hover:bg-gray-700 cursor-pointer transition-colors duration-150" 
+               :class="{'bg-gray-700': currentLabel === 2}"
+               @click="selectLabel(2)">СГП</p>
+          </div>
+        </transition>
+      </div>
     </div>
+    
     <div class="text-white grid grid-cols-[200px_1fr] gap-2">
       <div class="relative h-max">
         <highcharts class="hc map w-full" :options="chartOptions" />
@@ -55,7 +68,7 @@
   </BaseCard>
 </template>
 <script setup lang="ts">
-import { computed, ref } from "vue";
+import { computed, ref, onMounted, onUnmounted } from "vue";
 import BaseCard from "../../../shared/ui/BaseCard/BaseCard.vue";
 import { randomColorGenerate } from "../../../shared/helpers/randomColorGenerate";
 import { Numeral } from "../../../shared/helpers/numeral";
@@ -64,6 +77,44 @@ import { storeToRefs } from "pinia";
 
 const aStore = useAStore();
 const { a1FilterByOtrasl, currentLabel, currentOtrasl, currentProject } = storeToRefs(aStore);
+
+
+const isDropdownOpen = ref(false);
+
+const toggleDropdown = () => {
+  isDropdownOpen.value = !isDropdownOpen.value;
+};
+
+const selectLabel = (label: number) => {
+  aStore.setCurrentLabel(label);
+  isDropdownOpen.value = false;
+};
+
+
+const getSelectedLabel = computed(() => {
+  if (currentLabel.value === 1) return 'МинПром';
+  if (currentLabel.value === 4) return 'МинЭнерго';
+  if (currentLabel.value === 2) return 'СГП';
+  return 'Выбрать';
+});
+
+
+const handleClickOutside = (event: MouseEvent) => {
+  const target = event.target as HTMLElement;
+  if (isDropdownOpen.value && !target.closest('.dropdown-container')) {
+    isDropdownOpen.value = false;
+  }
+};
+
+
+onMounted(() => {
+  document.addEventListener('click', handleClickOutside);
+});
+
+
+onUnmounted(() => {
+  document.removeEventListener('click', handleClickOutside);
+});
 
 const list = computed(() =>
   a1FilterByOtrasl.value.reduce((acc, curr) => {
@@ -121,3 +172,15 @@ const chartOptions = computed(() => ({
   ],
 }));
 </script>
+
+<style scoped>
+.dropdown-enter-active,
+.dropdown-leave-active {
+  transition: all 0.2s;
+}
+.dropdown-enter-from,
+.dropdown-leave-to {
+  opacity: 0;
+  transform: translateY(-5px);
+}
+</style>

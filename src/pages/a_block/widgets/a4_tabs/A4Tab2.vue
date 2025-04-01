@@ -3,13 +3,33 @@
         <ul class="head text-white pb-1 mb-1 border-b border-gray-700 items-end w-[100%] sticky top-0 z-10 bg-[#1E2028]">
             <li class="w-[100%]"></li>
             <li class="w-[100%]">Наименование</li>
-            <li class="w-[100%]">Стоимость проекта</li>
+            <li class="w-[100%] cursor-pointer" @click="toggleSort('project_price')">
+                Стоимость проекта
+                <SortAscendingOutlined v-if="sortField === 'project_price' && sortOrder === 'asc'" class="text-blue-400 ml-1" />
+                <SortDescendingOutlined v-if="sortField === 'project_price' && sortOrder === 'desc'" class="text-blue-400 ml-1" />
+            </li>
             <li class="w-[100%]">Срок</li>
-            <li class="w-[100%]">План раб.мест</li>
-            <li class="w-[100%]">Факт раб.мест</li>
+            <li class="w-[100%] cursor-pointer" @click="toggleSort('work_places')">
+                План раб.мест
+                <SortAscendingOutlined v-if="sortField === 'work_places' && sortOrder === 'asc'" class="text-blue-400 ml-1" />
+                <SortDescendingOutlined v-if="sortField === 'work_places' && sortOrder === 'desc'" class="text-blue-400 ml-1" />
+            </li>
+            <li class="w-[100%] cursor-pointer" @click="toggleSort('fact_work')">
+                Факт раб.мест
+                <SortAscendingOutlined v-if="sortField === 'fact_work' && sortOrder === 'asc'" class="text-blue-400 ml-1" />
+                <SortDescendingOutlined v-if="sortField === 'fact_work' && sortOrder === 'desc'" class="text-blue-400 ml-1" />
+            </li>
             <li class="w-[100%]">%</li>
-            <li class="w-[100%]">План ФОТ</li>
-            <li class="w-[100%]">Факт ФОТ</li>
+            <li class="w-[100%] cursor-pointer" @click="toggleSort('plan_fot')">
+                План ФОТ
+                <SortAscendingOutlined v-if="sortField === 'plan_fot' && sortOrder === 'asc'" class="text-blue-400 ml-1" />
+                <SortDescendingOutlined v-if="sortField === 'plan_fot' && sortOrder === 'desc'" class="text-blue-400 ml-1" />
+            </li>
+            <li class="w-[100%] cursor-pointer" @click="toggleSort('fact_fot')">
+                Факт ФОТ
+                <SortAscendingOutlined v-if="sortField === 'fact_fot' && sortOrder === 'asc'" class="text-blue-400 ml-1" />
+                <SortDescendingOutlined v-if="sortField === 'fact_fot' && sortOrder === 'desc'" class="text-blue-400 ml-1" />
+            </li>
             <li class="w-[100%]">%</li>
             <li class="w-[100%]">СМЗ</li>
             <li class="w-[100%]">Риски КТР</li>
@@ -18,7 +38,7 @@
             <li class="w-[100%]">Отсутствует</li>
         </ul>
         <div class="body">
-            <RecycleScroller class="scroller h-full" :min-item-size="1" :items="a1FilterByProject" :item-size="1"
+            <RecycleScroller class="scroller h-full" :min-item-size="1" :items="sortedProjects" :item-size="1"
                 key-field="id" v-slot="{ item }" page-mode="contain">
                 <div class="head mt-1 min-h-[30px]">
                     <p class="w-full h-full flex items-center justify-center rounded bg-[#252A36] cursor-pointer">
@@ -135,9 +155,55 @@ import { Numeral } from '../../../../shared/helpers/numeral';
 import { useAStore } from '../../store';
 import { storeToRefs } from 'pinia';
 import { getColorFromGradient } from '../../../../shared/helpers/gradientColors';
+import { SortAscendingOutlined, SortDescendingOutlined } from '@ant-design/icons-vue';
+import { ref, computed } from 'vue';
 
 const aStore = useAStore()
 const { a1FilterByProject, currentProject } = storeToRefs(aStore);
+
+const sortField = ref('');
+const sortOrder = ref('asc');
+
+const toggleSort = (field: string) => {
+  if (sortField.value === field) {
+    sortOrder.value = sortOrder.value === 'asc' ? 'desc' : 'asc';
+  } else {
+    sortField.value = field;
+    sortOrder.value = 'asc';
+  }
+};
+
+const sortedProjects = computed(() => {
+  if (!sortField.value) {
+    return a1FilterByProject.value;
+  }
+
+  return [...a1FilterByProject.value].sort((a, b) => {
+    let valA, valB;
+
+    if (sortField.value === 'project_price') {
+      valA = Number(a.project_price || 0);
+      valB = Number(b.project_price || 0);
+    } else if (sortField.value === 'work_places') {
+      valA = Number(a.work_places || 0);
+      valB = Number(b.work_places || 0);
+    } else if (sortField.value === 'fact_work') {
+      valA = isExploitationCompleteForItem(a) ? Number(a.fact_work || 0) : (!isSMRActiveOrCompleteForItem(a) ? 0 : Number(a.data_project_temporaryworkplacescount || 0));
+      valB = isExploitationCompleteForItem(b) ? Number(b.fact_work || 0) : (!isSMRActiveOrCompleteForItem(b) ? 0 : Number(b.data_project_temporaryworkplacescount || 0));
+    } else if (sortField.value === 'plan_fot') {
+      valA = Number(a.plan_fot || 0);
+      valB = Number(b.plan_fot || 0);
+    } else if (sortField.value === 'fact_fot') {
+      valA = Number(a.fact_fot || 0);
+      valB = Number(b.fact_fot || 0);
+    } else {
+      valA = a[sortField.value] || 0;
+      valB = b[sortField.value] || 0;
+    }
+
+    return sortOrder.value === 'asc' ? valA - valB : valB - valA;
+  });
+});
 
 interface ProjectItem {
     project_start_date: string;
@@ -213,7 +279,7 @@ function getPercentText(item: ProjectItem) {
 .head {
     display: grid;
     grid-gap: 4px;
-    grid-template-columns: 2% 26% 7% 8% 5% 5% 3% 6% 6% 3% 5% 5% 5% 5% 5%;
+    grid-template-columns: 2% 26% 7% 7% 6% 6% 3% 6% 6% 3% 5% 5% 5% 5% 5%;
 }
 
 .element {
