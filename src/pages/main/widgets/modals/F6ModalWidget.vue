@@ -14,615 +14,425 @@
   
       <BaseCard
         v-else
-        title=""
-        number=""
+        title="Трудовые ресурсы"
+        number="F6"
         :show-close-button="true"
         @close="$emit('close')"
+        class="text-white"
       >
-        <div class="overflow-auto h-[calc(94vh)] grid grid-cols-2">
-          <div class="grid">
-           
-            
-            <highcharts :options="chartOptions" class="w-full m-auto h-max"></highcharts>
-          </div>
-          <div class="map h-[calc(90vh)] relative w-[calc(100%)] ml-[5px]">
-            <div
-            v-if="!!currentRegion"
-            class="rounded absolute z-10 top-5 right-5 bg-[#252A36] w-8 h-8 flex items-center justify-center cursor-pointer"
-            @click="() => {
-              if (!!currentRaion) {
-                currentRaion = null;
-                return;
-              }
-              currentRegion = null;
-            }"
-          >
-            <CloseOutlined />
-          </div>
-          
-          <div v-if="!isMapActive" class="absolute inset-0 flex items-center justify-center bg-[#222732] bg-opacity-80 z-10">
-            <div class="text-center p-6 bg-[#252A36] rounded-lg shadow-lg">
-              <p class="text-lg text-amber-400 mb-2">Нет данных для карты</p>
-              <p class="text-sm text-gray-300">В предоставленных данных отсутствует информация о регионах и районах</p>
-            </div>
-          </div>
-          
-          <BaseMap
-            v-if="!currentRegion"
-            :current-region="currentRegion ? Number(currentRegion) : undefined"
-            :fill-color="
-              (v) => {
-                const totalProc = groupByRegion[v]?.totalProc || 0;
-                const sortedRegions = Object.values(groupByRegion).sort((a, b) => b.totalProc - a.totalProc);
-                const index = sortedRegions.findIndex(region => region === groupByRegion[v]);
+      
+      <div class="flex justify-around mb-4">
+        <div class="text-xl font-semibold">ИНВЕСТПРОЕКТ</div>
+        <div class="text-xl font-semibold">ТиПО</div>
+      </div>
 
-                if (index < 6) {
-                  return getColorFromGradient(100); // Зеленый
-                } else if (index >= sortedRegions.length - 6) {
-                  return getColorFromGradient(10); // Красный
-                } else {
-                  return getColorFromGradient(50); // Оранжевый
-                }
-              }
-            "
-            @click-polygon="clickPolygon"
-            v-slot="slotProps"
-          >
-            <div>
-              <div class="flex items-center gap-2">
-                <p>Регион:</p>
-                <p class="font-bold">{{ slotProps.data.region }}</p>
-              </div>
-              <div class="flex items-center gap-2">
-                <p>Процент качественных рабочих мест:</p>
-                <p class="font-bold" :style="`color: ${
-                  (groupByRegion[slotProps.data.parent1_code?.toString()]?.totalProc || 0) >= 0 
-                    ? QUALITY_COLOR 
-                    : '#FE6A35'
-                }`">
-                  {{ ((groupByRegion[slotProps.data.parent1_code?.toString()]?.totalProc || 0) + 50).toFixed(1) }}%
-                </p>
+      <div class="flex space-x-6 mb-6 h-[calc(40vh)]">
+        
+        <div class="w-1/2">
+          <div class="grid grid-cols-3 text-sm mb-2">
+            <div class="font-medium">Наименование инвестпроекта</div>
+            <div class="font-medium">Профессия</div>
+            <div class="font-medium text-center">Кол-во</div>
+          </div>
+
+          <div class="max-h-[400px] overflow-y-auto">
+            <div v-for="(item, index) in investProjects" :key="index" class="grid grid-cols-3 text-sm py-2">
+              <div>{{ item.name }}</div>
+              <div>{{ item.profession }}</div>
+              <div class="text-center relative">
+                {{ item.count }}
+                <div class="absolute right-4 top-0 px-2 py-0.5 text-white text-xs rounded"
+                  :class="item.percent >= 70 ? 'bg-\[\#00ca72\]' : 'bg-\[\#ff3b30\]'">
+                  {{ item.percent }}%
+                </div>
               </div>
             </div>
-          </BaseMap>
-
-          <BaseMapNoMarker
-            v-else
-            :current-region="currentRegion ? Number(currentRegion) : 0"
-            :current-raion="currentRaion ? Number(currentRaion) : undefined"
-            :zoom="currentRegion ? getCityZoom(currentRegion) : 7"
-            :fill-color="(v) => {
-              if (!groupByRaion[v] || groupByRaion[v].parent1_code !== Number(currentRegion)) {
-                return '#222732'; 
-              }
-
-              const totalProc = groupByRaion[v].totalProc || 0;
-              const sortedRaions = Object.values(groupByRaion)
-                .filter(raion => raion.parent1_code === Number(currentRegion)) 
-                .sort((a, b) => b.totalProc - a.totalProc);
-              const index = sortedRaions.findIndex(raion => raion === groupByRaion[v]);
-
-              if (Number(currentRegion) === 710000000 || 
-                  Number(currentRegion) === 750000000 || 
-                  Number(currentRegion) === 790000000 ||
-                  Number(currentRegion) === 620000000 ||
-                  Number(currentRegion) === 470000000) {
-                if (index < 2) {
-                  return getColorFromGradient(100);
-                } else if (index >= sortedRaions.length - 2) {
-                  return getColorFromGradient(10);
-                } else {
-                  return getColorFromGradient(50);
-                }
-              } else {
-                if (index < 6) {
-                  return getColorFromGradient(100);
-                } else if (index >= sortedRaions.length - 6) {
-                  return getColorFromGradient(10);
-                } else {
-                  return getColorFromGradient(50);
-                }
-              }
-            }"
-            @click-polygon="clickRaion"
-            v-slot="slotProps"
-          >
-            <div>
-              <div class="flex items-center gap-2">
-                <p>Район:</p>
-                <p class="font-bold">{{ slotProps.data.raion }}</p>
-              </div>
-              <div class="flex items-center gap-2">
-                <p>Процент качественных рабочих мест:</p>
-                <p class="font-bold" :style="`color: ${
-                  (groupByRaion[slotProps.data.parent2_code?.toString()]?.totalProc || 0) >= 0 
-                    ? QUALITY_COLOR 
-                    : '#FE6A35'
-                }`">
-                  {{ ((groupByRaion[slotProps.data.parent2_code?.toString()]?.totalProc || 0) + 50).toFixed(1) }}%
-                </p>
-              </div>
-            </div>
-          </BaseMapNoMarker>
           </div>
         </div>
+
+        
+        <div class="w-1/2">
+          <div class="grid grid-cols-3 text-sm mb-2">
+            <div class="font-medium">Наименование ТиПО</div>
+            <div class="font-medium">Специальность</div>
+            <div class="font-medium text-center">Кол-во</div>
+          </div>
+
+          <div class="max-h-[400px] overflow-y-auto">
+            <div v-for="(item, index) in tipoItems" :key="index" class="grid grid-cols-3 text-sm py-2">
+              <div>{{ item.name }}</div>
+              <div>{{ item.specialty }}</div>
+              <div class="text-center">{{ item.count }}</div>
+            </div>
+          </div>
+        </div>
+      </div>
+     
+
+      <div class="map h-[calc(45vh)] relative">
+       
+        <div v-if="!!currentRegion"
+          class="rounded absolute z-10 top-5 right-5 bg-[#252A36] w-8 h-8 flex items-center justify-center cursor-pointer"
+          @click="() => {
+            if (!!currentRaion) {
+              aStore.setCurrentRaion(null);
+              return;
+            }
+            currentRegion = null;
+            aStore.setCurrentRaion(null);
+          }">
+          <CloseOutlined />
+        </div>
+        
+       
+        <BaseMap v-if="!currentRegion" class="h-full" :current-region="undefined" :zoom="4" :fill-color="(v: string) => {
+          if (!groupByRegion[v]) {
+            return '#222732'
+          }
+
+          if (currentTypeKey === 'project_duration') {
+            return getColorFromGradient((groupByRegion[v].sroki_dolg + groupByRegion[v].sroki_krat + groupByRegion[v].sroki_sred) / (sroki || 1) * 100, false, false, 10)
+          }
+
+          if (currentTypeKey === 'percentage_risk_region') {
+            const _color = getColorFromGradient((groupByRegion[v].risk_vysok + groupByRegion[v].risk_sred) / (risk || 1) * 100, true, false, 10)
+            return _color === '#222732' ? '#059669' : _color
+          }
+
+          const _gradientBlue = ['count', 'project_price', 'project_duration', 'act_exploitation'].includes(currentTypeKey || '')
+          const sum = SumValues[currentTypeKey || ''] || 1
+          return getColorFromGradient(groupByRegion[v][currentTypeKey || ''] / sum * 100, false, _gradientBlue, 10)
+        }" @click-polygon="clickPolygon" v-slot="slotProps">
+          <div class="flex">
+            <p>Регион: </p>
+            <p class="font-bold">{{ slotProps.data.region }}</p>
+          </div>
+          <template v-if="currentTypeKey === 'percentage_risk_region'">
+            <div class="flex">
+              <p>Отсутствует: </p>
+              <p class="font-bold">{{ Numeral(groupByRegion[slotProps.data.parent1_code]?.risk_otsut) }}</p>
+            </div>
+            <div class="flex">
+              <p>Высокий: </p>
+              <p class="font-bold">{{ Numeral(groupByRegion[slotProps.data.parent1_code]?.risk_vysok) }}</p>
+            </div>
+            <div class="flex">
+              <p>Средний: </p>
+              <p class="font-bold">{{ Numeral(groupByRegion[slotProps.data.parent1_code]?.risk_sred) }}</p>
+            </div>
+          </template>
+          <template v-else-if="currentTypeKey === 'project_duration'">
+            <div class="flex">
+              <p>Краткосрочные (0-5 лет): </p>
+              <p class="font-bold">{{ Numeral(groupByRegion[slotProps.data.parent1_code]?.sroki_dolg) }}</p>
+            </div>
+            <div class="flex">
+              <p>Среднесрочные (6-10 лет): </p>
+              <p class="font-bold">{{ Numeral(groupByRegion[slotProps.data.parent1_code]?.sroki_sred) }}</p>
+            </div>
+            <div class="flex">
+              <p>Долгосрочные (11-20 лет): </p>
+              <p class="font-bold">{{ Numeral(groupByRegion[slotProps.data.parent1_code]?.sroki_krat) }}</p>
+            </div>
+          </template>
+          <div class="flex" v-else>
+            <p>{{listLabels.find((item) => item.key === currentTypeKey)?.name}}: </p>
+            <p class="font-bold">{{ Numeral(groupByRegion[slotProps.data.parent1_code]?.[currentTypeKey || '']) }}</p>
+          </div>
+        </BaseMap>
+
+      
+        <BaseMapRegion v-else class="h-full" :current-region="currentRegion as number" :current-raion="currentRaion as number" :zoom="6"
+          :fill-color="(v: string) => {
+            if (!groupByRaion[v]) {
+              return '#222732'
+            }
+
+            if (currentTypeKey === 'project_duration') {
+              return getColorFromGradient((groupByRaion[v].sroki_dolg + groupByRaion[v].sroki_krat + groupByRaion[v].sroki_sred) / (sroki || 1) * 100, false, false, 10)
+            }
+
+            if (currentTypeKey === 'percentage_risk_region') {
+              if (groupByRaion[v].risk_vysok + groupByRaion[v].risk_sred + groupByRaion[v].risk_otsut === 0) return '#222732'
+              const _color = getColorFromGradient((groupByRaion[v].risk_vysok + groupByRaion[v].risk_sred) / (risk || 1) * 100, true, false, 10)
+              return _color === '#222732' ? '#059669' : _color
+            }
+
+            const _gradientBlue = ['count', 'project_price', 'project_duration', 'act_exploitation'].includes(currentTypeKey || '')
+            const sum = SumValues[currentTypeKey || ''] || 1
+            return getColorFromGradient(groupByRaion[v][currentTypeKey || ''] / sum * 100, false, _gradientBlue, 10)
+          }" @click-polygon="(code: string) => aStore.setCurrentRaion(+code)" v-slot="slotProps">
+          <div class="flex">
+            <p>Район: </p>
+            <p class="font-bold">{{ slotProps.data.region }}, {{ slotProps.data.raion }}</p>
+          </div>
+          <template v-if="currentTypeKey === 'percentage_risk_region'">
+            <div class="flex">
+              <p>Отсутствует: </p>
+              <p class="font-bold">{{ Numeral(groupByRaion[slotProps.data.parent2_code]?.risk_otsut) }}</p>
+            </div>
+            <div class="flex">
+              <p>Высокий: </p>
+              <p class="font-bold">{{ Numeral(groupByRaion[slotProps.data.parent2_code]?.risk_vysok) }}</p>
+            </div>
+            <div class="flex">
+              <p>Средний: </p>
+              <p class="font-bold">{{ Numeral(groupByRaion[slotProps.data.parent2_code]?.risk_sred) }}</p>
+            </div>
+          </template>
+          <template v-else-if="currentTypeKey === 'project_duration'">
+            <div class="flex">
+              <p>Краткосрочные (0-5 лет): </p>
+              <p class="font-bold">{{ Numeral(groupByRaion[slotProps.data.parent2_code]?.sroki_dolg) }}</p>
+            </div>
+            <div class="flex">
+              <p>Среднесрочные (6-10 лет): </p>
+              <p class="font-bold">{{ Numeral(groupByRaion[slotProps.data.parent2_code]?.sroki_sred) }}</p>
+            </div>
+            <div class="flex">
+              <p>Долгосрочные (11-20 лет): </p>
+              <p class="font-bold">{{ Numeral(groupByRaion[slotProps.data.parent2_code]?.sroki_krat) }}</p>
+            </div>
+          </template>
+          <div class="flex" v-else>
+            <p>{{listLabels.find((item) => item.key === currentTypeKey)?.name}}: </p>
+            <p class="font-bold">{{ Numeral(groupByRaion[slotProps.data.parent2_code]?.[currentTypeKey || '']) }}</p>
+          </div>
+        </BaseMapRegion>
+      </div>
       </BaseCard>
     </a-modal>
   </template>
   <script setup lang="ts">
-  import { getColorFromGradient } from "../../../../shared/helpers/gradientColors";
-  import { CloseOutlined } from "@ant-design/icons-vue";
-  import { computed, ref, watch } from "vue";
+  import { computed, ref } from 'vue';
+  import BaseMap from '../../../../shared/ui/BaseMap/BaseMap.vue';
+  import BaseMapRegion from '../../../../shared/ui/BaseMap/BaseMapRegion.vue';
+  import { useAStore } from '../../../a_block/store';
+  import { Numeral } from '../../../../shared/helpers/numeral';
+  import { storeToRefs } from 'pinia';
+  import { getColorFromGradient } from '../../../../shared/helpers/gradientColors';
   import BaseCard from "../../../../shared/ui/BaseCard/BaseCard.vue";
-  import BaseMap from "../../../../shared/ui/BaseMap/BaseMap.vue";
-  import BaseMapNoMarker from "../../../../shared/ui/BaseMap/BaseMapNoMarker.vue";
-  import { Numeral } from "../../../../shared/helpers/numeral";
-
-  // Константы цветов для использования в компоненте
-  const QUALITY_COLOR = '#109669'; // Зеленый
-  const NOT_QUALITY_COLOR = '#3090E8'; // Синий
-  const TOTAL_COLOR = '#9370DB'; // Фиолетовый
-
-  interface F6Data {
-    tp: number;
-    id_reg: number | null;
-    reg_ru: string | null;
-    id_rai: number | null;
-    rai_ru: string | null;
-    vcode_oked: string;
-    vname_oked: string;
-    cnt: number;
-    cnt_quality: number;
-    cnt_not_quality: number;
-    parent1_code: number | string | null;
-    parent2_code: number | string | null;
-  }
-
+  import { CloseOutlined } from '@ant-design/icons-vue';
+  
   const props = defineProps<{
-    data: F6Data[];
     visible: boolean;
   }>();
-
-  const currentRegion = ref<string | null>(null);
-  const currentRaion = ref<string | null>(null);
-  const loader = ref(false);
-
-  defineEmits(['close']);
-
   
-  const getCityZoom = (regionCode: string | null): number => {
-    if (regionCode === null) return 7;
-    
-    
-    const regionNumber = Number(regionCode);
-    if (
-      regionNumber === 710000000 || 
-      regionNumber === 750000000 || 
-      regionNumber === 790000000
-    ) {
-      return 10; 
-    }
-    
-    return 7; 
+  defineEmits(['close']);
+  
+  const loader = ref(false);
+  const aStore = useAStore();
+  const { currentRegion, currentRaion, a1FilterByProject, currentTypeKey } = storeToRefs(aStore);
+  
+  // Моковые данные для таблиц
+  const investProjects = ref([
+    { name: 'Строительство нового ГПЗ', profession: 'Инженер', count: 7, percent: 32 },
+    { name: 'Переработка зерна', profession: 'Агроном', count: 12, percent: 74 },
+    { name: 'Строительство нового ГПЗ', profession: 'Инженер', count: 7, percent: 32 },
+    { name: 'Переработка зерна', profession: 'Агроном', count: 12, percent: 74 },
+    { name: 'Строительство нового ГПЗ', profession: 'Инженер', count: 7, percent: 32 },
+    { name: 'Переработка зерна', profession: 'Агроном', count: 12, percent: 74 },
+    { name: 'Строительство нового ГПЗ', profession: 'Инженер', count: 7, percent: 32 },
+    { name: 'Переработка зерна', profession: 'Агроном', count: 12, percent: 74 },
+  ]);
+  
+  const tipoItems = ref([
+    { name: 'Политехнический колледж', specialty: 'Токарь', count: 2 },
+    { name: 'Агроколледж', specialty: 'Технолог', count: 10 },
+    { name: 'Политехнический колледж', specialty: 'Токарь', count: 2 },
+    { name: 'Агроколледж', specialty: 'Технолог', count: 10 },
+    { name: 'Политехнический колледж', specialty: 'Токарь', count: 2 },
+    { name: 'Агроколледж', specialty: 'Технолог', count: 10 },
+    { name: 'Политехнический колледж', specialty: 'Токарь', count: 2 },
+    { name: 'Агроколледж', specialty: 'Технолог', count: 10 },
+  ]);
+  
+  type ProjectItem = {
+    id: string;
+    project_price: number;
+    work_places: number;
+    plan_fot: number;
+    ball_tip_name: string;
+    duration_label: string;
+    parent1_code: string;
+    parent2_code: string;
+    [key: string]: any;
   };
-
-
-  function clickPolygon(code: string) {
-    console.log('Выбран регион с кодом:', code);
-    currentRegion.value = code;
-    currentRaion.value = null;
+  
+  const groupByProject = computed(() => {
+    return Object.values(a1FilterByProject.value.reduce<Record<string, ProjectItem>>((acc, curr) => {
+      acc[curr.id] = { ...curr };
+      return acc;
+    }, {}));
+  });
+  
+  const project_price = computed(() => {
+    return groupByProject.value.reduce<number>((acc, curr) => acc + curr.project_price, 0);
+  });
+  
+  const work_places = computed(() => {
+    return groupByProject.value.reduce<number>((acc, curr) => acc + curr.work_places, 0);
+  });
+  
+  const plan_fot = computed(() => {
+    return groupByProject.value.reduce<number>((acc, curr) => acc + curr.plan_fot, 0);
+  });
+  
+  const risk = computed(() => {
+    return groupByProject.value.reduce<number>((acc, curr) => {
+      if (['Не определено', 'Отсутствует'].includes(curr.ball_tip_name)) return acc;
+      return acc + 1;
+    }, 0);
+  });
+  
+  const sroki = computed(() => {
+    return groupByProject.value.reduce<number>((acc, curr) => {
+      acc += curr.duration_label.includes('Долгосрочные') ? 1 : 0;
+      acc += curr.duration_label.includes('Среднесрочные') ? 1 : 0;
+      acc += curr.duration_label.includes('Краткосрочные') ? 1 : 0;
+      return acc;
+    }, 0);
+  });
+  
+  const project_duration = computed(() => {
+    return groupByProject.value.reduce<Record<string, number>>((acc, curr) => {
+      if (acc[curr.duration_label])
+        acc[curr.duration_label] += 1;
+      else
+        acc[curr.duration_label] = 1;
+      return acc;
+    }, {});
+  });
+  
+  const percentage_risk_region = computed(() => {
+    return groupByProject.value.reduce<Record<string, number>>((acc, curr) => {
+      if (['Не определено'].includes(curr.ball_tip_name)) return acc;
+      if (acc[curr.ball_tip_name])
+        acc[curr.ball_tip_name] += 1;
+      else
+        acc[curr.ball_tip_name] = 1;
+      return acc;
+    }, {});
+  });
+  
+  interface SumValuesType {
+    count: number;
+    project_price: number;
+    work_places: number;
+    plan_fot: number;
+    project_duration: Record<string, number>;
+    percentage_risk_region: Record<string, number>;
+    [key: string]: any;
   }
-
-  function clickRaion(code: string) {
-    console.log('Выбран район с кодом:', code);
-    
-    
-    const raionData = props.data.find(item => 
-      item.tp === 4 && safeCompare(item.parent2_code, code)
-    );
-    
-   
-    if (raionData && raionData.parent1_code) {
-     
-      if (!currentRegion.value) {
-        currentRegion.value = raionData.parent1_code.toString();
-      }
-    }
-    
-    currentRaion.value = code;
-  }
-
-
- 
-
- 
-  const EXCLUDED_OKED_CATEGORIES = [
-    "Окэд не указан", 
-    "Дея-ть экстерриториальных организаций", 
-    "Дея-ть домашних хозяйств"
-  ];
-
-  function safeCompare(value1: string | number | null | undefined, value2: string | number | null | undefined): boolean {
-    if (value1 === null || value1 === undefined || value2 === null || value2 === undefined) {
-      return false;
-    }
-    
-    const str1 = String(value1).trim();
-    const str2 = String(value2).trim();
-    
-    if (str1 === str2) {
-      return true;
-    }
-    
-    const norm1 = str1.replace(/^0+/, '');
-    const norm2 = str2.replace(/^0+/, '');
-    
-    return norm1 === norm2;
-  }
-
-  const filteredData = computed(() => {
-    let filtered = props.data;
-    console.log('Всего записей:', props.data.length);
-
-    if (currentRaion.value) {
-      filtered = filtered.filter(item => {
-        const matchCode = safeCompare(item.parent2_code, currentRaion.value);
-        const match = (item.tp === 4) && matchCode;
-        return match;
-      });
-      console.log('После фильтрации по району:', filtered.length);
-    } else if (currentRegion.value) {
-      filtered = filtered.filter(item => {
-        const matchCode = safeCompare(item.parent1_code, currentRegion.value);
-        
-        const match = (item.tp === 3 || item.tp === 1) && matchCode;
-        return match;
-      });
-      console.log('После фильтрации по региону:', filtered.length);
-      
-      if (filtered.length < 3) {
-        console.log('Мало данных, пробуем альтернативный подход');
-        
-        const regionInfo = props.data.find(item => 
-          item.parent1_code?.toString() === currentRegion.value && item.reg_ru
-        );
-        
-        if (regionInfo && regionInfo.reg_ru) {
-          console.log('Пробуем фильтровать по имени региона:', regionInfo.reg_ru);
-          
-          const regionName = regionInfo.reg_ru;
-          const regionRecords = props.data.filter(item => 
-            (item.tp === 3 || item.tp === 1) && item.reg_ru === regionName
-          );
-          
-          if (regionRecords.length > 0) {
-            filtered = regionRecords;
-            console.log('Найдено записей по имени региона:', filtered.length);
-          }
-        }
-      }
-    } else {
-      filtered = filtered.filter(item => item.tp === 3);
-      
-      if (filtered.length === 0) {
-        filtered = props.data.filter(item => item.tp === 1);
-        console.log('Используем данные tp=1:', filtered.length);
-      }
-      
-      console.log('Общие данные:', filtered.length);
-    }
-
-    filtered = filtered.filter(item => !EXCLUDED_OKED_CATEGORIES.includes(item.vname_oked));
-    console.log('После исключения категорий:', filtered.length);
-    
-    if (filtered.length === 0) {
-      console.warn('Данных не найдено, используем запасной вариант');
-      
-      if (currentRaion.value) {
-        filtered = props.data.filter(item => item.tp === 4);
-      } else if (currentRegion.value) {
-        filtered = props.data.filter(item => item.tp === 3 || item.tp === 1);
-      } else {
-        filtered = props.data;
-      }
-      
-      filtered = filtered.filter(item => !EXCLUDED_OKED_CATEGORIES.includes(item.vname_oked));
-      console.log('Запасной вариант, записей:', filtered.length);
-    }
-
-    const grouped = filtered.reduce((acc, curr) => {
-      if (!curr.vcode_oked) return acc;
-
-      if (!acc[curr.vcode_oked]) {
-        acc[curr.vcode_oked] = {
+  
+  const SumValues = computed<SumValuesType>(() => {
+    return {
+      count: groupByProject.value.length,
+      project_price: project_price.value,
+      work_places: work_places.value,
+      plan_fot: plan_fot.value,
+      project_duration: project_duration.value,
+      percentage_risk_region: percentage_risk_region.value,
+    };
+  });
+  
+  const listLabels = computed(() => [
+    { name: 'Инвестпроекты', icon: '/img/m1-4.png', percent: 0, key: 'count', value: groupByProject.value.length },
+    { name: 'Инвестиции', icon: '/img/m1-4.png', percent: 0, key: 'project_price', value: project_price.value },
+    { name: 'Рабочие места', icon: '/img/m1-2.png', percent: 0, key: 'work_places', value: work_places.value },
+    { name: 'ФОТ', icon: '/img/m2-1.png', percent: 0, key: 'plan_fot', value: plan_fot.value },
+    { name: 'Сроки', icon: '/img/m1-4.png', percent: 0, key: 'project_duration', value: project_duration.value },
+    { name: 'Трудовой риск', icon: '/img/m1-3.png', percent: 0, key: 'percentage_risk_region', value: percentage_risk_region.value },
+  ]);
+  
+  const clickPolygon = (code: string) => {
+    currentRegion.value = +code;
+  };
+  
+  type RegionData = ProjectItem & {
+    count: number;
+    sroki_dolg: number;
+    sroki_sred: number;
+    sroki_krat: number;
+    risk_otsut: number;
+    risk_vysok: number;
+    risk_sred: number;
+  };
+  
+  const groupByRegion = computed(() => {
+    return a1FilterByProject.value.reduce<Record<string, RegionData>>((acc, curr) => {
+      if (!acc[curr.parent1_code]) {
+        acc[curr.parent1_code] = {
           ...curr,
-          cnt: curr.cnt,
-          cnt_quality: curr.cnt_quality,
-          cnt_not_quality: curr.cnt_not_quality
+          count: 1,
+          sroki_dolg: curr.duration_label.includes('Долгосрочные') ? 1 : 0,
+          sroki_sred: curr.duration_label.includes('Среднесрочные') ? 1 : 0,
+          sroki_krat: curr.duration_label.includes('Краткосрочные') ? 1 : 0,
+          risk_otsut: curr.ball_tip_name.includes('Отсутствует') ? 1 : 0,
+          risk_vysok: curr.ball_tip_name.includes('Высокий') ? 1 : 0,
+          risk_sred: curr.ball_tip_name.includes('Средний') ? 1 : 0,
         };
         return acc;
       }
-
-      acc[curr.vcode_oked].cnt += curr.cnt;
-      acc[curr.vcode_oked].cnt_quality += curr.cnt_quality;
-      acc[curr.vcode_oked].cnt_not_quality += curr.cnt_not_quality;
-      
+  
+      acc[curr.parent1_code].project_price += curr.project_price;
+      acc[curr.parent1_code].work_places += curr.work_places;
+      acc[curr.parent1_code].plan_fot += curr.plan_fot;
+      acc[curr.parent1_code].count += 1;
+  
+      acc[curr.parent1_code].sroki_dolg += curr.duration_label.includes('Долгосрочные') ? 1 : 0;
+      acc[curr.parent1_code].sroki_sred += curr.duration_label.includes('Среднесрочные') ? 1 : 0;
+      acc[curr.parent1_code].sroki_krat += curr.duration_label.includes('Краткосрочные') ? 1 : 0;
+  
+      acc[curr.parent1_code].risk_otsut += curr.ball_tip_name.includes('Отсутствует') ? 1 : 0;
+      acc[curr.parent1_code].risk_vysok += curr.ball_tip_name.includes('Высокий') ? 1 : 0;
+      acc[curr.parent1_code].risk_sred += curr.ball_tip_name.includes('Средний') ? 1 : 0;
+  
       return acc;
-    }, {} as Record<string, F6Data>);
-
-    return Object.values(grouped).sort((a, b) => b.cnt - a.cnt);
+    }, {});
   });
-
-  const groupByRegion = computed(() => {
-    const result = props.data
-      .filter(item => item.tp === 3 && !EXCLUDED_OKED_CATEGORIES.includes(item.vname_oked))
-      .reduce((acc, curr) => {
-        const regionCode = curr.parent1_code?.toString() || "";
-        
-        if (!acc[regionCode]) {
-          const qualityPercent = curr.cnt > 0 
-            ? (curr.cnt_quality / curr.cnt) * 100 - 50 
-            : 0;
-            
-          acc[regionCode] = { 
-            ...curr,
-            totalProc: qualityPercent
-          };
-          return acc;
-        }
-
-        acc[regionCode].cnt += curr.cnt;
-        acc[regionCode].cnt_quality += curr.cnt_quality;
-        acc[regionCode].cnt_not_quality += curr.cnt_not_quality;
-        
-        const totalCnt = acc[regionCode].cnt;
-        const qualityCnt = acc[regionCode].cnt_quality;
-        acc[regionCode].totalProc = totalCnt > 0 
-          ? (qualityCnt / totalCnt) * 100 - 50 
-          : 0;
-        
-        return acc;
-      }, {} as Record<string, F6Data & { totalProc: number }>);
-
-    return result;
-  });
-
+  
   const groupByRaion = computed(() => {
-    const result = props.data
-      .filter(item => item.tp === 4 && !EXCLUDED_OKED_CATEGORIES.includes(item.vname_oked))
-      .reduce((acc, curr) => {
-        const raionCode = curr.parent2_code?.toString() || "";
-        const parent1Code = curr.parent1_code ? Number(curr.parent1_code) : null;
-        
-        if (!acc[raionCode]) {
-          const qualityPercent = curr.cnt > 0 
-            ? (curr.cnt_quality / curr.cnt) * 100 - 50 
-            : 0;
-            
-          acc[raionCode] = { 
-            ...curr,
-            parent1_code: parent1Code,
-            totalProc: qualityPercent
-          };
-          return acc;
-        }
-
-        acc[raionCode].cnt += curr.cnt;
-        acc[raionCode].cnt_quality += curr.cnt_quality;
-        acc[raionCode].cnt_not_quality += curr.cnt_not_quality;
-        
-        const totalCnt = acc[raionCode].cnt;
-        const qualityCnt = acc[raionCode].cnt_quality;
-        acc[raionCode].totalProc = totalCnt > 0 
-          ? (qualityCnt / totalCnt) * 100 - 50 
-          : 0;
-        
+    return a1FilterByProject.value.reduce<Record<string, RegionData>>((acc, curr) => {
+      if (!acc[curr.parent2_code]) {
+        acc[curr.parent2_code] = {
+          ...curr,
+          count: 1,
+          sroki_dolg: curr.duration_label.includes('Долгосрочные') ? 1 : 0,
+          sroki_sred: curr.duration_label.includes('Среднесрочные') ? 1 : 0,
+          sroki_krat: curr.duration_label.includes('Краткосрочные') ? 1 : 0,
+          risk_otsut: curr.ball_tip_name.includes('Отсутствует') ? 1 : 0,
+          risk_vysok: curr.ball_tip_name.includes('Высокий') ? 1 : 0,
+          risk_sred: curr.ball_tip_name.includes('Средний') ? 1 : 0,
+        };
         return acc;
-      }, {} as Record<string, F6Data & { parent1_code: number | null, totalProc: number }>);
-
-    return result;
-  });
-
-  const selectedAreaStats = computed(() => {
-    let qualityTotal = 0;
-    let notQualityTotal = 0;
-    let allTotal = 0;
-    
-    filteredData.value.forEach(item => {
-      qualityTotal += item.cnt_quality;
-      notQualityTotal += item.cnt_not_quality;
-      allTotal += item.cnt;
-    });
-    
-    const qualityPercent = allTotal > 0 ? (qualityTotal / allTotal) * 100 : 0;
-    const notQualityPercent = allTotal > 0 ? (notQualityTotal / allTotal) * 100 : 0;
-    
-    return {
-      qualityTotal,
-      notQualityTotal,
-      allTotal,
-      qualityPercent,
-      notQualityPercent
-    };
-  });
-
-  const selectedRegionName = computed(() => {
-    if (!currentRegion.value) return '';
-    
-    const regionData = props.data.find(item => 
-      (item.tp === 3 || item.tp === 1) && safeCompare(item.parent1_code, currentRegion.value) && item.reg_ru
-    );
-    
-    return regionData?.reg_ru || '';
-  });
-
-  const selectedRaionName = computed(() => {
-    if (!currentRaion.value) return '';
-    
-    const raionData = props.data.find(item => 
-      item.tp === 4 && safeCompare(item.parent2_code, currentRaion.value) && item.rai_ru
-    );
-    
-    return raionData?.rai_ru || '';
-  });
-
-  const getFullTerritoryName = computed(() => {
-    if (currentRaion.value && selectedRaionName.value) {
-      if (selectedRegionName.value) {
-        return `${selectedRegionName.value}, ${selectedRaionName.value}`;
-      } else {
-        return selectedRaionName.value;
       }
-    } else if (currentRegion.value && selectedRegionName.value) {
-      return selectedRegionName.value;
-    }
-    return "Республика Казахстан";
-  });
-
-  const chartOptions = computed(() => {
-    let chartTitle = getFullTerritoryName.value;
-    
-    return {
-      chart: {
-        type: "bar",
-        height: "150%",
-        backgroundColor: "transparent",
-        spacingLeft: 10,
-        spacingRight: 10,
-        marginTop: 50,
-        marginBottom: 50,
-        animation: {
-          duration: 500
-        }
-      },
-      title: {
-        text: chartTitle,
-        style: {
-          color: "#fff",
-          fontSize: "16px"
-        }
-      },
-      xAxis: {
-        categories: filteredData.value.slice(0, 19).map(item => item.vname_oked),
-        labels: {
-          style: {
-            color: "#fff",
-            fontSize: "10px",
-          },
-        },
-      },
-      yAxis: {
-        min: 0,
-        title: {
-          text: null
-        },
-        labels: {
-          enabled: false,
-        },
-        gridLineWidth: 0,
-      },
-      legend: {
-        enabled: false,
-        align: 'right',
-        verticalAlign: 'middle',
-        layout: 'vertical',
-        itemStyle: {
-          color: '#fff',
-          fontWeight: 'normal'
-        }
-      },
-      tooltip: {
-        useHTML: true,
-        formatter: function(this: Highcharts.TooltipFormatterContextObject): string {
-          const series = this.series;
-          const point = this.point;
-          const x = this.x;
-          const y = this.y || 0;
-          
-          const categoryData = filteredData.value.find(item => item.vname_oked === x);
-          const qualityCount = categoryData ? categoryData.cnt_quality : 0;
-          const notQualityCount = categoryData ? categoryData.cnt_not_quality : 0;
-          const totalCount = qualityCount + notQualityCount;
-          
-         
-          const colorCircle = (color: string) => 
-            `<div style="display:inline-block; width:12px; height:12px; border-radius:50%; background-color:${color}; margin-right:6px; vertical-align:middle;"></div>`;
-            
-          return `<div><b>${x}</b><br/>
-                  <div style="display:flex; align-items:center; margin-top:5px;">
-                    ${colorCircle(QUALITY_COLOR)}
-                    <span>Качественные: ${Numeral(qualityCount)} (${((qualityCount / totalCount) * 100).toFixed(1)}%)</span>
-                  </div>
-                  <div style="display:flex; align-items:center; margin-top:3px;">
-                    ${colorCircle(NOT_QUALITY_COLOR)}
-                    <span>Некачественные: ${Numeral(notQualityCount)} (${((notQualityCount / totalCount) * 100).toFixed(1)}%)</span>
-                  </div>
-                  <div style="display:flex; align-items:center; margin-top:3px;">
-                    ${colorCircle(TOTAL_COLOR)}
-                    <span>Всего: ${Numeral(totalCount)}</span>
-                  </div></div>`;
-        }
-      },
-      plotOptions: {
-        series: {
-          stacking: 'normal',
-          borderWidth: 0,
-          pointWidth: 30,
-          minPointLength: 1,
-          groupPadding: 0.1,
-          pointPadding: 0.05,
-          dataLabels: {
-            enabled: true,
-            formatter: function(this: Highcharts.PointLabelObject): string {
-              if (this.y && this.y > 1000) {
-                return Numeral(this.y);
-              } else if (this.y && this.y > 0) {
-                return this.y > 500 ? Numeral(this.y) : '';
-              }
-              return '';
-            },
-            style: {
-              color: '#fff',
-              textOutline: 'none',
-              fontSize: '11px',
-              fontWeight: 'normal'
-            },
-            inside: true,
-            crop: false,
-            overflow: 'allow'
-          }
-        }
-      },
-      colors: [QUALITY_COLOR, NOT_QUALITY_COLOR],
-      series: [
-        {
-          name: 'Качественные',
-          data: filteredData.value.slice(0, 19).map(item => ({
-            y: item.cnt_quality,
-            dataLabels: {
-              enabled: item.cnt_quality > 500
-            }
-          })),
-        },
-        {
-          name: 'Рабочие места',
-          data: filteredData.value.slice(0, 19).map(item => ({
-            y: item.cnt_not_quality,
-            dataLabels: {
-              enabled: item.cnt_not_quality > 500
-            }
-          })),
-        }
-      ]
-    };
-  });
-
-  const isMapActive = computed(() => {
-    return props.data.some(item => item.parent1_code || item.parent2_code);
-  });
-
-  const hasChartData = computed(() => {
-    return filteredData.value.length > 0;
+  
+      acc[curr.parent2_code].project_price += curr.project_price;
+      acc[curr.parent2_code].work_places += curr.work_places;
+      acc[curr.parent2_code].plan_fot += curr.plan_fot;
+      acc[curr.parent2_code].count += 1;
+  
+      acc[curr.parent2_code].sroki_dolg += curr.duration_label.includes('Долгосрочные') ? 1 : 0;
+      acc[curr.parent2_code].sroki_sred += curr.duration_label.includes('Среднесрочные') ? 1 : 0;
+      acc[curr.parent2_code].sroki_krat += curr.duration_label.includes('Краткосрочные') ? 1 : 0;
+  
+      acc[curr.parent2_code].risk_otsut += curr.ball_tip_name.includes('Отсутствует') ? 1 : 0;
+      acc[curr.parent2_code].risk_vysok += curr.ball_tip_name.includes('Высокий') ? 1 : 0;
+      acc[curr.parent2_code].risk_sred += curr.ball_tip_name.includes('Средний') ? 1 : 0;
+  
+      return acc;
+    }, {});
   });
   </script>
+  
+  <style scoped>
+  .bg-\[\#00ca72\] {
+    background-color: #00ca72;
+  }
+  
+  .bg-\[\#ff3b30\] {
+    background-color: #ff3b30;
+  }
+  </style>
   
