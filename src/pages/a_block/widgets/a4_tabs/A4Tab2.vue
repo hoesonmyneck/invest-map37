@@ -1,34 +1,39 @@
 <template>
     <div class="overflow-scroll h-[27vh] text-white text-[12px]">
-        <ul class="head text-white pb-1 mb-1 border-b border-gray-700 items-end w-[100%] sticky top-0 z-10 bg-[#1E2028]">
+        <ul class="head text-white pb-1 mb-1 border-b border-gray-700 items-start w-[100%] sticky top-0 z-10 bg-[#1E2028]">
             <li class="w-[100%]"></li>
             <li class="w-[100%]">Наименование</li>
             <li class="w-[100%] cursor-pointer" @click="toggleSort('project_price')">
                 Стоимость проекта
                 <SortAscendingOutlined v-if="sortField === 'project_price' && sortOrder === 'asc'" class="text-blue-400 ml-1" />
                 <SortDescendingOutlined v-if="sortField === 'project_price' && sortOrder === 'desc'" class="text-blue-400 ml-1" />
+                <br><br>Общее: {{ Numeral(totalProjectPrice) }}
             </li>
             <li class="w-[100%]">Срок</li>
             <li class="w-[100%] cursor-pointer" @click="toggleSort('work_places')">
                 План раб.мест
                 <SortAscendingOutlined v-if="sortField === 'work_places' && sortOrder === 'asc'" class="text-blue-400 ml-1" />
                 <SortDescendingOutlined v-if="sortField === 'work_places' && sortOrder === 'desc'" class="text-blue-400 ml-1" />
+                <br><br>Общее: {{ Numeral(totalWorkPlaces) }}
             </li>
             <li class="w-[100%] cursor-pointer" @click="toggleSort('fact_work')">
                 Факт раб.мест
                 <SortAscendingOutlined v-if="sortField === 'fact_work' && sortOrder === 'asc'" class="text-blue-400 ml-1" />
                 <SortDescendingOutlined v-if="sortField === 'fact_work' && sortOrder === 'desc'" class="text-blue-400 ml-1" />
+                <br><br>Общее: {{ Numeral(totalFactWork) }}
             </li>
             <li class="w-[100%]">%</li>
             <li class="w-[100%] cursor-pointer" @click="toggleSort('plan_fot')">
                 План ФОТ
                 <SortAscendingOutlined v-if="sortField === 'plan_fot' && sortOrder === 'asc'" class="text-blue-400 ml-1" />
                 <SortDescendingOutlined v-if="sortField === 'plan_fot' && sortOrder === 'desc'" class="text-blue-400 ml-1" />
+                <br><br>Общее: {{ Numeral(totalPlanFot) }}
             </li>
             <li class="w-[100%] cursor-pointer" @click="toggleSort('fact_fot')">
                 Факт ФОТ
                 <SortAscendingOutlined v-if="sortField === 'fact_fot' && sortOrder === 'asc'" class="text-blue-400 ml-1" />
                 <SortDescendingOutlined v-if="sortField === 'fact_fot' && sortOrder === 'desc'" class="text-blue-400 ml-1" />
+                <br><br>Общее: {{ Numeral(totalFactFot) }}
             </li>
             <li class="w-[100%]">%</li>
             <li class="w-[100%]">СМЗ</li>
@@ -173,6 +178,31 @@ const toggleSort = (field: string) => {
   }
 };
 
+const totalProjectPrice = computed(() => {
+  return a1FilterByProject.value.reduce((sum, item) => sum + Number(item.project_price || 0), 0);
+});
+
+const totalWorkPlaces = computed(() => {
+  return a1FilterByProject.value.reduce((sum, item) => sum + Number(item.work_places || 0), 0);
+});
+
+const totalFactWork = computed(() => {
+  return a1FilterByProject.value.reduce((sum, item) => {
+    const value = isExploitationCompleteForItem(item) 
+      ? Number(item.fact_work || 0) 
+      : (!isSMRActiveOrCompleteForItem(item) ? 0 : Number(item.data_project_temporaryworkplacescount || 0));
+    return sum + value;
+  }, 0);
+});
+
+const totalPlanFot = computed(() => {
+  return a1FilterByProject.value.reduce((sum, item) => sum + Number(item.plan_fot || 0), 0);
+});
+
+const totalFactFot = computed(() => {
+  return a1FilterByProject.value.reduce((sum, item) => sum + Number(item.fact_fot || 0), 0);
+});
+
 const sortedProjects = computed(() => {
   if (!sortField.value) {
     return a1FilterByProject.value;
@@ -279,7 +309,7 @@ function getPercentText(item: ProjectItem) {
 .head {
     display: grid;
     grid-gap: 4px;
-    grid-template-columns: 2% 26% 7% 7% 6% 6% 3% 6% 6% 3% 5% 5% 5% 5% 5%;
+    grid-template-columns: 2% 26% 7% 7% 6% 6% 3% 8% 8% 3% 5% 4% 4% 4% 4%;
 }
 
 .element {
