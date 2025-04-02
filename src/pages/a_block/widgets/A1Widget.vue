@@ -18,7 +18,7 @@
      
       <div class="relative dropdown-container w-[170px]">
         <p class="h-6 px-4 flex items-center justify-around border cursor-pointer select-none" @click="toggleDropdown"
-          :class="`${[1, 2, 4].includes(currentLabel) ? 'border-[#3090e8]' : 'border-gray-600'}`">
+          :class="`${[1, 2, 4, 5].includes(currentLabel) ? 'border-[#3090e8]' : 'border-gray-600'}`">
           {{ getSelectedLabel + (isDropdownOpen ? ' ▲' : ' ▼') }}
         </p>
         <transition name="dropdown">
@@ -28,7 +28,10 @@
                @click="selectLabel(1)">МинПром</p>
             <p class="px-4 py-2 hover:bg-gray-700 cursor-pointer transition-colors duration-150" 
                :class="{'bg-gray-700': currentLabel === 4}"
-               @click="selectLabel(4)">МинЭнерго</p>
+               @click="selectLabel(4)">Минэнерго (зеленая энергетика)</p>
+            <p class="px-4 py-2 hover:bg-gray-700 cursor-pointer transition-colors duration-150" 
+               :class="{'bg-gray-700': currentLabel === 5}"
+               @click="selectLabel(5)">Минэнерго</p>
             <p class="px-4 py-2 hover:bg-gray-700 cursor-pointer transition-colors duration-150" 
                :class="{'bg-gray-700': currentLabel === 2}"
                @click="selectLabel(2)">СГП</p>
@@ -93,7 +96,8 @@ const selectLabel = (label: number) => {
 
 const getSelectedLabel = computed(() => {
   if (currentLabel.value === 1) return 'МинПром';
-  if (currentLabel.value === 4) return 'МинЭнерго';
+  if (currentLabel.value === 4) return 'Минэнерго (зеленая энергетика)';
+  if (currentLabel.value === 5) return 'Минэнерго';
   if (currentLabel.value === 2) return 'СГП';
   return 'Выбрать';
 });
