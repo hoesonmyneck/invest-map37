@@ -7,33 +7,33 @@
                 Стоимость проекта
                 <SortAscendingOutlined v-if="sortField === 'project_price' && sortOrder === 'asc'" class="text-blue-400 ml-1" />
                 <SortDescendingOutlined v-if="sortField === 'project_price' && sortOrder === 'desc'" class="text-blue-400 ml-1" />
-                <br><br>Общее: {{ Numeral(totalProjectPrice) }}
+                <br><br>{{ Numeral(totalProjectPrice) }}
             </li>
             <li class="w-[100%]">Срок</li>
             <li class="w-[100%] cursor-pointer" @click="toggleSort('work_places')">
                 План раб.мест
                 <SortAscendingOutlined v-if="sortField === 'work_places' && sortOrder === 'asc'" class="text-blue-400 ml-1" />
                 <SortDescendingOutlined v-if="sortField === 'work_places' && sortOrder === 'desc'" class="text-blue-400 ml-1" />
-                <br><br>Общее: {{ Numeral(totalWorkPlaces) }}
+                <br><br>{{ Numeral(totalWorkPlaces) }}
             </li>
             <li class="w-[100%] cursor-pointer" @click="toggleSort('fact_work')">
                 Факт раб.мест
                 <SortAscendingOutlined v-if="sortField === 'fact_work' && sortOrder === 'asc'" class="text-blue-400 ml-1" />
                 <SortDescendingOutlined v-if="sortField === 'fact_work' && sortOrder === 'desc'" class="text-blue-400 ml-1" />
-                <br><br>Общее: {{ Numeral(totalFactWork) }}
+                <br><br>{{ Numeral(totalFactWork) }}
             </li>
             <li class="w-[100%]">%</li>
             <li class="w-[100%] cursor-pointer" @click="toggleSort('plan_fot')">
                 План ФОТ
                 <SortAscendingOutlined v-if="sortField === 'plan_fot' && sortOrder === 'asc'" class="text-blue-400 ml-1" />
                 <SortDescendingOutlined v-if="sortField === 'plan_fot' && sortOrder === 'desc'" class="text-blue-400 ml-1" />
-                <br><br>Общее: {{ Numeral(totalPlanFot) }}
+                <br><br>{{ Numeral(totalPlanFot) }}
             </li>
             <li class="w-[100%] cursor-pointer" @click="toggleSort('fact_fot')">
                 Факт ФОТ
                 <SortAscendingOutlined v-if="sortField === 'fact_fot' && sortOrder === 'asc'" class="text-blue-400 ml-1" />
                 <SortDescendingOutlined v-if="sortField === 'fact_fot' && sortOrder === 'desc'" class="text-blue-400 ml-1" />
-                <br><br>Общее: {{ Numeral(totalFactFot) }}
+                <br><br>{{ Numeral(totalFactFot) }}
             </li>
             <li class="w-[100%]">%</li>
             <li class="w-[100%]">СМЗ</li>

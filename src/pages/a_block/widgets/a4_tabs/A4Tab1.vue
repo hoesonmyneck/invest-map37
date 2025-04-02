@@ -1,15 +1,15 @@
 <template>
     <div class="overflow-scroll h-[27vh] text-white text-[12px]">
-        <ul class="head text-white pb-1 mb-1 border-b border-gray-700 items-end w-[100%] sticky top-0 z-10 bg-[#1E2028]">
+        <ul class="head text-white pb-1 mb-1 border-b border-gray-700 items-start w-[100%] sticky top-0 z-10 bg-[#1E2028]">
             <li class="w-[100%]">Отрасль</li>
-            <li class="w-[100%]">К-во проектов</li>
-            <li class="w-[100%]">Стоимость проекта</li>
+            <li class="w-[100%]">К-во проектов<br><br>{{ Numeral(totalProjectsCount) }}</li>
+            <li class="w-[100%]">Стоимость проекта<br><br>{{ Numeral(totalProjectPrice) }}</li>
             <li class="w-[100%]">% завершенных по сроку</li>
-            <li class="w-[100%]">План раб.мест</li>
-            <li class="w-[100%]">Факт раб.мест</li>
+            <li class="w-[100%]">План раб.мест<br><br>{{ Numeral(totalWorkPlaces) }}</li>
+            <li class="w-[100%]">Факт раб.мест<br><br>{{ Numeral(totalFactWork) }}</li>
             <li class="w-[100%]">%</li>
-            <li class="w-[100%]">План ФОТ</li>
-            <li class="w-[100%]">Факт ФОТ</li>
+            <li class="w-[100%]">План ФОТ<br><br>{{ Numeral(totalPlanFot) }}</li>
+            <li class="w-[100%]">Факт ФОТ<br><br>{{ Numeral(totalFactFot) }}</li>
             <li class="w-[100%]">%</li>
             <li class="w-[100%]">СМЗ</li>
             <li class="w-[100%]">Риски КТР</li>
@@ -77,6 +77,47 @@ import { getColorFromGradient } from '../../../../shared/helpers/gradientColors'
 
 const aStore = useAStore()
 const { a1Filter, currentOtrasl } = storeToRefs(aStore);
+
+interface OtraslItem {
+    otrasl: string;
+    count: number;
+    project_price: number;
+    finsihed: number;
+    not_finsihed: number;
+    work_places: number;
+    fact_work: number;
+    plan_fot: number;
+    fact_fot: number;
+    smz_12mes: number;
+    risk_otsut: number;
+    risk_vysok: number;
+    risk_sred: number;
+    [key: string]: any;
+}
+
+const totalProjectsCount = computed(() => {
+    return Object.values(groupByOtrasl.value).reduce((sum: number, item: any) => sum + Number(item.count || 0), 0);
+});
+
+const totalProjectPrice = computed(() => {
+    return Object.values(groupByOtrasl.value).reduce((sum: number, item: any) => sum + Number(item.project_price || 0), 0);
+});
+
+const totalWorkPlaces = computed(() => {
+    return Object.values(groupByOtrasl.value).reduce((sum: number, item: any) => sum + Number(item.work_places || 0), 0);
+});
+
+const totalFactWork = computed(() => {
+    return Object.values(groupByOtrasl.value).reduce((sum: number, item: any) => sum + Number(item.fact_work || 0), 0);
+});
+
+const totalPlanFot = computed(() => {
+    return Object.values(groupByOtrasl.value).reduce((sum: number, item: any) => sum + Number(item.plan_fot || 0), 0);
+});
+
+const totalFactFot = computed(() => {
+    return Object.values(groupByOtrasl.value).reduce((sum: number, item: any) => sum + Number(item.fact_fot || 0), 0);
+});
 
 const groupByOtrasl = computed(() => Object.values(a1Filter.value.reduce((acc, curr) => {
     if (!acc[curr.otrasl]) {
