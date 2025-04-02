@@ -17,6 +17,6 @@ const route = useRoute();
     <F3Widget v-if="route.query.blocks ? route.query.blocks.includes(3) : true" />
     <F4Widget v-if="route.query.blocks ? route.query.blocks.includes(4) : true" />
     <F5Widget v-if="route.query.blocks ? route.query.blocks.includes(5) : true" />
-    <F6Widget v-if="route.query.blocks ? route.query.blocks.includes(6) : true" />
+    <!-- <F6Widget v-if="route.query.blocks ? route.query.blocks.includes(6) : true" /> -->
   </div>
 </template>
