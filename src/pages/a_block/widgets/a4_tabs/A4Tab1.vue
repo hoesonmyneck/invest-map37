@@ -6,7 +6,7 @@
             <li class="w-[100%]">Стоимость проекта<br><br>{{ Numeral(totalProjectPrice) }}</li>
             <li class="w-[100%]">% завершенных по сроку</li>
             <li class="w-[100%]">План раб.мест<br><br>{{ Numeral(totalWorkPlaces) }}</li>
-            <li class="w-[100%]">Факт раб.мест<br><br>{{ Numeral(totalFactWork) }}</li>
+            <li class="w-[100%]">Факт раб.мест<br><br>{{ Numeral(totalRawFactWork) }}</li>
             <li class="w-[100%]">%</li>
             <li class="w-[100%]">План ФОТ<br><br>{{ Numeral(totalPlanFot) }}</li>
             <li class="w-[100%]">Факт ФОТ<br><br>{{ Numeral(totalFactFot) }}</li>
@@ -39,10 +39,10 @@
                     </div>
 
                     <p class="element truncate text-center">{{ Numeral(item.work_places) }}</p>
-                    <p class="element truncate text-center">{{ Numeral(item.fact_work) }}</p>
+                    <p class="element truncate text-center">{{ Numeral(isExploitationCompleteForItem(item) ? item.fact_work : (!isSMRActiveOrCompleteForItem(item) ? 0 : item.data_project_temporaryworkplacescount || 0)) }}</p>
                     <p class="element truncate text-center"
-                        :style="{ background: item.fact_work === 0 ? '#dc2626' : getColorFromGradient(Math.min(item.fact_work / item.work_places * 100, 100)) }">
-                        {{ Numeral(Math.min(item.fact_work / item.work_places * 100, 100)) }}%
+                        :style="{ background: getPercentBackgroundColor(item) }">
+                        {{ getPercentText(item) }}
                     </p>
 
                     <p class="element truncate text-center">{{ Numeral(item.plan_fot) }}</p>
@@ -92,6 +92,8 @@ interface OtraslItem {
     risk_otsut: number;
     risk_vysok: number;
     risk_sred: number;
+    data_project_roadmap_tasks: any[];
+    data_project_temporaryworkplacescount: number;
     [key: string]: any;
 }
 
@@ -107,7 +109,13 @@ const totalWorkPlaces = computed(() => {
     return Object.values(groupByOtrasl.value).reduce((sum: number, item: any) => sum + Number(item.work_places || 0), 0);
 });
 
+const totalRawFactWork = computed(() => {
+    // Считаем общее количество фактических рабочих мест без фильтров - простая сумма
+    return a1Filter.value.reduce((sum: number, item: any) => sum + Number(item.fact_work || 0), 0);
+});
+
 const totalFactWork = computed(() => {
+    // Считаем с применением фильтров для ячеек таблицы
     return Object.values(groupByOtrasl.value).reduce((sum: number, item: any) => sum + Number(item.fact_work || 0), 0);
 });
 
@@ -119,6 +127,45 @@ const totalFactFot = computed(() => {
     return Object.values(groupByOtrasl.value).reduce((sum: number, item: any) => sum + Number(item.fact_fot || 0), 0);
 });
 
+function isExploitationCompleteForItem(item: any) {
+    const tasks = item.data_project_roadmap_tasks || [];
+    const exploitationTask = tasks.find((task: any) => 
+        task.task_name && task.task_name.toLowerCase().includes('ввод в эксплуатацию') && 
+        (task.status === 'DONE' || task.status === 'IN_PROGRESS')
+    );
+    return !!exploitationTask;
+}
+
+function isSMRActiveOrCompleteForItem(item: any) {
+    const tasks = item.data_project_roadmap_tasks || [];
+    const smrTask = tasks.find((task: any) => 
+        task.task_name && (
+            task.task_name.toLowerCase().includes('смр') || 
+            task.task_name.toLowerCase().includes('строительно-монтажные работы')
+        ) && 
+        (task.status === 'DONE' || task.status === 'IN_PROGRESS')
+    );
+    return !!smrTask;
+}
+
+function getPercentBackgroundColor(item: any) {
+    if (isExploitationCompleteForItem(item)) {
+        return item.fact_work === 0 ? '#dc2626' : getColorFromGradient(item.work_places === 0 ? 0 : Math.min(100, (item.fact_work / item.work_places * 100)));
+    } else {
+        const tempValue = !isSMRActiveOrCompleteForItem(item) ? 0 : (item.data_project_temporaryworkplacescount || 0);
+        return tempValue === 0 ? '#dc2626' : getColorFromGradient(item.work_places === 0 ? 0 : Math.min(100, (tempValue / item.work_places * 100)));
+    }
+}
+
+function getPercentText(item: any) {
+    if (isExploitationCompleteForItem(item)) {
+        return item.work_places === 0 ? '0%' : Numeral(Math.min(100, item.fact_work / item.work_places * 100)) + '%';
+    } else {
+        const tempValue = !isSMRActiveOrCompleteForItem(item) ? 0 : (item.data_project_temporaryworkplacescount || 0);
+        return item.work_places === 0 ? '0%' : Numeral(Math.min(100, tempValue / item.work_places * 100)) + '%';
+    }
+}
+
 const groupByOtrasl = computed(() => Object.values(a1Filter.value.reduce((acc, curr) => {
     if (!acc[curr.otrasl]) {
         acc[curr.otrasl] = {
@@ -129,12 +176,32 @@ const groupByOtrasl = computed(() => Object.values(a1Filter.value.reduce((acc, c
             risk_otsut: curr.ball_tip_name.includes('Отсутствует') ? 1 : 0,
             risk_vysok: curr.ball_tip_name.includes('Высокий') ? 1 : 0,
             risk_sred: curr.ball_tip_name.includes('Средний') ? 1 : 0,
+            data_project_roadmap_tasks: curr.data_project_roadmap_tasks || [],
+            data_project_temporaryworkplacescount: curr.data_project_temporaryworkplacescount || 0
         };
     } else {
         acc[curr.otrasl].count++;
         acc[curr.otrasl].sum_project_price += curr.project_price;
         acc[curr.otrasl].work_places += curr.work_places;
-        acc[curr.otrasl].fact_work += curr.fact_work;
+        
+        const isExploitationComplete = isExploitationCompleteForItem(curr);
+        const isSMRActive = isSMRActiveOrCompleteForItem(curr);
+        const factWorkValue = isExploitationComplete 
+            ? curr.fact_work 
+            : (!isSMRActive ? 0 : (curr.data_project_temporaryworkplacescount || 0));
+        
+        acc[curr.otrasl].fact_work += factWorkValue;
+        
+        if (curr.data_project_roadmap_tasks) {
+            acc[curr.otrasl].data_project_roadmap_tasks = [
+                ...(acc[curr.otrasl].data_project_roadmap_tasks || []),
+                ...curr.data_project_roadmap_tasks
+            ];
+        }
+        
+        acc[curr.otrasl].data_project_temporaryworkplacescount += 
+            (curr.data_project_temporaryworkplacescount || 0);
+        
         acc[curr.otrasl].plan_fot += curr.plan_fot;
         acc[curr.otrasl].fact_fot += curr.fact_fot;
         acc[curr.otrasl].smz_12mes += curr.smz_12mes;

@@ -20,7 +20,7 @@
                 Факт раб.мест
                 <SortAscendingOutlined v-if="sortField === 'fact_work' && sortOrder === 'asc'" class="text-blue-400 ml-1" />
                 <SortDescendingOutlined v-if="sortField === 'fact_work' && sortOrder === 'desc'" class="text-blue-400 ml-1" />
-                <br><br>{{ Numeral(totalFactWork) }}
+                <br><br>{{ Numeral(totalRawFactWork) }}
             </li>
             <li class="w-[100%]">%</li>
             <li class="w-[100%] cursor-pointer" @click="toggleSort('plan_fot')">
@@ -184,6 +184,10 @@ const totalProjectPrice = computed(() => {
 
 const totalWorkPlaces = computed(() => {
   return a1FilterByProject.value.reduce((sum, item) => sum + Number(item.work_places || 0), 0);
+});
+
+const totalRawFactWork = computed(() => {
+  return a1FilterByProject.value.reduce((sum, item) => sum + Number(item.fact_work || 0), 0);
 });
 
 const totalFactWork = computed(() => {
