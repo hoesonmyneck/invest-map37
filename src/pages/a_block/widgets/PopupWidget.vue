@@ -39,7 +39,7 @@
                         :options="chartOptions('СТОИМОСТЬ ПРОЕКТА', 'СТОИМОСТЬ ПРОЕКТА', 100, 100, currentProjectPopup.project_price, currentProjectPopup.project_price)"
                         class="h-[210px] w-[250px] m-auto mt-5">
                     </highcharts>
-                    <p class="absolute top-[130px] left-1/2 -translate-x-1/2 text-3xl">{{
+                    <p class="absolute top-[130px] left-1/2 -translate-x-1/2 text-2xl">{{
                         Numeral(currentProjectPopup.project_price) }}
                         <span class="block text-gray-400">₸</span>
                     </p>
