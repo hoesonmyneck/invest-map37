@@ -42,119 +42,69 @@
             <li class="w-[100%]">Средний</li>
             <li class="w-[100%]">Отсутствует</li>
         </ul>
-        <div class="body">
-            <RecycleScroller class="scroller h-full" :min-item-size="1" :items="sortedProjects" :item-size="1"
-                key-field="id" v-slot="{ item }" page-mode="contain">
-                <div class="head mt-1 min-h-[30px]">
-                    <p class="w-full h-full flex items-center justify-center rounded bg-[#252A36] cursor-pointer">
-                        <img src="/images/icons/map.png" alt="" class="w-[16px]" v-if="!!item.coordinates"
-                            @click="aStore.setCurrentProject(item.id), aStore.setCurrentRegion(item.parent1_code), aStore.setCurrentRaion(item.parent2_code), aStore.setCurrentOtrasl(item.otrasl)">
-                    </p>
-                    <a-tooltip placement="left" :title="item.project_name">
-                        <p class="element break-words cursor-pointer"
-                            :class="{ 'text-[#3090e8]': currentProject === item.id }"
-                            @click="aStore.setCurrentProject(item.id), aStore.setProjectModalVisible(true)">
-                            {{ item.project_name }}
-                        </p>
-                    </a-tooltip>
-                    <p class="element truncate text-center">{{ Numeral(item.project_price) }}</p>
-                    <div class="flex flex-col justify-center h-full">
-                        <div class="w-full h-[14px] bg-[#252A36] rounded mt-[3px]">
-                            <div class="progress h-[14px] flex justify-center rounded bg-[#3090e8]"
-                                :style="{ 'width': getProjectDatePrecent(item) + '%' }">
-                                <p class="text-[10px]">{{ new Date().getFullYear() }}
-                                </p>
+        
+        <div v-if="sortedProjects.length === 0" class="flex justify-center items-center h-full text-gray-400">
+            Список пуст
+        </div>
+        
+        <div v-else class="table-container">
+            <table>
+                <tbody>
+                    <tr v-for="(item, index) in sortedProjects" :key="index" class="table-row">
+                        <td class="map-cell">
+                            <div class="w-full h-full flex items-center justify-center rounded bg-[#252A36] cursor-pointer">
+                                <img src="/images/icons/map.png" alt="" class="w-[16px]" v-if="!!item.coordinates"
+                                    @click="aStore.setCurrentProject(item.id), aStore.setCurrentRegion(item.parent1_code), aStore.setCurrentRaion(item.parent2_code), aStore.setCurrentOtrasl(item.otrasl)">
                             </div>
-                        </div>
-                        <div class="flex justify-between text-[10px]">
-                            <p>{{ new Date(item.project_start_date).getFullYear() }}</p>
-                            <p>{{ new Date(item.project_exploitation_date).getFullYear() }}</p>
-                        </div>
-                    </div>
-                    <p class="element truncate text-center">{{ Numeral(item.work_places) }}</p>
-                    <p class="element truncate text-center">{{ Numeral(isExploitationCompleteForItem(item) ? item.fact_work : (!isSMRActiveOrCompleteForItem(item) ? 0 : item.data_project_temporaryworkplacescount || 0)) }}</p>
-                    <p class="element truncate text-center"
-                        :style="{ background: getPercentBackgroundColor(item) }">
-                        {{ getPercentText(item) }}
-                    </p>
-
-                    <p class="element truncate text-center">{{ Numeral(item.plan_fot) }}</p>
-                    <p class="element truncate text-center">{{ Numeral(item.fact_fot) }}</p>
-
-                    <p class="element truncate text-center"
-                        :style="{ background: item.fact_fot === 0 ? '#dc2626' : getColorFromGradient(item.fact_fot / item.plan_fot * 100) }">
-                        {{ Numeral(item.fact_fot / item.plan_fot * 100) }}%
-                    </p>
-
-                    <p class="element truncate text-center">{{ Numeral(item.smz_12mes) }}</p>
-                    <p class="element truncate text-center border border-[#3090e8]">
-                        {{ Numeral(item.risk_otsut + item.risk_vysok + item.risk_sred) }}
-                    </p>
-                    <p class="element truncate text-center border border-[#3090e8]">{{ Numeral(item.risk_vysok)
-                        }}</p>
-                    <p class="element truncate text-center border border-[#3090e8]">{{ Numeral(item.risk_sred)
-                        }}</p>
-                    <p class="element truncate text-center border border-[#3090e8]">{{ Numeral(item.risk_otsut)
-                        }}</p>
-                </div>
-            </RecycleScroller>
-            <!-- <template v-for="item in a1FilterByProject" :key="item.id">
-                <div class="head mt-1">
-                    <p class="w-full h-full flex items-center justify-center rounded bg-[#252A36] cursor-pointer">
-                        <img src="/images/icons/map.png" alt="" class="w-[16px]" v-if="!!item.coordinates"
-                            @click="aStore.setCurrentProject(item.id), aStore.setCurrentRegion(item.parent1_code), aStore.setCurrentRaion(item.parent2_code), aStore.setCurrentOtrasl(item.otrasl)">
-                    </p>
-                    <a-tooltip placement="left" :title="item.project_name">
-                        <p class="element truncate cur cursor-pointer"
-                            :class="{ 'text-[#3090e8]': currentProject === item.id }"
-                            @click="aStore.setCurrentProject(item.id), aStore.setProjectModalVisible(true)">
-                            {{ item.project_name }}
-                        </p>
-                    </a-tooltip>
-                    <p class="element truncate text-center">{{ Numeral(item.project_price) }}</p>
-                    <div>
-                        <div class="w-full h-[14px] bg-[#252A36] rounded mt-[3px]">
-                            <div class="progress h-[14px] flex justify-center rounded bg-[#3090e8]"
-                                :style="{ 'width': getProjectDatePrecent(item) + '%' }">
-                                <p class="text-[10px]">{{ new Date().getFullYear() }}
-                                </p>
+                        </td>
+                        <td class="name-cell">
+                            <a-tooltip placement="left" :title="item.project_name">
+                                <div class="element break-words cursor-pointer" :class="{ 'text-[#3090e8]': currentProject === item.id }"
+                                    @click="aStore.setCurrentProject(item.id), aStore.setProjectModalVisible(true)">
+                                    {{ item.project_name }}
+                                </div>
+                            </a-tooltip>
+                        </td>
+                        <td><div class="element truncate text-center">{{ Numeral(item.project_price) }}</div></td>
+                        <td class="date-cell">
+                            <div class="date-content">
+                                <div class="progress-container">
+                                    <div class="progress" :style="{ 'width': getProjectDatePrecent(item) + '%' }">
+                                        <span>{{ new Date().getFullYear() }}</span>
+                                    </div>
+                                </div>
+                                <div class="years-container">
+                                    <span>{{ new Date(item.project_start_date).getFullYear() }}</span>
+                                    <span>{{ new Date(item.project_exploitation_date).getFullYear() }}</span>
+                                </div>
                             </div>
-                        </div>
-                        <div class="flex justify-between text-[10px]">
-                            <p>{{ new Date(item.project_start_date).getFullYear() }}</p>
-                            <p>{{ new Date(item.project_exploitation_date).getFullYear() }}</p>
-                        </div>
-                    </div>
-                    <p class="element truncate text-center">{{ Numeral(item.work_places) }}</p>
-                    <p class="element truncate text-center">{{ Numeral(item.fact_work) }}</p>
-                    <p class="element truncate text-center"
-                        :style="{ background: getColorFromGradient(item.fact_work / item.work_places * 100) }">
-                        {{ Numeral(item.fact_work / item.work_places * 100) }}%
-                    </p>
-
-                    <p class="element truncate text-center">{{ Numeral(item.plan_fot) }}</p>
-                    <p class="element truncate text-center">{{ Numeral(item.fact_fot) }}</p>
-
-                    <p class="element truncate text-center"
-                        :style="{ background: getColorFromGradient(item.fact_fot / item.plan_fot * 100) }">
-                        {{ Numeral(item.fact_fot / item.plan_fot * 100) }}%
-                    </p>
-
-                    <p class="element truncate text-center">{{ Numeral(item.smz_12mes) }}</p>
-                    <p class="element truncate text-center border border-[#3090e8]">
-                        {{ Numeral(item.risk_otsut + item.risk_vysok + item.risk_sred) }}
-                    </p>
-                    <p class="element truncate text-center border border-[#3090e8]">{{ Numeral(item.risk_vysok)
-                        }}</p>
-                    <p class="element truncate text-center border border-[#3090e8]">{{ Numeral(item.risk_sred)
-                        }}</p>
-                    <p class="element truncate text-center border border-[#3090e8]">{{ Numeral(item.risk_otsut)
-                        }}</p>
-                </div>
-            </template> -->
+                        </td>
+                        <td><div class="element truncate text-center">{{ Numeral(item.work_places) }}</div></td>
+                        <td><div class="element truncate text-center">{{ Numeral(isExploitationCompleteForItem(item) ? item.fact_work : (!isSMRActiveOrCompleteForItem(item) ? 0 : item.data_project_temporaryworkplacescount || 0)) }}</div></td>
+                        <td>
+                            <div class="element truncate text-center" :style="{ background: getPercentBackgroundColor(item) }">
+                                {{ getPercentText(item) }}
+                            </div>
+                        </td>
+                        <td><div class="element truncate text-center">{{ Numeral(item.plan_fot) }}</div></td>
+                        <td><div class="element truncate text-center">{{ Numeral(item.fact_fot) }}</div></td>
+                        <td>
+                            <div class="element truncate text-center" :style="{ background: item.fact_fot === 0 ? '#dc2626' : getColorFromGradient(item.fact_fot / item.plan_fot * 100) }">
+                                {{ Numeral(item.fact_fot / item.plan_fot * 100) }}%
+                            </div>
+                        </td>
+                        <td><div class="element truncate text-center">{{ Numeral(item.smz_12mes) }}</div></td>
+                        <td><div class="element truncate text-center border border-[#3090e8]">{{ Numeral(item.risk_otsut + item.risk_vysok + item.risk_sred) }}</div></td>
+                        <td><div class="element truncate text-center border border-[#3090e8]">{{ Numeral(item.risk_vysok) }}</div></td>
+                        <td><div class="element truncate text-center border border-[#3090e8]">{{ Numeral(item.risk_sred) }}</div></td>
+                        <td><div class="element truncate text-center border border-[#3090e8]">{{ Numeral(item.risk_otsut) }}</div></td>
+                    </tr>
+                </tbody>
+            </table>
         </div>
     </div>
 </template>
+
 <script setup lang="ts">
 import { Numeral } from '../../../../shared/helpers/numeral';
 import { useAStore } from '../../store';
@@ -162,6 +112,8 @@ import { storeToRefs } from 'pinia';
 import { getColorFromGradient } from '../../../../shared/helpers/gradientColors';
 import { SortAscendingOutlined, SortDescendingOutlined } from '@ant-design/icons-vue';
 import { ref, computed } from 'vue';
+import { VirtualList } from "@xuemiyang/vue-virtual-list";
+import "@xuemiyang/vue-virtual-list/dist/style.css";
 
 const aStore = useAStore()
 const { a1FilterByProject, currentProject } = storeToRefs(aStore);
@@ -309,6 +261,7 @@ function getPercentText(item: ProjectItem) {
 }
 
 </script>
+
 <style scoped lang="scss">
 .head {
     display: grid;
@@ -323,9 +276,10 @@ function getPercentText(item: ProjectItem) {
     border-radius: 6px;
     width: 100%;
     min-height: 30px;
-    height: auto;
+    height: 100%;
     padding: 4px 12px;
     align-items: center;
+    justify-content: center;
 }
 
 .element.break-words {
@@ -333,8 +287,9 @@ function getPercentText(item: ProjectItem) {
     white-space: normal;
     overflow-wrap: break-word;
     height: 100%;
+    text-align: left;
+    justify-content: flex-start;
 }
-
 
 .head > div {
     display: flex;
@@ -342,4 +297,111 @@ function getPercentText(item: ProjectItem) {
     justify-content: center;
     height: 100%;
 }
+
+.table-container {
+    height: calc(23vh - 40px);
+    overflow-y: auto;
+    position: relative;
+}
+
+table {
+    width: 100%;
+    border-spacing: 4px 2px;
+    border-collapse: separate;
+}
+
+.table-row {
+    display: grid;
+    grid-template-columns: 2% 26% 7% 7% 6% 6% 3% 8% 8% 3% 5% 4% 4% 4% 4%;
+    grid-gap: 4px;
+    min-height: 30px;
+    
+    align-items: start;
+    margin-bottom: 4px;
+}
+
+.table-row > td {
+    align-self: stretch;
+}
+
+td {
+    vertical-align: middle;
+    padding: 0;
+    display: flex;
+    height: 100%;
+}
+
+td div.element, td div.flex {
+    height: 100%;
+    width: 100%;
+    margin: 0;
+}
+
+.map-cell {
+    min-height: 30px;
+}
+
+.name-cell {
+    min-height: 30px;
+    height: auto;
+}
+
+.name-cell div.element {
+    height: auto;
+    min-height: 100%;
+}
+
+.date-cell {
+    height: auto;
+    align-self: center;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.date-content {
+    width: 100%;
+    height: 45px;
+    border-radius: 6px;
+    padding: 4px 6px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-around;
+}
+
+.progress-container {
+    width: 100%;
+    height: 14px;
+    background: #252A36;
+    border-radius: 4px;
+    overflow: hidden;
+    position: relative;
+}
+
+.progress {
+    height: 100%;
+    background: #3090e8;
+    border-radius: 4px;
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.progress span {
+    color: white;
+    font-size: 10px;
+    position: relative;
+    z-index: 1;
+}
+
+.years-container {
+    display: flex;
+    justify-content: space-between;
+    color: white;
+    font-size: 10px;
+    margin-top: 4px;
+}
+
+
 </style>

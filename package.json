@@ -12,6 +12,7 @@
     "@ant-design/icons-vue": "^7.0.1",
     "@types/uuid": "^10.0.0",
     "@vue-leaflet/vue-leaflet": "^0.10.1",
+    "@xuemiyang/vue-virtual-list": "^1.0.8",
     "ant-design-vue": "4.x",
     "axios": "^1.7.9",
     "highcharts": "^11.4.8",

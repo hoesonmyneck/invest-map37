@@ -82,7 +82,7 @@
               <SortDescendingOutlined v-if="sortField === 'full_name' && sortOrder === 'desc'" class="text-blue-400 mb-8" />
             </p>
             <p class="cursor-pointer flex items-center gap-1" @click="toggleSort('bin')">
-              БИН <br><br> {{ formatNumber(filteredBin) }}
+              БИН <br><br><br> {{ formatNumber(filteredBin) }}
               <SortAscendingOutlined v-if="sortField === 'bin' && sortOrder === 'asc'" class="text-blue-400 mb-8" />
               <SortDescendingOutlined v-if="sortField === 'bin' && sortOrder === 'desc'" class="text-blue-400 mb-8" />
             </p>
