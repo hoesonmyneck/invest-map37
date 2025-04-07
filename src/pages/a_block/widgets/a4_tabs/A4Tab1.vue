@@ -2,14 +2,44 @@
     <div class="overflow-scroll h-[27vh] text-white text-[12px]">
         <ul class="head text-white pb-1 mb-1 border-b border-gray-700 items-start w-[100%] sticky top-0 z-10 bg-[#1E2028]">
             <li class="w-[100%]">Отрасль</li>
-            <li class="w-[100%]">К-во проектов<br><br>{{ Numeral(totalProjectsCount) }}</li>
-            <li class="w-[100%]">Стоимость проекта<br><br>{{ Numeral(totalProjectPrice) }}</li>
+            <li class="w-[100%] cursor-pointer" @click="toggleSort('count')">
+                К-во проектов
+                <SortAscendingOutlined v-if="sortField === 'count' && sortOrder === 'asc'" class="text-blue-400 ml-1" />
+                <SortDescendingOutlined v-if="sortField === 'count' && sortOrder === 'desc'" class="text-blue-400 ml-1" />
+                <br><br>{{ Numeral(totalProjectsCount) }}
+            </li>
+            <li class="w-[100%] cursor-pointer" @click="toggleSort('project_price')">
+                Стоимость проекта
+                <SortAscendingOutlined v-if="sortField === 'project_price' && sortOrder === 'asc'" class="text-blue-400 ml-1" />
+                <SortDescendingOutlined v-if="sortField === 'project_price' && sortOrder === 'desc'" class="text-blue-400 ml-1" />
+                <br><br>{{ Numeral(totalProjectPrice) }}
+            </li>
             <li class="w-[100%]">% завершенных по сроку</li>
-            <li class="w-[100%]">План раб.мест<br><br>{{ Numeral(totalWorkPlaces) }}</li>
-            <li class="w-[100%]">Факт раб.мест<br><br>{{ Numeral(totalRawFactWork) }}</li>
+            <li class="w-[100%] cursor-pointer" @click="toggleSort('work_places')">
+                План раб.мест
+                <SortAscendingOutlined v-if="sortField === 'work_places' && sortOrder === 'asc'" class="text-blue-400 ml-1" />
+                <SortDescendingOutlined v-if="sortField === 'work_places' && sortOrder === 'desc'" class="text-blue-400 ml-1" />
+                <br><br>{{ Numeral(totalWorkPlaces) }}
+            </li>
+            <li class="w-[100%] cursor-pointer" @click="toggleSort('fact_work')">
+                Факт раб.мест
+                <SortAscendingOutlined v-if="sortField === 'fact_work' && sortOrder === 'asc'" class="text-blue-400 ml-1" />
+                <SortDescendingOutlined v-if="sortField === 'fact_work' && sortOrder === 'desc'" class="text-blue-400 ml-1" />
+                <br><br>{{ Numeral(totalRawFactWork) }}
+            </li>
             <li class="w-[100%]">%</li>
-            <li class="w-[100%]">План ФОТ<br><br>{{ Numeral(totalPlanFot) }}</li>
-            <li class="w-[100%]">Факт ФОТ<br><br>{{ Numeral(totalFactFot) }}</li>
+            <li class="w-[100%] cursor-pointer" @click="toggleSort('plan_fot')">
+                План ФОТ
+                <SortAscendingOutlined v-if="sortField === 'plan_fot' && sortOrder === 'asc'" class="text-blue-400 ml-1" />
+                <SortDescendingOutlined v-if="sortField === 'plan_fot' && sortOrder === 'desc'" class="text-blue-400 ml-1" />
+                <br><br>{{ Numeral(totalPlanFot) }}
+            </li>
+            <li class="w-[100%] cursor-pointer" @click="toggleSort('fact_fot')">
+                Факт ФОТ
+                <SortAscendingOutlined v-if="sortField === 'fact_fot' && sortOrder === 'asc'" class="text-blue-400 ml-1" />
+                <SortDescendingOutlined v-if="sortField === 'fact_fot' && sortOrder === 'desc'" class="text-blue-400 ml-1" />
+                <br><br>{{ Numeral(totalFactFot) }}
+            </li>
             <li class="w-[100%]">%</li>
             <li class="w-[100%]">СМЗ</li>
             <li class="w-[100%]">Риски КТР</li>
@@ -18,7 +48,7 @@
             <li class="w-[100%]">Отсутствует</li>
         </ul>
         <div class="body">
-            <template v-for="item in Object.values(groupByOtrasl).sort((a, b) => b.count - a.count)" :key="item">
+            <template v-for="item in sortedOtraslItems" :key="item">
                 <div class="head mt-1">
                     <a-tooltip placement="left" :title="item.otrasl">
                         <p class="element truncate cursor-pointer"
@@ -69,11 +99,12 @@
     </div>
 </template>
 <script setup lang="ts">
-import { computed } from 'vue';
+import { computed, ref } from 'vue';
 import { Numeral } from '../../../../shared/helpers/numeral';
 import { useAStore } from '../../store';
 import { storeToRefs } from 'pinia';
 import { getColorFromGradient } from '../../../../shared/helpers/gradientColors';
+import { SortAscendingOutlined, SortDescendingOutlined } from '@ant-design/icons-vue';
 
 const aStore = useAStore()
 const { a1Filter, currentOtrasl } = storeToRefs(aStore);
@@ -110,12 +141,10 @@ const totalWorkPlaces = computed(() => {
 });
 
 const totalRawFactWork = computed(() => {
-    // Считаем общее количество фактических рабочих мест без фильтров - простая сумма
     return a1Filter.value.reduce((sum: number, item: any) => sum + Number(item.fact_work || 0), 0);
 });
 
 const totalFactWork = computed(() => {
-    // Считаем с применением фильтров для ячеек таблицы
     return Object.values(groupByOtrasl.value).reduce((sum: number, item: any) => sum + Number(item.fact_work || 0), 0);
 });
 
@@ -216,12 +245,61 @@ const groupByOtrasl = computed(() => Object.values(a1Filter.value.reduce((acc, c
 
     return acc;
 }, {})))
+
+const sortField = ref('count');
+const sortOrder = ref('desc');
+
+const toggleSort = (field: string) => {
+    if (sortField.value === field) {
+        sortOrder.value = sortOrder.value === 'asc' ? 'desc' : 'asc';
+    } else {
+        sortField.value = field;
+        sortOrder.value = 'desc';
+    }
+};
+
+const sortedOtraslItems = computed(() => {
+    const items = Object.values(groupByOtrasl.value) as OtraslItem[];
+    
+    if (!sortField.value) {
+        return items.sort((a: OtraslItem, b: OtraslItem) => b.count - a.count);
+    }
+    
+    return [...items].sort((a: OtraslItem, b: OtraslItem) => {
+        let valA, valB;
+        
+        if (sortField.value === 'count') {
+            valA = Number(a.count || 0);
+            valB = Number(b.count || 0);
+        } else if (sortField.value === 'project_price') {
+            valA = Number(a.project_price || 0);
+            valB = Number(b.project_price || 0);
+        } else if (sortField.value === 'work_places') {
+            valA = Number(a.work_places || 0);
+            valB = Number(b.work_places || 0);
+        } else if (sortField.value === 'fact_work') {
+            valA = isExploitationCompleteForItem(a) ? Number(a.fact_work || 0) : (!isSMRActiveOrCompleteForItem(a) ? 0 : Number(a.data_project_temporaryworkplacescount || 0));
+            valB = isExploitationCompleteForItem(b) ? Number(b.fact_work || 0) : (!isSMRActiveOrCompleteForItem(b) ? 0 : Number(b.data_project_temporaryworkplacescount || 0));
+        } else if (sortField.value === 'plan_fot') {
+            valA = Number(a.plan_fot || 0);
+            valB = Number(b.plan_fot || 0);
+        } else if (sortField.value === 'fact_fot') {
+            valA = Number(a.fact_fot || 0);
+            valB = Number(b.fact_fot || 0);
+        } else {
+            valA = a[sortField.value] || 0;
+            valB = b[sortField.value] || 0;
+        }
+        
+        return sortOrder.value === 'asc' ? valA - valB : valB - valA;
+    });
+});
 </script>
 <style scoped lang="scss">
 .head {
     display: grid;
     grid-gap: 4px;
-    grid-template-columns: 20% 6% 6% 6% 7% 7% 3% 6% 6% 3% 6% 5% 5% 5% 5% ;
+    grid-template-columns: 20% 6% 7% 6% 7% 7% 3% 6% 5% 3% 6% 5% 5% 5% 5% ;
 }
 
 .element {
