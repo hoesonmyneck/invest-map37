@@ -210,7 +210,7 @@ const groupByOtrasl = computed(() => Object.values(a1Filter.value.reduce((acc, c
         };
     } else {
         acc[curr.otrasl].count++;
-        acc[curr.otrasl].sum_project_price += curr.project_price;
+        acc[curr.otrasl].project_price += curr.project_price;
         acc[curr.otrasl].work_places += curr.work_places;
         
         const isExploitationComplete = isExploitationCompleteForItem(curr);
