@@ -1,5 +1,5 @@
 <template>
-    <div class="overflow-scroll h-[27vh] text-white text-[12px]">
+    <div class="overflow-x-hidden overflow-y-scroll h-[27vh] text-white text-[12px]">
         <ul class="head text-white pb-1 mb-1 border-b border-gray-700 items-start w-[100%] sticky top-0 z-10 bg-[#1E2028]">
             <li class="w-[100%]"></li>
             <li class="w-[100%]">Наименование</li>
