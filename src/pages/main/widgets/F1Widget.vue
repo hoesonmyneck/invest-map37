@@ -9,7 +9,7 @@
       <div class="flex pt-5 justify-center items-center w-full" v-if="loader">
         <a-spin />
       </div>
-      <div v-else class="text-white grid grid-cols-2 gap-2">
+      <div v-else class="text-white grid grid-cols-2 gap-2 mt-[10%]">
         <div class="relative">
           <highcharts
             :options="chartOptions"

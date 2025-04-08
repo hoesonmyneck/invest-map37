@@ -1,13 +1,13 @@
 <template>
   <l-map :zoom="zoom ?? 6" :max-zoom="10" :min-zoom="5" :center="mapCenter" :options="mapOptions" class="w-full"
     :use-global-leaflet="false">
-    <template v-for="feature in polygonFeatures" :key="feature.parent2_code + Math.random()">
-      <l-polygon @click="handlePolygonClick(feature.properties.parent2_code)"
-        v-if="!currentRegion ? true : +currentRegion === +feature.properties.parent1_code"
-        :lat-lngs="reverseCoordinates(feature.geometry.coordinates as [number, number][][])"
-        v-bind="polygonStyles(feature.properties.parent2_code)">
+    <template v-for="feature in polygonFeatures" :key="(feature as any).parent2_code + Math.random()">
+      <l-polygon @click="handlePolygonClick((feature as any).properties.parent2_code)"
+        v-if="!currentRegion ? true : +currentRegion === +(feature as any).properties.parent1_code"
+        :lat-lngs="reverseCoordinates((feature as any).geometry.coordinates as [number, number][][])"
+        v-bind="polygonStyles(+(feature as any).properties.parent2_code)">
         <l-tooltip class="p-0 bg-transparent rounded-md">
-          <slot :data="feature.properties" />
+          <slot :data="(feature as any).properties" />
         </l-tooltip>
       </l-polygon>
     </template>
@@ -31,7 +31,7 @@
 <script setup lang="ts">
 import { LMap, LPolygon, LTooltip, LMarker } from "@vue-leaflet/vue-leaflet";
 import { useRegionStore } from "../../../entities/region/store";
-import { computed, ref } from "vue";
+import { computed, ref, watch } from "vue";
 import { reverseCoordinates } from "../../helpers/reverseCoordinates";
 import { useAStore } from "../../../pages/a_block/store";
 import { storeToRefs } from "pinia";
@@ -41,7 +41,25 @@ const aStore = useAStore()
 const { a1FilterByProject } = storeToRefs(aStore);
 
 // Constants
-const MAP_CENTER = () => regionStore.regionCenteroid?.find((item) => +item.parent1_code === +props.currentRegion)?.centroid.reverse();
+const DEFAULT_MAP_CENTER = [49.213962, 67.109173] as [number, number]; // Запасные координаты центра Казахстана
+
+const MAP_CENTER = () => {
+  try {
+    if (props.currentRegion === undefined) return DEFAULT_MAP_CENTER;
+    
+    const centroid = regionStore.regionCenteroid?.find((item) => +item.parent1_code === +props.currentRegion)?.centroid;
+    if (!centroid || !Array.isArray(centroid) || centroid.length < 2) {
+      console.warn(`Не найден центроид для региона ${props.currentRegion}, используем запасной центр`);
+      return DEFAULT_MAP_CENTER;
+    }
+    
+    return centroid.slice().reverse();
+  } catch (error) {
+    console.error('Ошибка при определении центра карты:', error);
+    return DEFAULT_MAP_CENTER;
+  }
+};
+
 const MAP_OPTIONS = { zoomControl: false };
 const DEFAULT_POLYGON_STYLES = {
   color: "white",
@@ -69,7 +87,23 @@ const emit = defineEmits<{
 const { raionPolygons } = useRegionStore();
 
 // Computed
-const polygonFeatures = computed(() => Object.values(raionPolygons.features));
+const polygonFeatures = computed(() => {
+  if (!raionPolygons) return [];
+  if (typeof raionPolygons !== 'object') return [];
+  
+  try {
+    const features = (raionPolygons as any).features;
+    if (!features || typeof features !== 'object') {
+      console.warn('Отсутствуют или некорректны данные raionPolygons.features');
+      return [];
+    }
+    
+    return Object.values(features);
+  } catch (error) {
+    console.error('Ошибка при получении полигонов:', error);
+    return [];
+  }
+});
 
 const mapCenter = computed(() => MAP_CENTER());
 const mapOptions = computed(() => MAP_OPTIONS);
@@ -91,4 +125,8 @@ const handlePolygonClick = (code: string) => {
 
 // Refs
 const mapRef = ref(null);
+
+watch(() => props.currentRegion, (newRegion) => {
+  console.log(`Изменен регион на: ${newRegion}, центр карты: ${mapCenter.value}`);
+}, { immediate: true });
 </script>

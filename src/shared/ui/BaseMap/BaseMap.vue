@@ -1,12 +1,12 @@
 <template>
   <l-map ref="mapRef" :zoom="zoom ?? 5" :max-zoom="5" :min-zoom="4" :center="mapCenter" :options="mapOptions"
     class="w-full" :use-global-leaflet="false">
-    <l-polygon v-for="feature in polygonFeatures" :key="feature.parent1_code"
-      @click="handlePolygonClick(feature.properties.parent1_code)"
-      :lat-lngs="reverseCoordinates(feature.geometry.coordinates as [number, number][][])"
-      v-bind="polygonStyles(feature.properties.parent1_code)">
+    <l-polygon v-for="feature in polygonFeatures" :key="(feature as any).parent1_code"
+      @click="handlePolygonClick((feature as any).properties.parent1_code)"
+      :lat-lngs="reverseCoordinates((feature as any).geometry.coordinates as [number, number][][])"
+      v-bind="polygonStyles((feature as any).properties.parent1_code)">
       <l-tooltip class="p-0 bg-transparent rounded-md">
-        <slot :data="feature.properties" />
+        <slot :data="(feature as any).properties" />
       </l-tooltip>
     </l-polygon>
   </l-map>
@@ -16,11 +16,11 @@
 import { LMap, LPolygon, LTooltip } from "@vue-leaflet/vue-leaflet";
 import "leaflet/dist/leaflet.css";
 import { useRegionStore } from "../../../entities/region/store";
-import { computed, ref } from "vue";
+import { computed, ref, watch } from "vue";
 import { reverseCoordinates } from "../../helpers/reverseCoordinates";
 
 // Constants
-const MAP_CENTER = [49.213962, 67.109173] as [number, number];
+const DEFAULT_MAP_CENTER = [49.213962, 67.109173] as [number, number];
 const MAP_OPTIONS = { 
   zoomControl: false,
   dragging: false, 
@@ -53,9 +53,25 @@ const emit = defineEmits<{
 const { regionPolygons } = useRegionStore();
 
 // Computed
-const polygonFeatures = computed(() => Object.values(regionPolygons.features));
+const polygonFeatures = computed(() => {
+  if (!regionPolygons) return [];
+  if (typeof regionPolygons !== 'object') return [];
+  
+  try {
+    const features = (regionPolygons as any).features;
+    if (!features || typeof features !== 'object') {
+      console.warn('Отсутствуют или некорректны данные regionPolygons.features');
+      return [];
+    }
+    
+    return Object.values(features);
+  } catch (error) {
+    console.error('Ошибка при получении полигонов:', error);
+    return [];
+  }
+});
 
-const mapCenter = computed(() => MAP_CENTER);
+const mapCenter = computed(() => DEFAULT_MAP_CENTER);
 const mapOptions = computed(() => MAP_OPTIONS);
 
 // Methods
@@ -75,4 +91,9 @@ const handlePolygonClick = (code: string) => {
 
 // Refs
 const mapRef = ref(null);
+
+// Слежение за изменениями
+watch(() => props.currentRegion, (newRegion) => {
+  console.log(`Изменен регион на: ${newRegion}`);
+}, { immediate: true });
 </script>

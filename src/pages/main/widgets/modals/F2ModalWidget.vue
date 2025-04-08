@@ -20,12 +20,29 @@
       @close="$emit('close')"
     >
     <div class="flex gap-1 text-white mt-1 mb-1">
-        <div :class="{ active: tab === 0 }" @click="tab = 0" class="btn">
+        <div :class="{ active: tab === 0 }" @click="tab = 0" class="btn h-8">
           По отраслям
         </div>
-        <div :class="{ active: tab === 1 }" @click="tab = 1" class="btn">
+        <div :class="{ active: tab === 1 }" @click="tab = 1" class="btn h-8">
           Качественные рабочие места
         </div>
+        
+        <a-select 
+          v-if="tab === 1" 
+          class="text-white ml-2 w-40" 
+          placeholder="Фильтр 1"
+        >
+          <a-select-option value="option1">Опция 1</a-select-option>
+        </a-select>
+        
+        <a-select 
+          v-if="tab === 1" 
+          class="text-white ml-2 w-40"
+          placeholder="Фильтр 2"
+        >
+          <a-select-option value="option1">Опция 1</a-select-option>
+        </a-select>
+        
       </div>
       <div class="overflow-auto h-[calc(94vh)] grid grid-cols-2" v-if="tab === 0">
         <div class="grid">

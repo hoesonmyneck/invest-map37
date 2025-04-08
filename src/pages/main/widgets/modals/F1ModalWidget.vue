@@ -2,10 +2,10 @@
   <a-modal :footer="null" class="p-0" width="100%" height="100%" :closable="false" :centered="true">
     <BaseCard title="" number="" :show-close-button="true" @close="$emit('close')" class="h-screen">
       <div class="flex gap-2">
-        <div class="btn mini text-white" :class="{ 'bg-blue-500 active': activeTab === 1 }" @click="activeTab = 1">
+        <div class="btn mini text-white h-8" :class="{ 'bg-blue-500 active': activeTab === 1 }" @click="activeTab = 1">
           Рынок труда
         </div>
-        <div class="btn mini text-white" :class="{ 'bg-blue-500 active': activeTab === 2 }" @click="activeTab = 2">
+        <div class="btn mini text-white h-8" :class="{ 'bg-blue-500 active': activeTab === 2 }" @click="activeTab = 2">
           Программы
         </div>
         <a-select v-if="activeTab === 2" v-model:value="currentYear" class="w-[80px]">

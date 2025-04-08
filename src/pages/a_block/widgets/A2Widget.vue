@@ -115,7 +115,7 @@
       </BaseMap>
 
       <!-- Region Map -->
-      <BaseMapRegion v-else class="h-full" :current-region="currentRegion" :current-raion="currentRaion" :zoom="6"
+      <BaseMapRegion v-else class="h-full" :current-region="currentRegion" :current-raion="currentRaion" :zoom="getRegionZoom(currentRegion)"
         :fill-color="(v) => {
           if (!groupByRaion[v]) {
             return '#222732'
@@ -313,6 +313,21 @@ const groupByRaion = computed(() => a1FilterByProject.value.reduce((acc, curr) =
 
   return acc;
 }, {}))
+
+const getRegionZoom = (regionCode: number | null): number => {
+  if (regionCode === null) return 6;
+  
+  // Города республиканского значения имеют больший зум
+  if (
+    regionCode === 710000000 || // Алматы
+    regionCode === 750000000 || // Астана
+    regionCode === 790000000    // Шымкент
+  ) {
+    return 10; 
+  }
+  
+  return 6; // Стандартный зум для областей
+}
 </script>
 
 <style scoped lang="scss"></style>
