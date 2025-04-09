@@ -212,8 +212,8 @@
             <highcharts :options="chartOptionsF6" class="w-full m-auto h-max"></highcharts>
           </div>
           
-          <div class="text-white px-4 py-2">
-            <div class="text-sm font-medium mb-4">Статистика по отраслям:</div>
+          <div class="text-white px-0 py-2 w-[160px]">
+            <div class="text-sm font-medium mb-4">Статистика:</div>
             <div class="space-y-[16px] max-h-[calc(90vh)] mt-[30px]">
               <template v-for="(item, index) in filteredDataF6.slice(0, 19)" :key="index">
                 <div class="bg-[#252A36] p-1 rounded h-[37px] pt-[1px]">
