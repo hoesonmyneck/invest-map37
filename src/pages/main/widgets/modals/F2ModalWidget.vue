@@ -48,16 +48,16 @@
         <div class="grid">
           <div class="max-h-[100vh] overflow-scroll text-white max-w-[95%]">
             <div
-              class="head grid grid-cols-[2fr_120px_120px_135px_130px] mb-2 pb-2 border-b border-gray-600"
+              class="head grid grid-cols-[2fr_120px_120px_135px] mb-2 pb-2 border-b border-gray-600"
             >
               <p>Наименование</p>
               <p>Количество 2023</p>
               <p>Количество 2024</p>
               <p>Прирост 2023/2024</p>
-              <p>Прогноз 2025</p>
+              <!-- <p>Прогноз 2025</p> -->
             </div>
             <div
-              class="mt-1 gap-1 grid grid-cols-[2fr_120px_120px_140px_120px] text-[12px]"
+              class="mt-1 gap-1 grid grid-cols-[2fr_120px_120px_140px] text-[12px]"
               v-for="i in list"
               :key="i.vcode_oked"
             >
@@ -86,11 +86,11 @@
               >
                 {{ i.proc.toFixed(1) }} %
               </p>
-              <p
+              <!-- <p
                 class="h-9 w-full px-3 flex items-center bg-[#252A36] rounded w-full truncate"
               >
                 {{ !!i.prognoz ? `${+i.prognoz.toFixed(1)} %` : "" }}
-              </p>
+              </p> -->
             </div>
           </div>
         </div>
