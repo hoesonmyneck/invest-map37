@@ -207,12 +207,29 @@
           </BaseMapNoMarker>
         </div>
       </div>
-      <div class="overflow-auto h-[calc(94vh)] grid grid-cols-2" v-if="tab === 1">
+      <div class="overflow-auto h-[calc(94vh)] grid grid-cols-[40%_195px_1fr]" v-if="tab === 1">
           <div class="grid">
-           
-            
             <highcharts :options="chartOptionsF6" class="w-full m-auto h-max"></highcharts>
           </div>
+          
+          <div class="text-white px-4 py-2">
+            <div class="text-sm font-medium mb-4">Статистика по отраслям:</div>
+            <div class="space-y-[16px] max-h-[calc(90vh)] mt-[30px]">
+              <template v-for="(item, index) in filteredDataF6.slice(0, 19)" :key="index">
+                <div class="bg-[#252A36] p-1 rounded h-[37px] pt-[1px]">
+                  <div class="text-xs flex justify-between">
+                    <span>Всего:</span>
+                    <span>{{ Numeral(item.cnt_quality + item.cnt_not_quality) }}</span>
+                  </div>
+                  <div class="text-xs flex justify-between">
+                    <span>Качественные:</span>
+                    <span class="text-[#109669]">{{ ((item.cnt_quality / (item.cnt_quality + item.cnt_not_quality)) * 100).toFixed(1) }}%</span>
+                  </div>
+                </div>
+              </template>
+            </div>
+          </div>
+
           <div class="map h-[calc(90vh)] relative w-[calc(100%)] ml-[5px]">
             <div
             v-if="!!currentRegionF6"

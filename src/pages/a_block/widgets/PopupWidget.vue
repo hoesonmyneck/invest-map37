@@ -21,10 +21,10 @@
                 </div>
                 <div class="text-center relative">
                     <p class="absolute top-[130px] left-1/2 -translate-x-1/2 text-3xl">
-                        {{ !isExploitationComplete() ? '0%' : Numeral(Math.min(currentProjectPopup.fact_work / currentProjectPopup.work_places * 100, 100)) + '%' }}
+                        {{ currentProjectPopup.fact_year_value[currentProjectPopup.fact_year_value.length - 1] === 2024 ? '0%' : !isExploitationComplete() ? '0%' : Numeral(Math.min(currentProjectPopup.fact_work / currentProjectPopup.work_places * 100, 100)) + '%' }}
                     </p>
                     <highcharts
-                        :options="chartOptions('ПЛАНОВЫЕ РАБОЧИЕ МЕСТА', 'Фактический рабочие места', !isExploitationComplete() ? 0 : Math.min(currentProjectPopup.fact_work / currentProjectPopup.work_places * 100, 100), currentProjectPopup.work_places, currentProjectPopup.work_places, !isExploitationComplete() ? 0 : currentProjectPopup.fact_work)"
+                        :options="chartOptions('ПЛАНОВЫЕ РАБОЧИЕ МЕСТА', 'Фактический рабочие места', currentProjectPopup.fact_year_value[currentProjectPopup.fact_year_value.length - 1] === 2024 ? 0 : !isExploitationComplete() ? 0 : Math.min(currentProjectPopup.fact_work / currentProjectPopup.work_places * 100, 100), currentProjectPopup.work_places, currentProjectPopup.work_places, !isExploitationComplete() ? 0 : currentProjectPopup.fact_work)"
                         class="h-[200px] w-[250px] m-auto mt-5"></highcharts>
                     <div class="-mt-7">
                         <p class="text-gray-400 text-[12px] flex justify-center">
@@ -426,15 +426,7 @@ const getColorRisk = (risk: string) => {
 
 const calculateKrmValues = (factValues: number[], krmValue: number) => {
     if (!factValues.length || !krmValue) return Array(factValues.length).fill(0);
-    
-    
-    const firstFactValue = factValues[0] || 1;
-    
-  
-    const ratio = krmValue / firstFactValue;
-    
-    
-    return factValues.map(factValue => Math.round(factValue * ratio * 100) / 100);
+    return Array(factValues.length).fill(krmValue);
 }
 
 const chartOptions = (name: string, name2: string, percent: number, all: number, value: number, value2: number) => {
@@ -800,13 +792,7 @@ const permanentChartOptions = {
         text: '',
     },
     xAxis: {
-        categories: isExploitationComplete() 
-            ? currentProjectPopup.value.fact_year_value.filter(
-                (year: number) => year >= getExploitationYear()
-              )
-            : currentProjectPopup.value.fact_year_value.filter(
-                (year: number) => year >= new Date(currentProjectPopup.value.project_start_date).getFullYear()
-              ),
+        categories: currentProjectPopup.value.fact_year_value,
         labels: {
             style: {
                 color: '#fff'
@@ -837,20 +823,13 @@ const permanentChartOptions = {
             
             points.forEach(function(point: any) {
                 if (point.series.name === 'Фактические рабочие места') {
-                    const firstYearToShow = isExploitationComplete() ? getExploitationYear() : 
-                        new Date(currentProjectPopup.value.project_start_date).getFullYear();
-                    
-                    const firstYearIndex = currentProjectPopup.value.fact_year_value.findIndex(
-                        (year: number) => year >= firstYearToShow
-                    );
-                    
-                    const firstYearValue = currentProjectPopup.value.fact_count_value[firstYearIndex] || 0;
+                    const firstYearValue = currentProjectPopup.value.fact_count_value[0] || 0;
                     const currentValue = point.y;
                     const difference = currentValue - firstYearValue;
                     
                     let differenceText = '';
                     if (difference !== 0) {
-                        differenceText = difference < 0 ? difference.toString() : '+' + difference;
+                        differenceText = difference < 0 ? difference.toString() : '' + difference;
                     }
                     
                     tooltipText += '<span style="color:' + point.color + '">●</span> ' + 
@@ -894,41 +873,14 @@ const permanentChartOptions = {
     series: [{
         name: 'Фактические рабочие места',
         type: 'area',
-        data: isExploitationComplete()
-            ? currentProjectPopup.value.fact_count_value.filter(
-                (_: unknown, index: number): boolean => 
-                    currentProjectPopup.value.fact_year_value[index] >= getExploitationYear()
-              )
-            : currentProjectPopup.value.fact_count_value.filter(
-                (_: unknown, index: number): boolean => 
-                    currentProjectPopup.value.fact_year_value[index] >= 
-                    new Date(currentProjectPopup.value.project_start_date).getFullYear()
-              ),
+        data: currentProjectPopup.value.fact_count_value,
         color: '#3090E8',
     }, {
         name: 'Плановые рабочие места',
         type: 'line',
-        data: isExploitationComplete()
-            ? Array(currentProjectPopup.value.fact_year_value.filter(
-                (year: number) => year >= getExploitationYear()
-              ).length).fill(
-                currentProjectPopup.value.work_places + 
-                (currentProjectPopup.value.fact_count_value[
-                    currentProjectPopup.value.fact_year_value.findIndex(
-                        (year: number) => year >= getExploitationYear()
-                    )
-                ] || 0)
-              )
-            : Array(currentProjectPopup.value.fact_year_value.filter(
-                (year: number) => year >= new Date(currentProjectPopup.value.project_start_date).getFullYear()
-              ).length).fill(
-                currentProjectPopup.value.work_places + 
-                (currentProjectPopup.value.fact_count_value[
-                    currentProjectPopup.value.fact_year_value.findIndex(
-                        (year: number) => year >= new Date(currentProjectPopup.value.project_start_date).getFullYear()
-                    )
-                ] || 0)
-              ),
+        data: Array(currentProjectPopup.value.fact_year_value.length).fill(
+            currentProjectPopup.value.work_places + currentProjectPopup.value.fact_count_value[currentProjectPopup.value.fact_count_value.length - 1]
+        ),
         color: '#B85DDA',
         dashStyle: 'solid',
         lineWidth: 2
@@ -936,16 +888,7 @@ const permanentChartOptions = {
         name: 'Качественные рабочие места',
         type: 'line',
         data: calculateKrmValues(
-            isExploitationComplete()
-                ? currentProjectPopup.value.fact_count_value.filter(
-                    (_: unknown, index: number): boolean => 
-                        currentProjectPopup.value.fact_year_value[index] >= getExploitationYear()
-                  )
-                : currentProjectPopup.value.fact_count_value.filter(
-                    (_: unknown, index: number): boolean => 
-                        currentProjectPopup.value.fact_year_value[index] >= 
-                        new Date(currentProjectPopup.value.project_start_date).getFullYear()
-                  ),
+            currentProjectPopup.value.fact_count_value,
             currentProjectPopup.value.cnt_krm || 0
         ),
         color: '#FF9B42',
