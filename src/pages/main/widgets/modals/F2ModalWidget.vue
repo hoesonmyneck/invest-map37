@@ -214,14 +214,14 @@
           
           <div class="text-white px-0 py-2 w-[160px]">
             <div class="text-sm font-medium mb-4">Статистика:</div>
-            <div class="space-y-[16px] max-h-[calc(90vh)] mt-[30px]">
+            <div class="lg:space-y-[3.6px] 2xl:space-y-[16px] max-h-[calc(90vh)] lg:mt-[24px] 2xl:mt-[30px]">
               <template v-for="(item, index) in filteredDataF6.slice(0, 19)" :key="index">
-                <div class="bg-[#252A36] p-1 rounded h-[37px] pt-[1px]">
-                  <div class="text-xs flex justify-between">
+                <div class="bg-[#252A36] p-1 rounded lg:h-[30px] 2xl:h-[37px] pt-[0px]">
+                  <div class="lg:text-[10px] 2xl:text-xs flex justify-between">
                     <span>Всего:</span>
                     <span>{{ Numeral(item.cnt_quality + item.cnt_not_quality) }}</span>
                   </div>
-                  <div class="text-xs flex justify-between">
+                  <div class="lg:text-[10px] 2xl:text-xs flex justify-between">
                     <span>Качественные:</span>
                     <span class="text-[#109669]">{{ ((item.cnt_quality / (item.cnt_quality + item.cnt_not_quality)) * 100).toFixed(1) }}%</span>
                   </div>
