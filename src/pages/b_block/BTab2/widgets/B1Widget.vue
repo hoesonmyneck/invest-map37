@@ -25,7 +25,7 @@
             <img class="w-4" src="/images/a_block/img_1.png" alt="" />
             <p class="text-[10px]">Участники</p>
             <p class="text-[10px]">{{ Numeral(total) }}</p>
-            <p class="text-[10px] text-end">100%</p>
+            <p class="text-[10px] text-end">{{ Numeral((total / totalBeforeFilter) * 100) }}%</p>
           </li>
 
           <li
@@ -55,7 +55,11 @@ import { storeToRefs } from "pinia";
 import { chartOptions } from "../helpers/chartOption";
 
 const programStore = useProgramStore();
-const { serpinFilter } = storeToRefs(programStore);
+const { serpinFilter, serpin } = storeToRefs(programStore);
+
+const totalBeforeFilter = computed(() =>
+  serpin.value.reduce((acc, curr) => +acc + +(curr.total || 0), 0)
+);
 
 const rabotaet = computed(() =>
   serpinFilter.value.reduce((acc, curr) => +acc + +(curr.rabotaet || 0), 0)

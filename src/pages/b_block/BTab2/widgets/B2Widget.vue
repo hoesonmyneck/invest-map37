@@ -20,7 +20,7 @@
             <img class="w-4" src="/images/a_block/img_1.png" alt="" />
             <p class="text-[10px]">Участники</p>
             <p class="text-[10px]">{{ Numeral(total) }}</p>
-            <p class="text-[10px] text-end">100%</p>
+            <p class="text-[10px] text-end">{{ Numeral((total / totalBeforeFilter) * 100) }}%</p>
           </li>
 
           <li
@@ -54,7 +54,11 @@ const loader = ref(true);
 const data = ref<any[]>([]);
 
 const programStore = useProgramStore();
-const { aulAmanatiFilter } = storeToRefs(programStore);
+const { aulAmanatiFilter, aulAmanati } = storeToRefs(programStore);
+
+const totalBeforeFilter = computed(() =>
+  aulAmanati.value.reduce((acc, curr) => +acc + +(curr.total || 0), 0)
+);
 
 const srok_5 = computed(() =>
   aulAmanatiFilter.value.reduce((acc, curr) => +acc + +(curr.srok_5 || 0), 0)
