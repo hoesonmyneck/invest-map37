@@ -6,10 +6,10 @@
             <div class="grid grid-cols-4 gap-1 w-max m-auto items-end text-white">
                 <div class="text-center relative">
                     <p class="absolute top-[130px] left-1/2 -translate-x-1/2 text-3xl">
-                        {{ !isSMRActiveOrComplete() ? '0%' : Numeral(Math.min(currentProjectPopup.data_project_temporaryworkplacescount / currentProjectPopup.work_places * 100, 100)) + '%' }}
+                        {{ !isSMRActiveOrComplete() || currentProjectPopup.bin === '190140027983' ? '0%' : Numeral(Math.min(currentProjectPopup.data_project_temporaryworkplacescount / currentProjectPopup.data_project_temporaryworkplacescount * 100, 100)) + '%' }}
                     </p>
                     <highcharts
-                        :options="chartOptions2('ПЛАНОВЫЕ РАБОЧИЕ МЕСТА', 'Фактический рабочие места', !isSMRActiveOrComplete() ? 0 : Math.min(currentProjectPopup.data_project_temporaryworkplacescount / currentProjectPopup.work_places * 100, 100), currentProjectPopup.work_places, currentProjectPopup.work_places, !isSMRActiveOrComplete() ? 0 : currentProjectPopup.data_project_temporaryworkplacescount)"
+                        :options="chartOptions2('ПЛАНОВЫЕ РАБОЧИЕ МЕСТА', 'Фактический рабочие места', !isSMRActiveOrComplete() || currentProjectPopup.bin === '190140027983' ? 0 : Math.min(currentProjectPopup.data_project_temporaryworkplacescount / currentProjectPopup.data_project_temporaryworkplacescount * 100, 100), currentProjectPopup.work_places, currentProjectPopup.work_places, !isSMRActiveOrComplete() || currentProjectPopup.bin === '190140027983' ? 0 : currentProjectPopup.data_project_temporaryworkplacescount)"
                         class="h-[200px] w-[250px] m-auto mt-5"></highcharts>
                     <div class="-mt-7">
                         <p class="text-gray-400 text-[12px] flex justify-center">
@@ -21,10 +21,10 @@
                 </div>
                 <div class="text-center relative">
                     <p class="absolute top-[130px] left-1/2 -translate-x-1/2 text-3xl">
-                        {{ currentProjectPopup.fact_year_value[currentProjectPopup.fact_year_value.length - 1] === 2024 ? '0%' : !isExploitationComplete() ? '0%' : Numeral(Math.min(currentProjectPopup.fact_work / currentProjectPopup.work_places * 100, 100)) + '%' }}
+                        {{ !isExploitationComplete() ? '0%' : Numeral(Math.min(currentProjectPopup.fact_work / currentProjectPopup.work_places * 100, 100)) + '%' }}
                     </p>
                     <highcharts
-                        :options="chartOptions('ПЛАНОВЫЕ РАБОЧИЕ МЕСТА', 'Фактический рабочие места', currentProjectPopup.fact_year_value[currentProjectPopup.fact_year_value.length - 1] === 2024 ? 0 : !isExploitationComplete() ? 0 : Math.min(currentProjectPopup.fact_work / currentProjectPopup.work_places * 100, 100), currentProjectPopup.work_places, currentProjectPopup.work_places, !isExploitationComplete() ? 0 : currentProjectPopup.fact_work)"
+                        :options="chartOptions('ПЛАНОВЫЕ РАБОЧИЕ МЕСТА', 'Фактический рабочие места', !isExploitationComplete() ? 0 : Math.min(currentProjectPopup.fact_work / currentProjectPopup.work_places * 100, 100), currentProjectPopup.work_places, currentProjectPopup.work_places, !isExploitationComplete() ? 0 : currentProjectPopup.fact_work)"
                         class="h-[200px] w-[250px] m-auto mt-5"></highcharts>
                     <div class="-mt-7">
                         <p class="text-gray-400 text-[12px] flex justify-center">
