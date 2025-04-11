@@ -36,7 +36,7 @@
                 </div>
                 <div class="text-center relative">
                     <highcharts
-                        :options="chartOptions('СТОИМОСТЬ ПРОЕКТА', 'СТОИМОСТЬ ПРОЕКТА', 100, 100, currentProjectPopup.project_price, currentProjectPopup.project_price)"
+                        :options="chartOptions3('СТОИМОСТЬ ПРОЕКТА', 'СТОИМОСТЬ ПРОЕКТА', 100, 100, currentProjectPopup.project_price, currentProjectPopup.project_price)"
                         class="h-[210px] w-[250px] m-auto mt-5">
                     </highcharts>
                     <p class="absolute top-[130px] left-1/2 -translate-x-1/2 text-2xl">{{
@@ -50,7 +50,7 @@
                         Numeral(currentProjectPopup.fact_fot / currentProjectPopup.plan_fot * 100) }}%
                     </p>
                     <highcharts
-                        :options="chartOptions('ПЛАНОВЫЙ ФОНД ОПЛАТЫ ТРУДА', 'Фактический фонд оплаты труда', currentProjectPopup.fact_fot / currentProjectPopup.plan_fot * 100, currentProjectPopup.plan_fot, currentProjectPopup.plan_fot, currentProjectPopup.fact_fot)"
+                        :options="chartOptions4('ПЛАНОВЫЙ ФОНД ОПЛАТЫ ТРУДА', 'Фактический фонд оплаты труда', currentProjectPopup.fact_fot / currentProjectPopup.plan_fot * 100, currentProjectPopup.plan_fot, currentProjectPopup.plan_fot, currentProjectPopup.fact_fot)"
                         class="h-[200px] w-[250px] m-auto mt-5">
                     </highcharts>
                     <div class="-mt-7">
@@ -467,16 +467,67 @@ const chartOptions2 = (name: string, name2: string, percent: number, all: number
         },
         tooltip: {
             formatter: function(this: any) {
-                // Определяем, на какую серию навели (заполненная или незаполненная)
                 const isFilled = this.point.series.index === 1;
                 const temporaryWorkplaces = !isSMRActiveOrComplete() ? 0 : currentProjectPopup.value.data_project_temporaryworkplacescount;
                 
                 if (isFilled) {
-                    // Если навели на заполненную шкалу (синюю)
                     return '<b>Временные рабочие места:</b> ' + Numeral(temporaryWorkplaces);
                 } else {
-                    // Если навели на незаполненную шкалу (серую)
                     return '<b>Плановые рабочие места:</b> ' + Numeral(currentProjectPopup.value.work_places);
+                }
+            }
+        },
+        yAxis: { min: 0, max: 100, lineWidth: 0, tickPositions: [] },
+        plotOptions: { solidgauge: { dataLabels: { enabled: false, showInLegend: false } } },
+        series: [
+            { name: "", data: [{ name, radius: "80%", innerRadius: "100%", color: "rgba(48,144,232,0.2)", y: 100, value: Numeral(value) }] },
+            { name: name ?? '', data: [{ name: name2, radius: "80%", innerRadius: "100%", color: "#3090E8", y: +percent.toFixed(0), value: Numeral(value2) }] },
+        ],
+    }
+}
+const chartOptions3 = (name: string, name2: string, percent: number, all: number, value: number, value2: number) => {
+    return {
+        chart: { type: "solidgauge", backgroundColor: "transparent", height: "100%" },
+        title: { text: "" },
+        pane: {
+            startAngle: -125,
+            endAngle: 125,
+            background: [{ outerRadius: 0, innerRadius: 0, borderWidth: 0 }],
+        },
+        tooltip: {
+            formatter: function(this: any) {
+                const isFilled = this.point.series.index === 1;
+                if (isFilled) {
+                    return '<b>Стоимость проекта:</b> ' + Numeral(value2);
+                } else {
+                    return '<b>Плановые рабочие места:</b> ' + Numeral(value);
+                }
+            }
+        },
+        yAxis: { min: 0, max: 100, lineWidth: 0, tickPositions: [] },
+        plotOptions: { solidgauge: { dataLabels: { enabled: false, showInLegend: false } } },
+        series: [
+            { name: "", data: [{ name, radius: "80%", innerRadius: "100%", color: "rgba(48,144,232,0.2)", y: 100, value: Numeral(value) }] },
+            { name: name ?? '', data: [{ name: name2, radius: "80%", innerRadius: "100%", color: "#3090E8", y: +percent.toFixed(0), value: Numeral(value2) }] },
+        ],
+    }
+}
+const chartOptions4 = (name: string, name2: string, percent: number, all: number, value: number, value2: number) => {
+    return {
+        chart: { type: "solidgauge", backgroundColor: "transparent", height: "100%" },
+        title: { text: "" },
+        pane: {
+            startAngle: -125,
+            endAngle: 125,
+            background: [{ outerRadius: 0, innerRadius: 0, borderWidth: 0 }],
+        },
+        tooltip: {
+            formatter: function(this: any) {
+                const isFilled = this.point.series.index === 1;
+                if (isFilled) {
+                    return '<b>Фонд оплаты труда:</b> ' + Numeral(value2);
+                } else {
+                    return '<b>Фонд оплаты труда:</b> ' + Numeral(value);
                 }
             }
         },

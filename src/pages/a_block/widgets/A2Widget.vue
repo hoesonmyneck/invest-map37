@@ -44,6 +44,7 @@
           </li>
         </template>
       </ul>
+      <div class=" mini block h-max ml-[5%]">Выбрано: {{ selectedLocation }}</div>
       <div v-if="!!currentRegion"
         class="rounded absolute z-10 top-5 right-5 bg-[#252A36] w-8 h-8 flex items-center justify-center cursor-pointer"
         @click="() => {
@@ -251,7 +252,24 @@ const clickPolygon = (code: string) => {
   currentRegion.value = +code;
 }
 
-const groupByRegion = computed(() => a1FilterByProject.value.reduce((acc, curr) => {
+interface RegionData {
+  parent1_code: number;
+  parent2_code: number;
+  region: string;
+  raion: string;
+  project_price: number;
+  work_places: number;
+  plan_fot: number;
+  count: number;
+  sroki_dolg: number;
+  sroki_sred: number;
+  sroki_krat: number;
+  risk_otsut: number;
+  risk_vysok: number;
+  risk_sred: number;
+}
+
+const groupByRegion = computed<Record<number, RegionData>>(() => a1FilterByProject.value.reduce((acc, curr) => {
   if (!acc[curr.parent1_code]) {
     acc[curr.parent1_code] = {
       ...curr,
@@ -262,7 +280,7 @@ const groupByRegion = computed(() => a1FilterByProject.value.reduce((acc, curr) 
       risk_otsut: curr.ball_tip_name.includes('Отсутствует') ? 1 : 0,
       risk_vysok: curr.ball_tip_name.includes('Высокий') ? 1 : 0,
       risk_sred: curr.ball_tip_name.includes('Средний') ? 1 : 0,
-    };
+    } as RegionData;
     return acc;
   }
 
@@ -280,10 +298,9 @@ const groupByRegion = computed(() => a1FilterByProject.value.reduce((acc, curr) 
   acc[curr.parent1_code].risk_sred += curr.ball_tip_name.includes('Средний') ? 1 : 0;
 
   return acc;
-}, {}))
+}, {} as Record<number, RegionData>))
 
-
-const groupByRaion = computed(() => a1FilterByProject.value.reduce((acc, curr) => {
+const groupByRaion = computed<Record<number, RegionData>>(() => a1FilterByProject.value.reduce((acc, curr) => {
   if (!acc[curr.parent2_code]) {
     acc[curr.parent2_code] = {
       ...curr,
@@ -294,7 +311,7 @@ const groupByRaion = computed(() => a1FilterByProject.value.reduce((acc, curr) =
       risk_otsut: curr.ball_tip_name.includes('Отсутствует') ? 1 : 0,
       risk_vysok: curr.ball_tip_name.includes('Высокий') ? 1 : 0,
       risk_sred: curr.ball_tip_name.includes('Средний') ? 1 : 0,
-    };
+    } as RegionData;
     return acc;
   }
 
@@ -312,7 +329,7 @@ const groupByRaion = computed(() => a1FilterByProject.value.reduce((acc, curr) =
   acc[curr.parent2_code].risk_sred += curr.ball_tip_name.includes('Средний') ? 1 : 0;
 
   return acc;
-}, {}))
+}, {} as Record<number, RegionData>))
 
 const getRegionZoom = (regionCode: number | null): number => {
   if (regionCode === null) return 6;
@@ -328,6 +345,18 @@ const getRegionZoom = (regionCode: number | null): number => {
   
   return 6; // Стандартный зум для областей
 }
+
+const selectedLocation = computed(() => {
+  if (currentRaion.value) {
+    const raion = Object.values(groupByRaion.value).find((r: RegionData) => r.parent2_code === currentRaion.value);
+    return raion ? `${raion.region}, ${raion.raion}` : 'Казахстан';
+  }
+  if (currentRegion.value) {
+    const region = Object.values(groupByRegion.value).find((r: RegionData) => r.parent1_code === currentRegion.value);
+    return region ? `${region.region}` : 'Казахстан';
+  }
+  return 'Казахстан';
+});
 </script>
 
 <style scoped lang="scss"></style>
