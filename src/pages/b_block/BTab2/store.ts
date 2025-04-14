@@ -43,8 +43,12 @@ export const useProgramStore = defineStore("program", {
         setCurrentKey(key: string) {
             this.current_key = key;
         },
-        setCurrentRegion(code: string) {
-            this.currentRegion = +code;
+        setCurrentRegion(code: string | null) {
+            this.currentRegion = code ? +code : null;
+            this.currentRaion = null;
+        },
+        setCurrentRaion(code: string | null) {
+            this.currentRaion = code ? +code : null;
         }
     }
 });

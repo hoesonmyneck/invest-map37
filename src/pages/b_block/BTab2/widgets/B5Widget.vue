@@ -20,14 +20,15 @@
       </ul>
     </div>
     <div
-      v-if="!!currentRegion"
+      v-if="!!currentRegion || !!currentRaion"
       class="rounded absolute z-10 top-5 right-5 bg-[#252A36] w-8 h-8 flex items-center justify-center cursor-pointer"
       @click="clickPolygon(null)"
     >
       <CloseOutlined />
     </div>
     <BaseMap
-      :current-region="+currentRegion"
+      v-if="!currentRegion"
+      :current-region="currentRegion || undefined"
       :fill-color="
         (v) => {
           return getColorFromGradient(
@@ -56,6 +57,42 @@
         </div>
       </div>
     </BaseMap>
+    <BaseMapNoMarker
+      v-else
+      :current-region="currentRegion"
+      :current-raion="currentRaion"
+      :zoom="getCityZoom(currentRegion)"
+      :fill-color="
+        (v) => {
+          if (!groupByRaion[+v]) {
+            return '#FF4D4F';
+          }
+          return getColorFromGradient(
+            (groupByRaion[+v].total / maxTotalRaion) * 100,
+            false,
+            false,
+            10
+          );
+        }
+      "
+      @click-polygon="clickRaion"
+      v-slot="slotProps"
+    >
+      <div>
+        <div class="flex items-center gap-2">
+          <p>Район:</p>
+          <p class="font-bold">{{ slotProps.data.raion }}</p>
+        </div>
+        <div class="flex items-center gap-2" v-if="groupByRaion">
+          <p class="mb-2">
+            Участники:
+            <span class="font-bold">{{
+              groupByRaion[slotProps.data.parent2_code].total
+            }}</span>
+          </p>
+        </div>
+      </div>
+    </BaseMapNoMarker>
   </div>
 </template>
 <script setup lang="ts">
@@ -63,11 +100,12 @@ import { computed } from "vue";
 import { useProgramStore } from "../store";
 import { storeToRefs } from "pinia";
 import BaseMap from "../../../../shared/ui/BaseMap/BaseMap.vue";
+import BaseMapNoMarker from "../../../../shared/ui/BaseMap/BaseMapNoMarker.vue";
 import { getColorFromGradient } from "../../../../shared/helpers/gradientColors";
 import { CloseOutlined } from "@ant-design/icons-vue";
 
 const programStore = useProgramStore();
-const { current_key, currentRegion, serpin, aulAmanati, diplommenAulga } =
+const { current_key, currentRegion, currentRaion, serpin, aulAmanati, diplommenAulga } =
   storeToRefs(programStore);
 
 const listLabels = computed(() => [
@@ -92,14 +130,22 @@ const listLabels = computed(() => [
 const maxTotal = computed(
   (): number =>
     Object.values(groupByRegion.value).reduce(
-      (acc, curr) => acc + curr.total,
+      (acc, curr: any) => acc + curr.total,
+      0
+    ) as number
+);
+
+const maxTotalRaion = computed(
+  (): number =>
+    Object.values(groupByRaion.value).reduce(
+      (acc, curr: any) => acc + curr.total,
       0
     ) as number
 );
 
 const groupByRegion = computed(() => {
   if (current_key.value === "serpin")
-    return serpin.value.reduce((acc, curr) => {
+    return serpin.value.reduce((acc, curr: any) => {
       if (acc[curr.parent1_code]) {
         acc[curr.parent1_code].total += curr.total;
         acc[curr.parent1_code].value += curr.ispolnayet;
@@ -114,7 +160,7 @@ const groupByRegion = computed(() => {
     }, {});
 
   if (current_key.value === "diplom")
-    return diplommenAulga.value.reduce((acc, curr) => {
+    return diplommenAulga.value.reduce((acc, curr: any) => {
       if (acc[curr.parent1_code]) {
         const item = acc[curr.parent1_code];
         item.value += curr.rabotaet_aul;
@@ -132,7 +178,7 @@ const groupByRegion = computed(() => {
     }, {});
 
   if (current_key.value === "auyl_amanat")
-    return aulAmanati.value.reduce((acc, curr) => {
+    return aulAmanati.value.reduce((acc, curr: any) => {
       if (acc[curr.parent1_code]) {
         const item = acc[curr.parent1_code];
         item.value += curr.active_ip;
@@ -154,8 +200,86 @@ const groupByRegion = computed(() => {
     }, {});
 });
 
-const clickPolygon = (code: string) => {
+const groupByRaion = computed(() => {
+  if (current_key.value === "serpin")
+    return serpin.value.reduce((acc, curr: any) => {
+      if (curr.parent1_code === currentRegion.value) {
+        if (acc[curr.parent2_code]) {
+          acc[curr.parent2_code].total += curr.total;
+          acc[curr.parent2_code].value += curr.ispolnayet;
+        } else {
+          acc[curr.parent2_code] = {
+            ...curr,
+            value: curr.ispolnayet,
+          };
+        }
+      }
+      return acc;
+    }, {});
+
+  if (current_key.value === "diplom")
+    return diplommenAulga.value.reduce((acc, curr: any) => {
+      if (curr.parent1_code === currentRegion.value) {
+        if (acc[curr.parent2_code]) {
+          const item = acc[curr.parent2_code];
+          item.value += curr.rabotaet_aul;
+          item.total += curr.total;
+          item.count += 1;
+        } else {
+          acc[curr.parent2_code] = {
+            ...curr,
+            count: 1,
+            value: curr.rabotaet_aul,
+          };
+        }
+      }
+      return acc;
+    }, {});
+
+  if (current_key.value === "auyl_amanat")
+    return aulAmanati.value.reduce((acc, curr: any) => {
+      if (curr.parent1_code === currentRegion.value) {
+        if (acc[curr.parent2_code]) {
+          const item = acc[curr.parent2_code];
+          item.value += curr.active_ip;
+          item.total += curr.total;
+          item.not_active += curr.not_active;
+          item.opv_has += curr.opv_has;
+          item.active_ip += curr.active_ip;
+          item.loan_price_sum += !!curr.loan_price_sum ? curr.loan_price_sum : 0;
+          item.count += 1;
+        } else {
+          acc[curr.parent2_code] = {
+            ...curr,
+            count: 1,
+            value: curr.active_ip,
+          };
+        }
+      }
+      return acc;
+    }, {});
+});
+
+const getCityZoom = (regionCode: number | null): number => {
+  if (regionCode === null) return 7;
+  
+  if (
+    regionCode === 710000000 || 
+    regionCode === 750000000 || 
+    regionCode === 790000000    
+  ) {
+    return 10; 
+  }
+  
+  return 7; 
+};
+
+const clickPolygon = (code: string | null) => {
   programStore.setCurrentRegion(code);
+};
+
+const clickRaion = (code: string | null) => {
+  programStore.setCurrentRaion(code);
 };
 </script>
 

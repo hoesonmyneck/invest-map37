@@ -11,6 +11,15 @@
         <div :class="{ active: tab === 1 }" @click="tab = 1" class="btn">
           Качественные рабочие места
         </div>
+        <a-select 
+          v-if="tab === 1" 
+          class="text-white ml-2 w-40" 
+          placeholder="Выберите год"
+          v-model:value="selectedYear"
+        >
+          <a-select-option value="2024">2024 год</a-select-option>
+          <a-select-option value="2023">2023 год</a-select-option>
+        </a-select>
       </div>
       <div class="overflow-auto h-[calc(42vh-66px)]" v-if="tab === 0">
         <highcharts :options="chartOptions" class="w-full m-auto h-max"></highcharts>
@@ -20,13 +29,13 @@
         </div> 
     </BaseCard>
 
-    <F2ModalWidget :data="data" :visible="visible" :dataF6="dataF6" @close="visible = false" />
+    <F2ModalWidget :data="data" :visible="visible" :dataF6="dataF6" :dataF6_2023="dataF6_2023" @close="visible = false" />
   </div>
 </template>
 <script setup lang="ts">
 import { computed, ref, onMounted } from "vue";
 import BaseCard from "../../../shared/ui/BaseCard/BaseCard.vue";
-import { getF2_new, getF6 } from "../../../entities/f/api";
+import { getF2_new, getF6, getF2_2023 } from "../../../entities/f/api";
 import { Numeral } from "../../../shared/helpers/numeral";
 import F2ModalWidget from "./modals/F2ModalWidget.vue";
 
@@ -64,21 +73,50 @@ interface F6Data {
   parent2_code: number | string | null;
 }
 
+interface F2_2023_Data {
+  TP: number;
+  REGID?: string;
+  REG_RU?: string;
+  IDRAI?: string;
+  RAI_RU?: string;
+  VCODE_OKED?: string;
+  VNAME_OKED?: string;
+  CNT: number;
+  CNT_QUALITY: number;
+}
+
 const loader = ref(true);
 const data = ref<F2Data[]>([]);
 const dataF6 = ref<F6Data[]>([]);
+const dataF6_2023 = ref<F6Data[]>([]);
 const visible = ref(false);
 const currentRegion = ref("");
+const selectedYear = ref('2024');
 
 async function loadF2() {
   try {
-    const [f2Data, f6Data] = await Promise.all([
+    const [f2Data, f6Data, f6Data2023] = await Promise.all([
       getF2_new(),
-      getF6()
+      getF6(),
+      getF2_2023()
     ]);
     
     data.value = f2Data;
     dataF6.value = f6Data;
+    dataF6_2023.value = f6Data2023.map((item: F2_2023_Data) => ({
+      tp: item.TP,
+      id_reg: item.REGID ? Number(item.REGID) : null,
+      reg_ru: item.REG_RU || null,
+      id_rai: item.IDRAI ? Number(item.IDRAI) : null,
+      rai_ru: item.RAI_RU || null,
+      vcode_oked: item.VCODE_OKED || '',
+      vname_oked: item.VNAME_OKED || item.REG_RU || '',
+      cnt: item.CNT,
+      cnt_quality: item.CNT_QUALITY,
+      cnt_not_quality: item.CNT - item.CNT_QUALITY,
+      parent1_code: item.REGID ? Number(item.REGID) : null,
+      parent2_code: item.IDRAI ? Number(item.IDRAI) : null
+    }));
   } catch (error) {
     console.error("Ошибка загрузки данных:", error);
   } finally {
@@ -97,7 +135,8 @@ const EXCLUDED_OKED_CATEGORIES = [
 ];
 
 const filteredData = computed(() => {
-  return dataF6.value
+  const dataSource = selectedYear.value === '2023' ? dataF6_2023.value : dataF6.value;
+  return dataSource
     .filter(item => item.tp === 2)
     .filter(item => !EXCLUDED_OKED_CATEGORIES.includes(item.vname_oked))
     .sort((a, b) => b.cnt_not_quality - a.cnt_not_quality);

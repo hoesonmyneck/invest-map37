@@ -27,22 +27,45 @@
           Качественные рабочие места
         </div>
         
-        <a-select 
-          v-if="tab === 1" 
-          class="text-white ml-2 w-40" 
-          placeholder="Фильтр 1"
-        >
-          <a-select-option value="option1">Опция 1</a-select-option>
-        </a-select>
-        
-        <a-select 
-          v-if="tab === 1" 
-          class="text-white ml-2 w-40"
-          placeholder="Фильтр 2"
-        >
-          <a-select-option value="option1">Опция 1</a-select-option>
-        </a-select>
-        
+        <div v-if="tab === 1" class="flex items-center ml-4">
+          <a-radio-group v-model:value="chartMode" button-style="solid">
+            <a-radio-button value="single">Единичный год</a-radio-button>
+            <a-radio-button value="compare">Сравнение годов</a-radio-button>
+          </a-radio-group>
+        </div>
+
+        <div v-if="tab === 1" class="flex items-center gap-2">
+          <template v-if="chartMode === 'compare'">
+            <a-select 
+              class="text-white ml-2 w-40" 
+              placeholder="Год 1"
+              v-model:value="selectedYear1"
+            >
+              <a-select-option value="2024">2024 год</a-select-option>
+              <a-select-option value="2023">2023 год</a-select-option>
+            </a-select>
+            
+            <a-select 
+              class="text-white ml-2 w-40"
+              placeholder="Год 2"
+              v-model:value="selectedYear2"
+            >
+              <a-select-option v-if="selectedYear1 !== '2024'" value="2024">2024 год</a-select-option>
+              <a-select-option v-if="selectedYear1 !== '2023'" value="2023">2023 год</a-select-option>
+            </a-select>
+          </template>
+
+          <template v-else>
+            <a-select 
+              class="text-white ml-2 w-40"
+              placeholder="Выберите режим"
+              v-model:value="singleModeOption"
+            >
+              <a-select-option value="2024">2024 год</a-select-option>
+              <a-select-option value="2023">2023 год</a-select-option>
+            </a-select>
+          </template>
+        </div>
       </div>
       <div class="overflow-auto h-[calc(94vh)] grid grid-cols-2" v-if="tab === 0">
         <div class="grid">
@@ -110,7 +133,7 @@
           </div>
           <BaseMap
             v-if="!currentRegion"
-            :current-region="currentRegion"
+            :current-region="currentRegion || undefined"
             :fill-color="
               (v) => {
                 const totalProc = groupByRegion[v]?.totalProc || 0;
@@ -149,8 +172,8 @@
 
           <BaseMapNoMarker
             v-else
-            :current-region="currentRegion"
-            :current-raion="currentRaion"
+            :current-region="currentRegion || 0"
+            :current-raion="currentRaion || undefined"
             :zoom="getCityZoom(currentRegion)"
             :fill-color="(v) => {
               if (!groupByRaion[v] || groupByRaion[v].parent1_code !== currentRegion) {
@@ -215,7 +238,19 @@
           <div class="text-white px-0 py-2 w-[160px]">
             <div class="text-sm font-medium mb-4">Статистика:</div>
             <div class="lg:space-y-[3.6px] 2xl:space-y-[16px] max-h-[calc(90vh)] lg:mt-[24px] 2xl:mt-[30px]">
-              <template v-for="(item, index) in filteredDataF6.slice(0, 19)" :key="index">
+              <template v-if="chartMode === 'compare'" v-for="(item, index) in filteredDataF6.year1.slice(0, 19)" :key="`compare-${index}`">
+                <div class="bg-[#252A36] p-1 rounded lg:h-[30px] 2xl:h-[37px] pt-[0px]">
+                  <div class="lg:text-[10px] 2xl:text-xs flex justify-between">
+                    <span>Всего:</span>
+                    <span>{{ Numeral(item.cnt_quality + item.cnt_not_quality) }}</span>
+                  </div>
+                  <div class="lg:text-[10px] 2xl:text-xs flex justify-between">
+                    <span>Качественные:</span>
+                    <span class="text-[#109669]">{{ ((item.cnt_quality / (item.cnt_quality + item.cnt_not_quality)) * 100).toFixed(1) }}%</span>
+                  </div>
+                </div>
+              </template>
+              <template v-else v-for="(item, index) in singleYearData.slice(0, 19)" :key="`single-${index}`">
                 <div class="bg-[#252A36] p-1 rounded lg:h-[30px] 2xl:h-[37px] pt-[0px]">
                   <div class="lg:text-[10px] 2xl:text-xs flex justify-between">
                     <span>Всего:</span>
@@ -357,7 +392,7 @@
 <script setup lang="ts">
 import { getColorFromGradient } from "../../../../shared/helpers/gradientColors";
 import { CloseOutlined } from "@ant-design/icons-vue";
-import { computed, ref } from "vue";
+import { computed, ref, watch } from "vue";
 import BaseCard from "../../../../shared/ui/BaseCard/BaseCard.vue";
 import BaseMap from "../../../../shared/ui/BaseMap/BaseMap.vue";
 import BaseMapNoMarker from "../../../../shared/ui/BaseMap/BaseMapNoMarker.vue";
@@ -395,17 +430,19 @@ interface F2Data {
   parent2_code: string | null;
 }
 const tab = ref(0);
-const currentRegion = ref<string | null>(null);
-const currentRaion = ref<string | null>(null);
+const currentRegion = ref<number | null>(null);
+const currentRaion = ref<number | null>(null);
 const loader = ref(false);
 
 defineEmits(["close"]);
 const props = withDefaults(defineProps<{
   data: F2Data[];
   dataF6?: F6DataF6[];
+  dataF6_2023?: F6DataF6[];
   visible: boolean;
 }>(), {
-  dataF6: () => []
+  dataF6: () => [],
+  dataF6_2023: () => []
 });
 
 const getCityZoom = (regionCode: number | null): number => {
@@ -425,7 +462,7 @@ const getCityZoom = (regionCode: number | null): number => {
 const list = computed(() => {
   const filtered = props.data.filter((item) => {
     if (currentRaion.value) {
-      return item.tip === 3 && item.parent2_code === parseInt(currentRaion.value);
+      return item.tip === 3 && item.parent2_code === currentRaion.value;
     }
     return currentRegion.value ? item.tip === 2 : item.tip === 1;
   });
@@ -433,7 +470,7 @@ const list = computed(() => {
   const filteredByRegion = filtered.filter((item) => {
     if (!currentRegion.value) return true;
 
-    const currentRegionNumber = parseInt(currentRegion.value);
+    const currentRegionNumber = parseInt(currentRegion.value.toString());
     const itemRegionNumber = parseInt(item.parent1_code || "0");
     const matches = itemRegionNumber === currentRegionNumber;
 
@@ -483,12 +520,12 @@ const list = computed(() => {
 });
 
 function clickPolygon(code: string) {
-  currentRegion.value = code;
+  currentRegion.value = Number(code);
   currentRaion.value = null;
 }
 
 function clickRaion(code: string) {
-  currentRaion.value = code;
+  currentRaion.value = Number(code);
 }
 
 const groupByRegion = computed(() => {
@@ -564,8 +601,8 @@ interface F6DataF6 {
   parent2_code: number | string | null;
 }
 
-const currentRegionF6 = ref<string | null>(null);
-const currentRaionF6 = ref<string | null>(null);
+const currentRegionF6 = ref<number | null>(null);
+const currentRaionF6 = ref<number | null>(null);
 const loaderF6 = ref(false);
 
 const getCityZoomF6 = (regionCode: string | null): number => {
@@ -585,28 +622,12 @@ const getCityZoomF6 = (regionCode: string | null): number => {
 };
 
 function clickPolygonF6(code: string) {
-  console.log('Выбран регион с кодом:', code);
-  currentRegionF6.value = code;
+  currentRegionF6.value = Number(code);
   currentRaionF6.value = null;
 }
 
 function clickRaionF6(code: string) {
-  console.log('Выбран район с кодом:', code);
-  
-  
-  const raionData = props.dataF6.find(item => 
-    item.tp === 4 && safeCompareF6(item.parent2_code, code)
-  );
-  
- 
-  if (raionData && raionData.parent1_code) {
-   
-    if (!currentRegionF6.value) {
-      currentRegionF6.value = raionData.parent1_code.toString();
-    }
-  }
-  
-  currentRaionF6.value = code;
+  currentRaionF6.value = Number(code);
 }
 
 const EXCLUDED_OKED_CATEGORIES_F6 = [
@@ -633,79 +654,62 @@ function safeCompareF6(value1: string | number | null | undefined, value2: strin
   return norm1 === norm2;
 }
 
+const selectedYear1 = ref('2024');
+const selectedYear2 = ref('2023');
+
+
+watch(selectedYear1, (newValue) => {
+
+  if (newValue === selectedYear2.value) {
+    
+    selectedYear2.value = newValue === '2024' ? '2023' : '2024';
+  }
+});
+
+
+watch(selectedYear2, (newValue) => {
+  
+  if (newValue === selectedYear1.value) {
+    
+    selectedYear1.value = newValue === '2024' ? '2023' : '2024';
+  }
+});
+
 const filteredDataF6 = computed(() => {
-  let filtered = props.dataF6;
-  console.log('Всего записей:', props.dataF6.length);
+  const dataSource1 = selectedYear1.value === '2023' ? props.dataF6_2023 : props.dataF6;
+  const dataSource2 = selectedYear2.value === '2023' ? props.dataF6_2023 : props.dataF6;
+  
+  let filtered1 = dataSource1;
+  let filtered2 = dataSource2;
 
   if (currentRaionF6.value) {
-    filtered = filtered.filter(item => {
+    filtered1 = filtered1.filter(item => {
       const matchCode = safeCompareF6(item.parent2_code, currentRaionF6.value);
-      const match = (item.tp === 4) && matchCode;
-      return match;
+      return (item.tp === 4) && matchCode;
     });
-    console.log('После фильтрации по району:', filtered.length);
+    filtered2 = filtered2.filter(item => {
+      const matchCode = safeCompareF6(item.parent2_code, currentRaionF6.value);
+      return (item.tp === 4) && matchCode;
+    });
   } else if (currentRegionF6.value) {
-    filtered = filtered.filter(item => {
+    filtered1 = filtered1.filter(item => {
       const matchCode = safeCompareF6(item.parent1_code, currentRegionF6.value);
-      
-      const match = (item.tp === 3 || item.tp === 1) && matchCode;
-      return match;
+      return (item.tp === 3 || item.tp === 1) && matchCode;
     });
-    console.log('После фильтрации по региону:', filtered.length);
-    
-    if (filtered.length < 3) {
-      console.log('Мало данных, пробуем альтернативный подход');
-      
-      const regionInfo = props.dataF6.find(item => 
-        item.parent1_code?.toString() === currentRegionF6.value && item.reg_ru
-      );
-      
-      if (regionInfo && regionInfo.reg_ru) {
-        console.log('Пробуем фильтровать по имени региона:', regionInfo.reg_ru);
-        
-        const regionName = regionInfo.reg_ru;
-        const regionRecords = props.dataF6.filter(item => 
-          (item.tp === 3 || item.tp === 1) && item.reg_ru === regionName
-        );
-        
-        if (regionRecords.length > 0) {
-          filtered = regionRecords;
-          console.log('Найдено записей по имени региона:', filtered.length);
-        }
-      }
-    }
+    filtered2 = filtered2.filter(item => {
+      const matchCode = safeCompareF6(item.parent1_code, currentRegionF6.value);
+      return (item.tp === 3 || item.tp === 1) && matchCode;
+    });
   } else {
-    filtered = filtered.filter(item => item.tp === 3);
-    
-    if (filtered.length === 0) {
-      filtered = props.dataF6.filter(item => item.tp === 1);
-      console.log('Используем данные tp=1:', filtered.length);
-    }
-    
-    console.log('Общие данные:', filtered.length);
+    filtered1 = filtered1.filter(item => item.tp === 3);
+    filtered2 = filtered2.filter(item => item.tp === 3);
   }
 
-  filtered = filtered.filter(item => !EXCLUDED_OKED_CATEGORIES_F6.includes(item.vname_oked));
-  console.log('После исключения категорий:', filtered.length);
-  
-  if (filtered.length === 0) {
-    console.warn('Данных не найдено, используем запасной вариант');
-    
-    if (currentRaionF6.value) {
-      filtered = props.dataF6.filter(item => item.tp === 4);
-    } else if (currentRegionF6.value) {
-      filtered = props.dataF6.filter(item => item.tp === 3 || item.tp === 1);
-    } else {
-      filtered = props.dataF6;
-    }
-    
-    filtered = filtered.filter(item => !EXCLUDED_OKED_CATEGORIES_F6.includes(item.vname_oked));
-    console.log('Запасной вариант, записей:', filtered.length);
-  }
+  filtered1 = filtered1.filter(item => !EXCLUDED_OKED_CATEGORIES_F6.includes(item.vname_oked));
+  filtered2 = filtered2.filter(item => !EXCLUDED_OKED_CATEGORIES_F6.includes(item.vname_oked));
 
-  const grouped = filtered.reduce((acc, curr) => {
+  const grouped1 = filtered1.reduce((acc, curr) => {
     if (!curr.vcode_oked) return acc;
-
     if (!acc[curr.vcode_oked]) {
       acc[curr.vcode_oked] = {
         ...curr,
@@ -715,15 +719,33 @@ const filteredDataF6 = computed(() => {
       };
       return acc;
     }
-
     acc[curr.vcode_oked].cnt += curr.cnt;
     acc[curr.vcode_oked].cnt_quality += curr.cnt_quality;
     acc[curr.vcode_oked].cnt_not_quality += curr.cnt_not_quality;
-    
     return acc;
   }, {} as Record<string, F6DataF6>);
 
-  return Object.values(grouped).sort((a, b) => b.cnt - a.cnt);
+  const grouped2 = filtered2.reduce((acc, curr) => {
+    if (!curr.vcode_oked) return acc;
+    if (!acc[curr.vcode_oked]) {
+      acc[curr.vcode_oked] = {
+        ...curr,
+        cnt: curr.cnt,
+        cnt_quality: curr.cnt_quality,
+        cnt_not_quality: curr.cnt_not_quality
+      };
+      return acc;
+    }
+    acc[curr.vcode_oked].cnt += curr.cnt;
+    acc[curr.vcode_oked].cnt_quality += curr.cnt_quality;
+    acc[curr.vcode_oked].cnt_not_quality += curr.cnt_not_quality;
+    return acc;
+  }, {} as Record<string, F6DataF6>);
+
+  return {
+    year1: Object.values(grouped1).sort((a, b) => b.cnt - a.cnt),
+    year2: Object.values(grouped2).sort((a, b) => b.cnt - a.cnt)
+  };
 });
 
 const groupByRegionF6 = computed(() => {
@@ -801,7 +823,7 @@ const selectedAreaStatsF6 = computed(() => {
   let notQualityTotal = 0;
   let allTotal = 0;
   
-  filteredDataF6.value.forEach(item => {
+  filteredDataF6.value.year1.forEach(item => {
     qualityTotal += item.cnt_quality;
     notQualityTotal += item.cnt_not_quality;
     allTotal += item.cnt;
@@ -852,8 +874,180 @@ const getFullTerritoryNameF6 = computed(() => {
   return "Республика Казахстан";
 });
 
+const chartMode = ref('single');
+const singleModeOption = ref<string>('2024');
+
 const chartOptionsF6 = computed(() => {
   let chartTitle = getFullTerritoryNameF6.value;
+  
+
+  if (chartMode.value === 'single') {
+    const dataSource = singleModeOption.value === '2023' ? props.dataF6_2023 : props.dataF6;
+    
+    let filtered = dataSource;
+    if (currentRaionF6.value) {
+      filtered = filtered.filter(item => {
+        const matchCode = safeCompareF6(item.parent2_code, currentRaionF6.value);
+        return (item.tp === 4) && matchCode;
+      });
+    } else if (currentRegionF6.value) {
+      filtered = filtered.filter(item => {
+        const matchCode = safeCompareF6(item.parent1_code, currentRegionF6.value);
+        return (item.tp === 3 || item.tp === 1) && matchCode;
+      });
+    } else {
+      filtered = filtered.filter(item => item.tp === 3);
+    }
+
+    filtered = filtered.filter(item => !EXCLUDED_OKED_CATEGORIES_F6.includes(item.vname_oked));
+
+    const grouped = filtered.reduce((acc, curr) => {
+      if (!curr.vcode_oked) return acc;
+      if (!acc[curr.vcode_oked]) {
+        acc[curr.vcode_oked] = {
+          ...curr,
+          cnt: curr.cnt,
+          cnt_quality: curr.cnt_quality,
+          cnt_not_quality: curr.cnt_not_quality
+        };
+        return acc;
+      }
+      acc[curr.vcode_oked].cnt += curr.cnt;
+      acc[curr.vcode_oked].cnt_quality += curr.cnt_quality;
+      acc[curr.vcode_oked].cnt_not_quality += curr.cnt_not_quality;
+      return acc;
+    }, {} as Record<string, F6DataF6>);
+
+    const sortedData = Object.values(grouped).sort((a, b) => b.cnt - a.cnt);
+
+    return {
+      chart: {
+        type: "bar",
+        height: "150%",
+        backgroundColor: "transparent",
+        spacingLeft: 10,
+        spacingRight: 10,
+        marginTop: 50,
+        marginBottom: 50,
+        animation: {
+          duration: 500
+        }
+      },
+      title: {
+        text: `${chartTitle} - ${singleModeOption.value} год`,
+        style: {
+          color: "#fff",
+          fontSize: "16px"
+        }
+      },
+      xAxis: {
+        categories: sortedData.slice(0, 19).map(item => item.vname_oked),
+        labels: {
+          style: {
+            color: "#fff",
+            fontSize: "10px",
+          },
+        }
+      },
+      yAxis: {
+        min: 0,
+        title: {
+          text: null
+        },
+        labels: {
+          enabled: false,
+        },
+        gridLineWidth: 0,
+      },
+      legend: {
+        enabled: false
+      },
+      tooltip: {
+        useHTML: true,
+        formatter: function(this: Highcharts.TooltipFormatterContextObject): string {
+          const x = this.x;
+          const categoryData = sortedData.find(item => item.vname_oked === x);
+          
+          if (!categoryData) return '';
+          
+          const qualityCount = categoryData.cnt_quality;
+          const notQualityCount = categoryData.cnt_not_quality;
+          const totalCount = qualityCount + notQualityCount;
+          
+          const colorCircle = (color: string) => 
+            `<div style="display:inline-block; width:12px; height:12px; border-radius:50%; background-color:${color}; margin-right:6px; vertical-align:middle;"></div>`;
+            
+          return `<div><b>${x}</b><br/>
+                  <div style="margin-top:10px;">
+                    <div style="color: #3090E8; font-weight: bold;">${singleModeOption.value} год:</div>
+                    <div style="display:flex; align-items:center; margin-top:5px;">
+                      ${colorCircle(QUALITY_COLOR_F6)}
+                      <span>Качественные: ${Numeral(qualityCount)} (${((qualityCount / totalCount) * 100).toFixed(1)}%)</span>
+                    </div>
+                    <div style="display:flex; align-items:center; margin-top:3px;">
+                      ${colorCircle(NOT_QUALITY_COLOR_F6)}
+                      <span>Некачественные: ${Numeral(notQualityCount)} (${((notQualityCount / totalCount) * 100).toFixed(1)}%)</span>
+                    </div>
+                    <div style="display:flex; align-items:center; margin-top:3px;">
+                      ${colorCircle(TOTAL_COLOR_F6)}
+                      <span>Всего: ${Numeral(totalCount)}</span>
+                    </div>
+                  </div></div>`;
+        }
+      },
+      plotOptions: {
+        series: {
+          stacking: 'normal',
+          borderWidth: 0,
+          pointWidth: 15,
+          groupPadding: 0.2,
+          pointPadding: 0.1,
+          dataLabels: {
+            enabled: true,
+            formatter: function(this: Highcharts.PointLabelObject): string {
+              if (this.y && this.y > 1000) {
+                return Numeral(this.y);
+              } else if (this.y && this.y > 0) {
+                return this.y > 500 ? Numeral(this.y) : '';
+              }
+              return '';
+            },
+            style: {
+              color: '#fff',
+              textOutline: 'none',
+              fontSize: '11px',
+              fontWeight: 'normal'
+            },
+            inside: true,
+            crop: false,
+            overflow: 'allow'
+          }
+        }
+      },
+      colors: [QUALITY_COLOR_F6, NOT_QUALITY_COLOR_F6],
+      series: [
+        {
+          name: 'Качественные',
+          data: sortedData.slice(0, 19).map(item => ({
+            y: item.cnt_quality,
+            dataLabels: {
+              enabled: item.cnt_quality > 500
+            }
+          }))
+        },
+        {
+          name: 'Некачественные',
+          data: sortedData.slice(0, 19).map(item => ({
+            y: item.cnt_not_quality,
+            dataLabels: {
+              enabled: item.cnt_not_quality > 500
+            }
+          }))
+        }
+      ]
+    };
+  }
+
   
   return {
     chart: {
@@ -876,13 +1070,13 @@ const chartOptionsF6 = computed(() => {
       }
     },
     xAxis: {
-      categories: filteredDataF6.value.slice(0, 19).map(item => item.vname_oked),
+      categories: filteredDataF6.value.year1.slice(0, 19).map(item => item.vname_oked),
       labels: {
         style: {
           color: "#fff",
           fontSize: "10px",
         },
-      },
+      }
     },
     yAxis: {
       min: 0,
@@ -912,27 +1106,50 @@ const chartOptionsF6 = computed(() => {
         const x = this.x;
         const y = this.y || 0;
         
-        const categoryData = filteredDataF6.value.find(item => item.vname_oked === x);
-        const qualityCount = categoryData ? categoryData.cnt_quality : 0;
-        const notQualityCount = categoryData ? categoryData.cnt_not_quality : 0;
-        const totalCount = qualityCount + notQualityCount;
+        const categoryData1 = filteredDataF6.value.year1.find(item => item.vname_oked === x);
+        const categoryData2 = filteredDataF6.value.year2.find(item => item.vname_oked === x);
         
-       
+        const qualityCount1 = categoryData1 ? categoryData1.cnt_quality : 0;
+        const notQualityCount1 = categoryData1 ? categoryData1.cnt_not_quality : 0;
+        const totalCount1 = qualityCount1 + notQualityCount1;
+        
+        const qualityCount2 = categoryData2 ? categoryData2.cnt_quality : 0;
+        const notQualityCount2 = categoryData2 ? categoryData2.cnt_not_quality : 0;
+        const totalCount2 = qualityCount2 + notQualityCount2;
+        
         const colorCircle = (color: string) => 
           `<div style="display:inline-block; width:12px; height:12px; border-radius:50%; background-color:${color}; margin-right:6px; vertical-align:middle;"></div>`;
           
         return `<div><b>${x}</b><br/>
-                <div style="display:flex; align-items:center; margin-top:5px;">
-                  ${colorCircle(QUALITY_COLOR_F6)}
-                  <span>Качественные: ${Numeral(qualityCount)} (${((qualityCount / totalCount) * 100).toFixed(1)}%)</span>
+                <div style="margin-top:10px;">
+                  <div style="color: #3090E8; font-weight: bold;">${selectedYear1.value} год:</div>
+                  <div style="display:flex; align-items:center; margin-top:5px;">
+                    ${colorCircle(QUALITY_COLOR_F6)}
+                    <span>Качественные: ${Numeral(qualityCount1)} (${((qualityCount1 / totalCount1) * 100).toFixed(1)}%)</span>
+                  </div>
+                  <div style="display:flex; align-items:center; margin-top:3px;">
+                    ${colorCircle(NOT_QUALITY_COLOR_F6)}
+                    <span>Некачественные: ${Numeral(notQualityCount1)} (${((notQualityCount1 / totalCount1) * 100).toFixed(1)}%)</span>
+                  </div>
+                  <div style="display:flex; align-items:center; margin-top:3px;">
+                    ${colorCircle(TOTAL_COLOR_F6)}
+                    <span>Всего: ${Numeral(totalCount1)}</span>
+                  </div>
                 </div>
-                <div style="display:flex; align-items:center; margin-top:3px;">
-                  ${colorCircle(NOT_QUALITY_COLOR_F6)}
-                  <span>Некачественные: ${Numeral(notQualityCount)} (${((notQualityCount / totalCount) * 100).toFixed(1)}%)</span>
-                </div>
-                <div style="display:flex; align-items:center; margin-top:3px;">
-                  ${colorCircle(TOTAL_COLOR_F6)}
-                  <span>Всего: ${Numeral(totalCount)}</span>
+                <div style="margin-top:10px;">
+                  <div style="color: #3090E8; font-weight: bold;">${selectedYear2.value} год:</div>
+                  <div style="display:flex; align-items:center; margin-top:5px;">
+                    ${colorCircle(QUALITY_COLOR_F6)}
+                    <span>Качественные: ${Numeral(qualityCount2)} (${((qualityCount2 / totalCount2) * 100).toFixed(1)}%)</span>
+                  </div>
+                  <div style="display:flex; align-items:center; margin-top:3px;">
+                    ${colorCircle(NOT_QUALITY_COLOR_F6)}
+                    <span>Некачественные: ${Numeral(notQualityCount2)} (${((notQualityCount2 / totalCount2) * 100).toFixed(1)}%)</span>
+                  </div>
+                  <div style="display:flex; align-items:center; margin-top:3px;">
+                    ${colorCircle(TOTAL_COLOR_F6)}
+                    <span>Всего: ${Numeral(totalCount2)}</span>
+                  </div>
                 </div></div>`;
       }
     },
@@ -940,10 +1157,9 @@ const chartOptionsF6 = computed(() => {
       series: {
         stacking: 'normal',
         borderWidth: 0,
-        pointWidth: 30,
-        minPointLength: 1,
-        groupPadding: 0.1,
-        pointPadding: 0.05,
+        pointWidth: 15,
+        groupPadding: 0.2,
+        pointPadding: 0.1,
         dataLabels: {
           enabled: true,
           formatter: function(this: Highcharts.PointLabelObject): string {
@@ -966,11 +1182,12 @@ const chartOptionsF6 = computed(() => {
         }
       }
     },
-    colors: [QUALITY_COLOR_F6, NOT_QUALITY_COLOR_F6],
+    colors: [QUALITY_COLOR_F6, NOT_QUALITY_COLOR_F6, QUALITY_COLOR_F6, NOT_QUALITY_COLOR_F6],
     series: [
       {
-        name: 'Качественные',
-        data: filteredDataF6.value.slice(0, 19).map(item => ({
+        name: `Качественные (${selectedYear1.value})`,
+        stack: selectedYear1.value,
+        data: filteredDataF6.value.year1.slice(0, 19).map(item => ({
           y: item.cnt_quality,
           dataLabels: {
             enabled: item.cnt_quality > 500
@@ -978,8 +1195,29 @@ const chartOptionsF6 = computed(() => {
         })),
       },
       {
-        name: 'Рабочие места',
-        data: filteredDataF6.value.slice(0, 19).map(item => ({
+        name: `Некачественные (${selectedYear1.value})`,
+        stack: selectedYear1.value,
+        data: filteredDataF6.value.year1.slice(0, 19).map(item => ({
+          y: item.cnt_not_quality,
+          dataLabels: {
+            enabled: item.cnt_not_quality > 500
+          }
+        })),
+      },
+      {
+        name: `Качественные (${selectedYear2.value})`,
+        stack: selectedYear2.value,
+        data: filteredDataF6.value.year2.slice(0, 19).map(item => ({
+          y: item.cnt_quality,
+          dataLabels: {
+            enabled: item.cnt_quality > 500
+          }
+        })),
+      },
+      {
+        name: `Некачественные (${selectedYear2.value})`,
+        stack: selectedYear2.value,
+        data: filteredDataF6.value.year2.slice(0, 19).map(item => ({
           y: item.cnt_not_quality,
           dataLabels: {
             enabled: item.cnt_not_quality > 500
@@ -995,6 +1233,47 @@ const isMapActiveF6 = computed(() => {
 });
 
 const hasChartDataF6 = computed(() => {
-  return filteredDataF6.value.length > 0;
+  return filteredDataF6.value.year1.length > 0 && filteredDataF6.value.year2.length > 0;
+});
+
+// Добавляем новый computed для данных единичного года
+const singleYearData = computed(() => {
+  const dataSource = singleModeOption.value === '2023' ? props.dataF6_2023 : props.dataF6;
+  
+  let filtered = dataSource;
+  if (currentRaionF6.value) {
+    filtered = filtered.filter(item => {
+      const matchCode = safeCompareF6(item.parent2_code, currentRaionF6.value);
+      return (item.tp === 4) && matchCode;
+    });
+  } else if (currentRegionF6.value) {
+    filtered = filtered.filter(item => {
+      const matchCode = safeCompareF6(item.parent1_code, currentRegionF6.value);
+      return (item.tp === 3 || item.tp === 1) && matchCode;
+    });
+  } else {
+    filtered = filtered.filter(item => item.tp === 3);
+  }
+
+  filtered = filtered.filter(item => !EXCLUDED_OKED_CATEGORIES_F6.includes(item.vname_oked));
+
+  const grouped = filtered.reduce((acc, curr) => {
+    if (!curr.vcode_oked) return acc;
+    if (!acc[curr.vcode_oked]) {
+      acc[curr.vcode_oked] = {
+        ...curr,
+        cnt: curr.cnt,
+        cnt_quality: curr.cnt_quality,
+        cnt_not_quality: curr.cnt_not_quality
+      };
+      return acc;
+    }
+    acc[curr.vcode_oked].cnt += curr.cnt;
+    acc[curr.vcode_oked].cnt_quality += curr.cnt_quality;
+    acc[curr.vcode_oked].cnt_not_quality += curr.cnt_not_quality;
+    return acc;
+  }, {} as Record<string, F6DataF6>);
+
+  return Object.values(grouped).sort((a, b) => b.cnt - a.cnt);
 });
 </script>

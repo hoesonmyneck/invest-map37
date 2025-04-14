@@ -59,3 +59,8 @@ export const getAulBesigi = async () => {
   const res = await api.get(`data/aul_besigi.json`);
   return res.data;
 };
+
+export const getF2_2023 = async () => {
+  const res = await api.get(`data/f/f2_2023.json`);
+  return res.data;
+};
