@@ -28,8 +28,14 @@
             class="grid text-gray-400 grid-cols-[40px_1fr_80px_70px] w-full mb-4"
           >
             <img class="w-4" :src="`/images/a_block/a2_${i + 1}.png`" alt="" />
-            <p class="text-[10px]">{{ l.name }}</p>
-            <p class="text-[10px]">{{ Numeral(l.count) }}</p>
+            <p 
+              class="text-[10px] cursor-pointer hover:text-blue-400"
+              @click="showIinPopup(l)"
+            >{{ l.name }}</p>
+            <p 
+              class="text-[10px] cursor-pointer hover:text-blue-400"
+              @click="showIinPopup(l)"
+            >{{ Numeral(l.count) }}</p>
             <p
               class="text-[10px] p-1 bg-gray-800 rounded-lg w-full px-3 text-center"
             >
@@ -39,6 +45,17 @@
         </ul>
       </div>
     </BaseCard>
+
+    <IinPopupWidget
+      v-if="showPopup"
+      :visible="showPopup"
+      :iins="selectedCategory ? programStore.getIinsByCategory('diplommenAulga', selectedCategory.key) : []"
+      :names="selectedCategory ? programStore.getNamesByCategory('diplommenAulga', selectedCategory.key) : []"
+      :addresses="selectedCategory ? programStore.getAddressesByCategory('diplommenAulga', selectedCategory.key) : []"
+      :title="`«ДИПЛОММЕН АУЫЛҒА» - ${selectedCategory ? selectedCategory.name : ''}`"
+      :category-name="selectedCategory ? selectedCategory.name : ''"
+      @close="showPopup = false"
+    />
   </div>
 </template>
 <script setup lang="ts">
@@ -49,9 +66,13 @@ import BaseCard from "../../../../shared/ui/BaseCard/BaseCard.vue";
 import { Numeral } from "../../../../shared/helpers/numeral";
 import { storeToRefs } from "pinia";
 import { chartOptions } from "../helpers/chartOption";
+import IinPopupWidget from "./IinPopupWidget.vue";
 
 const programStore = useProgramStore();
 const { diplommenAulgaFilter, diplommenAulga } = storeToRefs(programStore);
+
+const showPopup = ref(false);
+const selectedCategory = ref<{ name: string, key: string } | null>(null);
 
 const totalBeforeFilter = computed(() =>
   diplommenAulga.value.reduce((acc, curr) => +acc + +(curr.total || 0), 0)
@@ -76,15 +97,22 @@ const total = computed(() =>
 const listDiplommenAulga = computed(() => [
   {
     name: "Работающие в селе",
+    key: "rabotaet_aul",
     count: rabotaet_aul.value,
     percent: (rabotaet_aul.value / total.value) * 100,
   },
   {
     name: "Безработные",
+    key: "bezrabot",
     count: bezrabot.value,
     percent: (bezrabot.value / total.value) * 100,
   },
 ]);
+
+function showIinPopup(category: { name: string, key: string, count: number, percent: number }) {
+  selectedCategory.value = category;
+  showPopup.value = true;
+}
 
 const chart = computed(() =>
   chartOptions(

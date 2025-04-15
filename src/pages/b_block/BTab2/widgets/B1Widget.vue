@@ -33,8 +33,14 @@
             class="grid text-gray-400 grid-cols-[40px_1fr_80px_60px] w-full mb-2"
           >
             <img class="w-4" :src="`/images/a_block/img_${i + 2}.png`" alt="" />
-            <p class="text-[10px]">{{ l.name }}</p>
-            <p class="text-[10px]">{{ l.count }}</p>
+            <p 
+              class="text-[10px] cursor-pointer hover:text-blue-400"
+              @click="showIinPopup(l)"
+            >{{ l.name }}</p>
+            <p 
+              class="text-[10px] cursor-pointer hover:text-blue-400"
+              @click="showIinPopup(l)"
+            >{{ l.count }}</p>
             <p
               class="text-[10px] p-1 bg-gray-800 rounded-lg w-full px-3 text-center"
             >
@@ -44,18 +50,32 @@
         </ul>
       </div>
     </BaseCard>
+
+    <IinPopupWidget
+      v-if="showPopup"
+      :visible="showPopup"
+      :iins="selectedCategory ? programStore.getIinsByCategory('serpin', selectedCategory.key) : []"
+      :addresses="selectedCategory ? programStore.getAddressesByCategory('serpin', selectedCategory.key) : []"
+      :title="`«СЕРПIН» - ${selectedCategory ? selectedCategory.name : ''}`"
+      :category-name="selectedCategory ? selectedCategory.name : ''"
+      @close="showPopup = false"
+    />
   </div>
 </template>
 <script setup lang="ts">
-import { computed } from "vue";
+import { computed, ref } from "vue";
 import { useProgramStore } from "../store";
 import BaseCard from "../../../../shared/ui/BaseCard/BaseCard.vue";
 import { Numeral } from "../../../../shared/helpers/numeral";
 import { storeToRefs } from "pinia";
 import { chartOptions } from "../helpers/chartOption";
+import IinPopupWidget from "./IinPopupWidget.vue";
 
 const programStore = useProgramStore();
 const { serpinFilter, serpin } = storeToRefs(programStore);
+
+const showPopup = ref(false);
+const selectedCategory = ref<{ name: string, key: string } | null>(null);
 
 const totalBeforeFilter = computed(() =>
   serpin.value.reduce((acc, curr) => +acc + +(curr.total || 0), 0)
@@ -83,30 +103,40 @@ const total = computed(() =>
 const listSerpin = computed(() => [
   {
     name: "Работающие",
+    key: "rabotaet",
     count: rabotaet.value,
     percent: (rabotaet.value / total.value) * 100,
   },
   {
     name: "Безработные",
+    key: "bezrabot",
     count: bezrabot.value,
     percent: (bezrabot.value / total.value) * 100,
   },
   {
     name: "С трудовым договором:",
+    key: "est_trud",
     count: est_trud.value,
     percent: (est_trud.value / total.value) * 100,
   },
   {
     name: "Без трудового договора",
+    key: "bez_trud",
     count: bez_trud.value,
     percent: (bez_trud.value / total.value) * 100,
   },
   {
     name: "Исполняющие",
+    key: "ispolnayet",
     count: ispolnayet.value,
     percent: (ispolnayet.value / total.value) * 100,
   },
 ]);
+
+function showIinPopup(category: { name: string, key: string, count: number, percent: number }) {
+  selectedCategory.value = category;
+  showPopup.value = true;
+}
 
 const chartSerpin = computed(() =>
   chartOptions(

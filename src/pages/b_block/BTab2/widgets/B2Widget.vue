@@ -28,8 +28,14 @@
             class="grid text-gray-400 grid-cols-[40px_1fr_80px_60px] w-full mb-4"
           >
             <img class="w-4" :src="`/images/a_block/a2_${i + 1}.png`" alt="" />
-            <p class="text-[10px]">{{ l.name }}</p>
-            <p class="text-[10px]">{{ Numeral(l.count) }}</p>
+            <p 
+              class="text-[10px] cursor-pointer hover:text-blue-400"
+              @click="showIinPopup(l)"
+            >{{ l.name }}</p>
+            <p 
+              class="text-[10px] cursor-pointer hover:text-blue-400"
+              @click="showIinPopup(l)"
+            >{{ Numeral(l.count) }}</p>
             <p
               class="text-[10px] p-1 bg-gray-800 rounded-lg w-full px-3 text-center"
             >
@@ -39,6 +45,17 @@
         </ul>
       </div>
     </BaseCard>
+
+    <IinPopupWidget
+      v-if="showPopup"
+      :visible="showPopup"
+      :iins="selectedCategory ? programStore.getIinsByCategory('aulAmanati', selectedCategory.key) : []"
+      :names="selectedCategory ? programStore.getNamesByCategory('aulAmanati', selectedCategory.key) : []"
+      :purposes="selectedCategory ? programStore.getPurposesByCategory('aulAmanati', selectedCategory.key) : []"
+      :title="`«АУЫЛ АМАНАТЫ» - ${selectedCategory ? selectedCategory.name : ''}`"
+      :category-name="selectedCategory ? selectedCategory.name : ''"
+      @close="showPopup = false"
+    />
   </div>
 </template>
 <script setup lang="ts">
@@ -49,9 +66,13 @@ import BaseCard from "../../../../shared/ui/BaseCard/BaseCard.vue";
 import { Numeral } from "../../../../shared/helpers/numeral";
 import { storeToRefs } from "pinia";
 import { chartOptions } from "../helpers/chartOption";
+import IinPopupWidget from "./IinPopupWidget.vue";
 
 const loader = ref(true);
 const data = ref<any[]>([]);
+
+const showPopup = ref(false);
+const selectedCategory = ref<{ name: string, key: string } | null>(null);
 
 const programStore = useProgramStore();
 const { aulAmanatiFilter, aulAmanati } = storeToRefs(programStore);
@@ -85,30 +106,40 @@ const total = computed(() =>
 const listAulAmanati = computed(() => [
   {
     name: "Срок до 5 лет",
+    key: "srok_5",
     count: srok_5.value,
     percent: (srok_5.value / total.value) * 100,
   },
   {
     name: "Срок до 7 лет",
+    key: "srok_7",
     count: srok_7.value,
     percent: (srok_7.value / total.value) * 100,
   },
   {
     name: "Активное ИП",
+    key: "active_ip",
     count: active_ip.value,
     percent: (active_ip.value / total.value) * 100,
   },
   {
     name: "Неактивное ИП",
+    key: "not_active",
     count: not_active.value,
     percent: (not_active.value / total.value) * 100,
   },
   {
     name: "Есть ОПВ",
+    key: "opv_has",
     count: opv_has.value,
     percent: (opv_has.value / total.value) * 100,
   },
 ]);
+
+function showIinPopup(category: { name: string, key: string, count: number, percent: number }) {
+  selectedCategory.value = category;
+  showPopup.value = true;
+}
 
 const chart = computed(() =>
   chartOptions(
