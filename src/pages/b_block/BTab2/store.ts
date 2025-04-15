@@ -174,6 +174,94 @@ export const useProgramStore = defineStore("program", {
             });
             
             return allAddresses;
+        },
+        
+        getLoanPurposesByCategory(program: string, category: string): string[] {
+            if (program !== 'aulAmanati') return [];
+            
+            const filteredData = this.aulAmanatiFilter;
+            
+            const allLoanPurposes: string[] = [];
+            filteredData.forEach(item => {
+                if (item[category] && item.loan_purpose_people && Array.isArray(item.loan_purpose_people)) {
+                    if (category === 'total') {
+                        allLoanPurposes.push(...item.loan_purpose_people);
+                    } else {
+                        const count = parseInt(item[category], 10);
+                        if (!isNaN(count) && count > 0 && count <= item.loan_purpose_people.length) {
+                            allLoanPurposes.push(...item.loan_purpose_people.slice(0, count));
+                        }
+                    }
+                }
+            });
+            
+            return allLoanPurposes;
+        },
+        
+        getContractsByCategory(program: string, category: string): string[] {
+            if (program !== 'serpin') return [];
+            
+            const filteredData = this.serpinFilter;
+            
+            const allContracts: string[] = [];
+            filteredData.forEach(item => {
+                if (item[category] && item.contract_people && Array.isArray(item.contract_people)) {
+                    if (category === 'total') {
+                        allContracts.push(...item.contract_people);
+                    } else {
+                        const count = parseInt(item[category], 10);
+                        if (!isNaN(count) && count > 0 && count <= item.contract_people.length) {
+                            allContracts.push(...item.contract_people.slice(0, count));
+                        }
+                    }
+                }
+            });
+            
+            return allContracts;
+        },
+        
+        getSupportsByCategory(program: string, category: string): string[] {
+            if (program !== 'diplommenAulga') return [];
+            
+            const filteredData = this.diplommenAulgaFilter;
+            
+            const allSupports: string[] = [];
+            filteredData.forEach(item => {
+                if (item[category] && item.support_people && Array.isArray(item.support_people)) {
+                    if (category === 'total') {
+                        allSupports.push(...item.support_people);
+                    } else {
+                        const count = parseInt(item[category], 10);
+                        if (!isNaN(count) && count > 0 && count <= item.support_people.length) {
+                            allSupports.push(...item.support_people.slice(0, count));
+                        }
+                    }
+                }
+            });
+            
+            return allSupports;
+        },
+        
+        getCreditsByCategory(program: string, category: string): string[] {
+            if (program !== 'diplommenAulga') return [];
+            
+            const filteredData = this.diplommenAulgaFilter;
+            
+            const allCredits: string[] = [];
+            filteredData.forEach(item => {
+                if (item[category] && item.credit_people && Array.isArray(item.credit_people)) {
+                    if (category === 'total') {
+                        allCredits.push(...item.credit_people);
+                    } else {
+                        const count = parseInt(item[category], 10);
+                        if (!isNaN(count) && count > 0 && count <= item.credit_people.length) {
+                            allCredits.push(...item.credit_people.slice(0, count));
+                        }
+                    }
+                }
+            });
+            
+            return allCredits;
         }
     }
 });

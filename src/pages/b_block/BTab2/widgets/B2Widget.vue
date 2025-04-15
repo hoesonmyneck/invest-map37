@@ -52,6 +52,7 @@
       :iins="selectedCategory ? programStore.getIinsByCategory('aulAmanati', selectedCategory.key) : []"
       :names="selectedCategory ? programStore.getNamesByCategory('aulAmanati', selectedCategory.key) : []"
       :purposes="selectedCategory ? programStore.getPurposesByCategory('aulAmanati', selectedCategory.key) : []"
+      :loan-purposes="selectedCategory ? programStore.getLoanPurposesByCategory('aulAmanati', selectedCategory.key) : []"
       :title="`«АУЫЛ АМАНАТЫ» - ${selectedCategory ? selectedCategory.name : ''}`"
       :category-name="selectedCategory ? selectedCategory.name : ''"
       @close="showPopup = false"

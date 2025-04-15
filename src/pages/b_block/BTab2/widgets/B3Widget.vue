@@ -52,6 +52,8 @@
       :iins="selectedCategory ? programStore.getIinsByCategory('diplommenAulga', selectedCategory.key) : []"
       :names="selectedCategory ? programStore.getNamesByCategory('diplommenAulga', selectedCategory.key) : []"
       :addresses="selectedCategory ? programStore.getAddressesByCategory('diplommenAulga', selectedCategory.key) : []"
+      :supports="selectedCategory ? programStore.getSupportsByCategory('diplommenAulga', selectedCategory.key) : []"
+      :credits="selectedCategory ? programStore.getCreditsByCategory('diplommenAulga', selectedCategory.key) : []"
       :title="`«ДИПЛОММЕН АУЫЛҒА» - ${selectedCategory ? selectedCategory.name : ''}`"
       :category-name="selectedCategory ? selectedCategory.name : ''"
       @close="showPopup = false"

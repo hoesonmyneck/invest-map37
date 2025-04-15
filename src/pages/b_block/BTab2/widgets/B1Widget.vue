@@ -56,6 +56,7 @@
       :visible="showPopup"
       :iins="selectedCategory ? programStore.getIinsByCategory('serpin', selectedCategory.key) : []"
       :addresses="selectedCategory ? programStore.getAddressesByCategory('serpin', selectedCategory.key) : []"
+      :contracts="selectedCategory ? programStore.getContractsByCategory('serpin', selectedCategory.key) : []"
       :title="`«СЕРПIН» - ${selectedCategory ? selectedCategory.name : ''}`"
       :category-name="selectedCategory ? selectedCategory.name : ''"
       @close="showPopup = false"
