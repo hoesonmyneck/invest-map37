@@ -65,7 +65,7 @@
       :fill-color="
         (v) => {
           if (!groupByRaion[+v]) {
-            return '#FF4D4F';
+            return '#dc2626';
           }
           return getColorFromGradient(
             (groupByRaion[+v].total / maxTotalRaion) * 100,
