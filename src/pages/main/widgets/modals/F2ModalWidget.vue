@@ -29,8 +29,8 @@
         
         <div v-if="tab === 1" class="flex items-center ml-4">
           <a-radio-group v-model:value="chartMode" button-style="solid">
-            <a-radio-button value="single">Единичный год</a-radio-button>
-            <a-radio-button value="compare">Сравнение годов</a-radio-button>
+            <a-radio-button value="single">За 1 год</a-radio-button>
+            <a-radio-button value="compare">По годам</a-radio-button>
           </a-radio-group>
         </div>
 
