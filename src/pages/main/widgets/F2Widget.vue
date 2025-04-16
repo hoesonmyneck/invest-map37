@@ -11,15 +11,6 @@
         <div :class="{ active: tab === 1 }" @click="tab = 1" class="btn">
           Качественные рабочие места
         </div>
-        <a-select 
-          v-if="tab === 1" 
-          class="text-white ml-2 w-40" 
-          placeholder="Выберите год"
-          v-model:value="selectedYear"
-        >
-          <a-select-option value="2024">2024 год</a-select-option>
-          <a-select-option value="2023">2023 год</a-select-option>
-        </a-select>
       </div>
       <div class="overflow-auto h-[calc(42vh-66px)]" v-if="tab === 0">
         <highcharts :options="chartOptions" class="w-full m-auto h-max"></highcharts>
