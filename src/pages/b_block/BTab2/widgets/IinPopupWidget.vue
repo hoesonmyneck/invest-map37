@@ -16,13 +16,21 @@
       @close="$emit('close')"
     >
       <div class="p-3">
-        <div class="mb-4">
+        <div class="flex justify-between items-center mb-4">
           <a-input 
             v-model:value="searchQuery" 
             placeholder="Поиск по ИИН или ФИО" 
-            class="w-full" 
+            class="w-full mr-4" 
             @input="onSearch"
           />
+          <a-button 
+            type="primary" 
+            class="flex items-center gap-2 bg-blue-600 hover:bg-blue-700"
+            @click="downloadExcel"
+          >
+            <DownloadOutlined />
+            <span>Скачать в Excel</span>
+          </a-button>
         </div>
         
         
@@ -53,15 +61,6 @@
                 <td v-if="hasContracts" class="py-2 px-3 text-white">{{ item.contract || '-' }}</td>
                 <td v-if="hasSupports" class="py-2 px-3 text-white">{{ item.support || '-' }}</td>
                 <td v-if="hasCredits" class="py-2 px-3 text-white">{{ item.credit || '-' }}</td>
-                <td class="py-2 px-3 text-right">
-                  <a-button 
-                    type="text" 
-                    class="copy-button !text-white"
-                    @click="copyToClipboard(item.iin)"
-                  >
-                    Копировать
-                  </a-button>
-                </td>
               </tr>
             </tbody>
           </table>
@@ -88,6 +87,8 @@
 <script setup lang="ts">
 import { ref, computed, onMounted, watch } from "vue";
 import BaseCard from "../../../../shared/ui/BaseCard/BaseCard.vue";
+import { DownloadOutlined } from "@ant-design/icons-vue";
+import { exportToExcel } from "../../../../shared/helpers/excelExport";
 
 interface PersonItem {
   iin: string;
@@ -202,6 +203,27 @@ function handleScroll(event: Event) {
       !loading.value) {
     loadMore();
   }
+}
+
+function downloadExcel() {
+  const excelData = filteredItems.value.map(item => {
+    const data: Record<string, string> = {
+      'ИИН': item.iin
+    };
+    
+    if (item.name) data['ФИО'] = item.name;
+    if (item.purpose) data['Тип'] = item.purpose;
+    if (item.address) data['Адрес'] = item.address;
+    if (item.loanPurpose) data['Цель кредита'] = item.loanPurpose;
+    if (item.contract) data['Контракт'] = item.contract;
+    if (item.support) data['Поддержка'] = item.support;
+    if (item.credit) data['Кредит'] = item.credit;
+    
+    return data;
+  });
+  
+  const fileName = props.title.replace(/["«»]/g, '').replace(/\s+/g, '_');
+  exportToExcel(excelData, fileName, props.categoryName);
 }
 
 function copyToClipboard(iin: string) {
