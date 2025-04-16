@@ -1,5 +1,5 @@
 <template>
-    <div class="overflow-x-hidden overflow-y-scroll h-[27vh] text-white text-[12px]">
+    <div :class="[isModal ? 'h-full' : 'h-[27vh]', 'overflow-x-hidden overflow-y-scroll text-white text-[12px]']">
         <ul class="head text-white pb-1 mb-1 border-b border-gray-700 items-start w-[100%] sticky top-0 z-10 bg-[#1E2028]">
             <li class="w-[100%]"></li>
             <li class="w-[100%]">Наименование</li>
@@ -111,9 +111,16 @@ import { useAStore } from '../../store';
 import { storeToRefs } from 'pinia';
 import { getColorFromGradient } from '../../../../shared/helpers/gradientColors';
 import { SortAscendingOutlined, SortDescendingOutlined } from '@ant-design/icons-vue';
-import { ref, computed } from 'vue';
+import { ref, computed, defineProps } from 'vue';
 import { VirtualList } from "@xuemiyang/vue-virtual-list";
 import "@xuemiyang/vue-virtual-list/dist/style.css";
+
+const props = defineProps({
+    isModal: {
+        type: Boolean,
+        default: false
+    }
+});
 
 const aStore = useAStore()
 const { a1FilterByProject, currentProject } = storeToRefs(aStore);
@@ -299,8 +306,7 @@ function getPercentText(item: ProjectItem) {
 }
 
 .table-container {
-    height: calc(23vh - 40px);
-    overflow-y: auto;
+    height: auto;
     position: relative;
 }
 

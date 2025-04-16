@@ -1,5 +1,5 @@
 <template>
-    <div class="overflow-scroll h-[27vh] text-white text-[12px]">
+    <div :class="[isModal ? 'h-full' : 'h-[27vh]', 'overflow-x-hidden overflow-y-scroll text-white text-[12px]']">
         <ul class="head text-white pb-1 mb-1 border-b border-gray-700 items-start w-[100%] sticky top-0 z-10 bg-[#1E2028]">
             <li class="w-[100%]">Отрасль</li>
             <li class="w-[100%] cursor-pointer" @click="toggleSort('count')">
@@ -99,12 +99,19 @@
     </div>
 </template>
 <script setup lang="ts">
-import { computed, ref } from 'vue';
+import { computed, ref, defineProps } from 'vue';
 import { Numeral } from '../../../../shared/helpers/numeral';
 import { useAStore } from '../../store';
 import { storeToRefs } from 'pinia';
 import { getColorFromGradient } from '../../../../shared/helpers/gradientColors';
 import { SortAscendingOutlined, SortDescendingOutlined } from '@ant-design/icons-vue';
+
+const props = defineProps({
+    isModal: {
+        type: Boolean,
+        default: false
+    }
+});
 
 const aStore = useAStore()
 const { a1Filter, currentOtrasl } = storeToRefs(aStore);
@@ -299,7 +306,18 @@ const sortedOtraslItems = computed(() => {
 .head {
     display: grid;
     grid-gap: 4px;
-    grid-template-columns: 20% 6% 7% 6% 7% 7% 3% 6% 5% 3% 6% 5% 5% 5% 5% ;
+    grid-template-columns: 20% 6% 7% 6% 7% 7% 3% 6% 5% 3% 6% 5% 5% 5% 5%;
+    li {
+        padding: 4px 8px;
+    }
+}
+
+.body {
+    .head {
+        display: grid;
+        grid-gap: 4px;
+        grid-template-columns: 20% 6% 7% 6% 7% 7% 3% 6% 5% 3% 6% 5% 5% 5% 5%;
+    }
 }
 
 .element {
@@ -308,8 +326,10 @@ const sortedOtraslItems = computed(() => {
     background: #252A36;
     border-radius: 6px;
     width: 100%;
-    height: 30px;
-    padding: 0 12px;
+    min-height: 30px;
+    height: 100%;
+    padding: 4px 8px;
     align-items: center;
+    white-space: nowrap;
 }
 </style>
