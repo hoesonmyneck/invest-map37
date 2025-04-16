@@ -237,16 +237,27 @@
           
           <div class="text-white px-0 py-2 w-[160px]">
             <div class="text-sm font-medium mb-4">Статистика:</div>
-            <div class="lg:space-y-[3.6px] 2xl:space-y-[16px] max-h-[calc(90vh)] lg:mt-[24px] 2xl:mt-[30px]">
+            <div class="lg:space-y-[3.6px] 2xl:space-y-[16px] max-h-[calc(90vh)] lg:mt-[24px] 2xl:mt-[0px]">
               <template v-if="chartMode === 'compare'" v-for="(item, index) in filteredDataF6.year1.slice(0, 19)" :key="`compare-${index}`">
-                <div class="bg-[#252A36] p-1 rounded lg:h-[30px] 2xl:h-[37px] pt-[0px]">
+                <div class="bg-[#252A36] p-1 rounded lg:h-[48px] 2xl:h-[60px] pt-[5px]">
                   <div class="lg:text-[10px] 2xl:text-xs flex justify-between">
-                    <span>Всего:</span>
+                    <span>{{ selectedYear1 }}:</span>
                     <span>{{ Numeral(item.cnt_quality + item.cnt_not_quality) }}</span>
                   </div>
                   <div class="lg:text-[10px] 2xl:text-xs flex justify-between">
+                    <span>{{ selectedYear2 }}:</span>
+                    <span>{{ Numeral(getTotalByYear2(item)) }}</span>
+                  </div>
+                  <div class="lg:text-[10px] 2xl:text-xs flex justify-between">
                     <span>Качественные:</span>
-                    <span class="text-[#109669]">{{ ((item.cnt_quality / (item.cnt_quality + item.cnt_not_quality)) * 100).toFixed(1) }}%</span>
+                    <span 
+                      :class="{
+                        'text-[#109669]': getQualityChangePercentage(item) >= 0,
+                        'text-[#FE6A35]': getQualityChangePercentage(item) < 0
+                      }"
+                    >
+                      {{ getQualityChangePercentage(item) >= 0 ? '+' : '' }}{{ getQualityChangePercentage(item).toFixed(1) }}%
+                    </span>
                   </div>
                 </div>
               </template>
@@ -581,7 +592,6 @@ const maxTotalProc = computed(() => {
   return max || 1;
 });
 
-// Константы цветов для использования в компоненте
 const QUALITY_COLOR_F6 = '#109669'; // Зеленый
 const NOT_QUALITY_COLOR_F6 = '#3090E8'; // Синий
 const TOTAL_COLOR_F6 = '#9370DB'; // Фиолетовый
@@ -1008,7 +1018,11 @@ const chartOptionsF6 = computed(() => {
               if (this.y && this.y > 1000) {
                 return Numeral(this.y);
               } else if (this.y && this.y > 0) {
-                return this.y > 500 ? Numeral(this.y) : '';
+                if (this.y > 500) {
+                  return Numeral(this.y);
+                } else {
+                  return '';
+                }
               }
               return '';
             },
@@ -1164,9 +1178,17 @@ const chartOptionsF6 = computed(() => {
           enabled: true,
           formatter: function(this: Highcharts.PointLabelObject): string {
             if (this.y && this.y > 1000) {
-              return Numeral(this.y);
+              const seriesIndex = this.point.series.index;
+              const yearLabel = seriesIndex < 2 ? selectedYear1.value : selectedYear2.value;
+              return `${Numeral(this.y)} (${yearLabel})`;
             } else if (this.y && this.y > 0) {
-              return this.y > 500 ? Numeral(this.y) : '';
+              if (this.y > 500) {
+                const seriesIndex = this.point.series.index;
+                const yearLabel = seriesIndex < 2 ? selectedYear1.value : selectedYear2.value;
+                return `${Numeral(this.y)} (${yearLabel})`;
+              } else {
+                return '';
+              }
             }
             return '';
           },
@@ -1236,7 +1258,6 @@ const hasChartDataF6 = computed(() => {
   return filteredDataF6.value.year1.length > 0 && filteredDataF6.value.year2.length > 0;
 });
 
-// Добавляем новый computed для данных единичного года
 const singleYearData = computed(() => {
   const dataSource = singleModeOption.value === '2023' ? props.dataF6_2023 : props.dataF6;
   
@@ -1276,4 +1297,34 @@ const singleYearData = computed(() => {
 
   return Object.values(grouped).sort((a, b) => b.cnt - a.cnt);
 });
+
+function getQualityChangePercentage(item: F6DataF6): number {
+  const qualityCount1 = item.cnt_quality;
+  
+  const itemYear2 = filteredDataF6.value.year2.find(i => i.vcode_oked === item.vcode_oked);
+  
+  if (!itemYear2) return 0; 
+  
+  const qualityCount2 = itemYear2.cnt_quality;
+  
+  const qualityChange = qualityCount2 - qualityCount1;
+
+  if (qualityCount1 === 0 && qualityCount2 > 0) return 100;
+  
+  if (qualityCount1 > 0 && qualityCount2 === 0) return -100;
+  
+  const changePercentage = qualityCount1 > 0 
+    ? (qualityChange / qualityCount1) * 100 
+    : 0;
+  
+  return changePercentage;
+}
+
+function getTotalByYear2(item: F6DataF6): number {
+  const itemYear2 = filteredDataF6.value.year2.find(i => i.vcode_oked === item.vcode_oked);
+  
+  if (!itemYear2) return 0; 
+  
+  return itemYear2.cnt_quality + itemYear2.cnt_not_quality;
+}
 </script>
