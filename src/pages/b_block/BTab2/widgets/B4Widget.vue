@@ -6,7 +6,7 @@
       :show-close-button="false"
       @close="$emit('close')"
     >
-      <div class="text-white overflow-x-scroll h-[calc(20vh)] w-full">
+      <div class="text-white overflow-x-scroll h-[calc(20vh)] w-full" ref="scrollContainer" @scroll="handleScroll">
         <div
           class="header-grid-text items-end text-xs w-full"
           style="margin-bottom: 0; padding: 0 10px"
@@ -23,17 +23,17 @@
         <div
           class="header-grid-text3 w-full border-b border-gray-700 text-gray-400 mb-2"
         >
-          <p>{{ Numeral(aulBesigiFilter.length) }}</p>
+          <p>{{ Numeral(sortedItems.length) }}</p>
           <p>{{ Numeral(totalSumm) }}</p>
         </div>
         <div class="">
           <div
-            v-for="l in aulBesigiFilter.sort(
-              (a, b) => b.percentage_change - a.percentage_change
-            )"
+            v-for="(l, index) in displayedItems"
             :key="Math.random()"
             class="header-grid-text3 text-xs"
             style="margin-bottom: 0; padding: 2px 5px"
+            :id="`item-${index}`"
+            :ref="index === lastVisibleItemIndex ? setLastVisibleItemRef : undefined"
           >
             <a-tooltip placement="left" :title="l.project_name">
               <p class="block truncate">{{ l.project_name }}</p>
@@ -67,13 +67,27 @@
               </p>
             </div>
           </div>
+          
+          <div 
+            v-if="displayedItems.length < sortedItems.length" 
+            class="text-center py-4"
+          >
+            <a-button
+              type="primary"
+              @click="loadMore"
+              :loading="loading"
+              class="bg-blue-600"
+            >
+              Загрузить еще 500
+            </a-button>
+          </div>
         </div>
       </div>
     </BaseCard>
   </div>
 </template>
 <script setup lang="ts">
-import { computed, ref } from "vue";
+import { computed, ref, watch, nextTick, onUpdated } from "vue";
 import { getAulBesigi } from "../../../../entities/b/api";
 import { useProgramStore } from "../store";
 import BaseCard from "../../../../shared/ui/BaseCard/BaseCard.vue";
@@ -87,6 +101,75 @@ const { aulBesigiFilter } = storeToRefs(programStore);
 const totalSumm = computed(() =>
   aulBesigiFilter.value.reduce((acc, curr) => acc + curr.project_price, 0)
 );
+
+const initialItemsCount = 200;  
+const itemsPerPage = 500;      
+const currentPage = ref(0);     
+const loading = ref(false);
+const scrollContainer = ref<HTMLElement | null>(null);
+const lastVisibleItemIndex = ref<number | null>(null);
+const lastVisibleItemElement = ref<HTMLElement | null>(null);
+
+const sortedItems = computed(() => 
+  aulBesigiFilter.value.sort((a, b) => b.percentage_change - a.percentage_change)
+);
+
+const displayedItems = computed(() => {
+  if (currentPage.value === 0) {
+    return sortedItems.value.slice(0, initialItemsCount);
+  } else {
+    return sortedItems.value.slice(0, initialItemsCount + (currentPage.value * itemsPerPage));
+  }
+});
+
+function setLastVisibleItemRef(el: any) {
+  if (el) {
+    lastVisibleItemElement.value = el;
+  }
+}
+
+function loadMore() {
+  if (loading.value) return;
+  
+  loading.value = true;
+  
+  if (currentPage.value === 0) {
+    lastVisibleItemIndex.value = initialItemsCount - 1;
+  } else {
+    lastVisibleItemIndex.value = initialItemsCount + (currentPage.value * itemsPerPage) - 1;
+  }
+  
+  setTimeout(() => {
+    currentPage.value += 1;
+    
+    nextTick(() => {
+      if (lastVisibleItemElement.value) {
+        lastVisibleItemElement.value.scrollIntoView({ block: 'start' });
+      }
+      loading.value = false;
+    });
+  }, 300);
+}
+
+function handleScroll(event: Event) {
+  const target = event.target as HTMLElement;
+  const { scrollTop, scrollHeight, clientHeight } = target;
+  
+  const isNearBottom = scrollTop + clientHeight >= scrollHeight - 50;
+  const shouldLoadMore = isNearBottom && 
+                         displayedItems.value.length < sortedItems.value.length && 
+                         !loading.value;
+  
+  if (shouldLoadMore && !document.querySelector('.load-more-active')) {
+    loadMore();
+  }
+}
+
+watch(() => aulBesigiFilter.value, () => {
+  currentPage.value = 0;
+  lastVisibleItemIndex.value = null;
+  lastVisibleItemElement.value = null;
+}, { deep: true });
 </script>
 
 <style scoped lang="scss">
