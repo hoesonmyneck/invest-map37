@@ -300,7 +300,7 @@ const groupByRaion = computed(() => {
 });
 
 const getCityZoom = (regionCode: number | null): number => {
-  if (regionCode === null) return 7;
+  if (regionCode === null) return 6;
   
   if (
     regionCode === 710000000 || 
@@ -310,7 +310,7 @@ const getCityZoom = (regionCode: number | null): number => {
     return 9; 
   }
   
-  return 7; 
+  return 6; 
 };
 
 const clickPolygon = (code: string | null) => {
