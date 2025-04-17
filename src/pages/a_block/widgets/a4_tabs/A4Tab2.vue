@@ -111,7 +111,7 @@ import { useAStore } from '../../store';
 import { storeToRefs } from 'pinia';
 import { getColorFromGradient } from '../../../../shared/helpers/gradientColors';
 import { SortAscendingOutlined, SortDescendingOutlined } from '@ant-design/icons-vue';
-import { ref, computed, defineProps } from 'vue';
+import { ref, computed, defineProps, defineExpose } from 'vue';
 import { VirtualList } from "@xuemiyang/vue-virtual-list";
 import "@xuemiyang/vue-virtual-list/dist/style.css";
 
@@ -124,6 +124,73 @@ const props = defineProps({
 
 const aStore = useAStore()
 const { a1FilterByProject, currentProject } = storeToRefs(aStore);
+
+function getExportData() {
+    const exportData = sortedProjects.value.map(item => {
+        const factWorkValue = isExploitationCompleteForItem(item) ? 
+            item.fact_work : 
+            (!isSMRActiveOrCompleteForItem(item) ? 0 : item.data_project_temporaryworkplacescount || 0);
+            
+        const factWorkPercent = item.work_places === 0 ? 0 : 
+            Math.min(100, (factWorkValue / item.work_places * 100));
+            
+        const fotPercent = item.plan_fot === 0 ? 0 : 
+            Math.min(100, (item.fact_fot / item.plan_fot * 100));
+            
+        const startYear = new Date(item.project_start_date).getFullYear();
+        const endYear = new Date(item.project_exploitation_date).getFullYear();
+            
+        return {
+            'ID': item.id,
+            'Наименование': item.project_name,
+            'Стоимость проекта': item.project_price,
+            'Год начала': startYear,
+            'Год завершения': endYear,
+            'План раб.мест': item.work_places,
+            'Факт раб.мест': factWorkValue,
+            '% рабочих мест': factWorkPercent.toFixed(2) + '%',
+            'План ФОТ': item.plan_fot,
+            'Факт ФОТ': item.fact_fot,
+            '% ФОТ': fotPercent.toFixed(2) + '%',
+            'СМЗ': item.smz_12mes,
+            'Риски КТР общие': item.risk_otsut + item.risk_vysok + item.risk_sred,
+            'Высокий риск': item.risk_vysok,
+            'Средний риск': item.risk_sred,
+            'Отсутствует риск': item.risk_otsut,
+            'Статус': item.project_status || '-',
+            'Координаты': item.coordinates || '-'
+        };
+    });
+    
+    if (exportData.length === 0) {
+        exportData.push({
+            'ID': '-',
+            'Наименование': 'Нет данных',
+            'Стоимость проекта': 0,
+            'Год начала': '-',
+            'Год завершения': '-',
+            'План раб.мест': 0,
+            'Факт раб.мест': 0,
+            '% рабочих мест': '0%',
+            'План ФОТ': 0,
+            'Факт ФОТ': 0,
+            '% ФОТ': '0%',
+            'СМЗ': 0,
+            'Риски КТР общие': 0,
+            'Высокий риск': 0,
+            'Средний риск': 0,
+            'Отсутствует риск': 0,
+            'Статус': '-',
+            'Координаты': '-'
+        } as any);
+    }
+    
+    return exportData;
+}
+
+defineExpose({
+    getExportData
+});
 
 const sortField = ref('');
 const sortOrder = ref('asc');

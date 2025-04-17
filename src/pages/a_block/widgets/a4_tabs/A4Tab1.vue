@@ -99,7 +99,7 @@
     </div>
 </template>
 <script setup lang="ts">
-import { computed, ref, defineProps } from 'vue';
+import { computed, ref, defineProps, defineExpose } from 'vue';
 import { Numeral } from '../../../../shared/helpers/numeral';
 import { useAStore } from '../../store';
 import { storeToRefs } from 'pinia';
@@ -301,12 +301,68 @@ const sortedOtraslItems = computed(() => {
         return sortOrder.value === 'asc' ? valA - valB : valB - valA;
     });
 });
+
+function getExportData() {
+    const exportData = sortedOtraslItems.value.map(item => {
+        const finishedPercent = item.finsihed / (+item.not_finsihed + item.finsihed) * 100;
+        const factWorkPercent = item.work_places === 0 ? 0 : 
+            (isExploitationCompleteForItem(item) ? 
+                Math.min(100, item.fact_work / item.work_places * 100) : 
+                Math.min(100, (!isSMRActiveOrCompleteForItem(item) ? 0 : 
+                    item.data_project_temporaryworkplacescount / item.work_places * 100)));
+        const fotPercent = item.plan_fot === 0 ? 0 : Math.min(100, item.fact_fot / item.plan_fot * 100);
+        
+        return {
+            'Отрасль': item.otrasl,
+            'Количество проектов': item.count,
+            'Стоимость проекта': item.project_price,
+            '% завершенных по сроку': finishedPercent.toFixed(2) + '%',
+            'План раб.мест': item.work_places,
+            'Факт раб.мест': isExploitationCompleteForItem(item) ? 
+                item.fact_work : 
+                (!isSMRActiveOrCompleteForItem(item) ? 0 : item.data_project_temporaryworkplacescount),
+            '% рабочих мест': factWorkPercent.toFixed(2) + '%',
+            'План ФОТ': item.plan_fot,
+            'Факт ФОТ': item.fact_fot,
+            '% ФОТ': fotPercent.toFixed(2) + '%',
+            'СМЗ': item.smz_12mes,
+            'Риски КТР': item.risk_otsut + item.risk_vysok + item.risk_sred,
+            'Высокий': item.risk_vysok,
+            'Средний': item.risk_sred,
+            'Отсутствует': item.risk_otsut
+        };
+    });
+    
+    exportData.push({
+        'Отрасль': 'ИТОГО',
+        'Количество проектов': totalProjectsCount.value,
+        'Стоимость проекта': totalProjectPrice.value,
+        '% завершенных по сроку': '-' as any,
+        'План раб.мест': totalWorkPlaces.value,
+        'Факт раб.мест': totalRawFactWork.value,
+        '% рабочих мест': '-' as any,
+        'План ФОТ': totalPlanFot.value,
+        'Факт ФОТ': totalFactFot.value,
+        '% ФОТ': '-' as any,
+        'СМЗ': '-' as any,
+        'Риски КТР': '-' as any,
+        'Высокий': '-' as any,
+        'Средний': '-' as any,
+        'Отсутствует': '-' as any
+    });
+    
+    return exportData;
+}
+
+defineExpose({
+    getExportData
+});
 </script>
 <style scoped lang="scss">
 .head {
     display: grid;
     grid-gap: 4px;
-    grid-template-columns: 20% 6% 7% 6% 7% 7% 3% 6% 5% 3% 6% 5% 5% 5% 5%;
+    grid-template-columns: 17% 8% 8% 6% 7% 7% 3% 6% 5% 3% 6% 5% 5% 5% 5%;
     li {
         padding: 4px 8px;
     }
@@ -316,7 +372,7 @@ const sortedOtraslItems = computed(() => {
     .head {
         display: grid;
         grid-gap: 4px;
-        grid-template-columns: 20% 6% 7% 6% 7% 7% 3% 6% 5% 3% 6% 5% 5% 5% 5%;
+        grid-template-columns: 17% 8% 8% 6% 7% 7% 3% 6% 5% 3% 6% 5% 5% 5% 5%;
     }
 }
 
