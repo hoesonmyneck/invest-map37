@@ -229,8 +229,12 @@ const percentage_risk_region = computed(() => groupByProject.value.reduce((acc: 
   return acc;
 }, {}));
 
+const totalRegionsCount = computed(() => {
+  return Object.values(groupByRegion.value).reduce((acc, region) => acc + region.count, 0);
+});
+
 const SumValues = computed(() => ({
-  count: groupByProject.value.length,
+  count: totalRegionsCount.value,
   project_price: project_price.value,
   work_places: work_places.value,
   plan_fot: plan_fot.value,
@@ -239,7 +243,7 @@ const SumValues = computed(() => ({
 }))
 
 const listLabels = computed(() => [
-  { name: 'Инвестпроекты', icon: '/img/m1-4.png', percent: 0, key: 'count', value: groupByProject.value.length },
+  { name: 'Инвестпроекты', icon: '/img/m1-4.png', percent: 0, key: 'count', value: totalRegionsCount.value },
   { name: 'Инвестиции', icon: '/img/m1-4.png', percent: 0, key: 'project_price', value: project_price.value },
   { name: 'Рабочие места', icon: '/img/m1-2.png', percent: 0, key: 'work_places', value: work_places.value },
   { name: 'ФОТ', icon: '/img/m2-1.png', percent: 0, key: 'plan_fot', value: plan_fot.value },
@@ -269,67 +273,72 @@ interface RegionData {
   risk_sred: number;
 }
 
-const groupByRegion = computed<Record<number, RegionData>>(() => a1FilterByProject.value.reduce((acc, curr) => {
-  if (!acc[curr.parent1_code]) {
-    acc[curr.parent1_code] = {
-      ...curr,
-      count: 1,
-      sroki_dolg: curr.duration_label.includes('Долгосрочные') ? 1 : 0,
-      sroki_sred: curr.duration_label.includes('Среднесрочные') ? 1 : 0,
-      sroki_krat: curr.duration_label.includes('Краткосрочные') ? 1 : 0,
-      risk_otsut: curr.ball_tip_name.includes('Отсутствует') ? 1 : 0,
-      risk_vysok: curr.ball_tip_name.includes('Высокий') ? 1 : 0,
-      risk_sred: curr.ball_tip_name.includes('Средний') ? 1 : 0,
-    } as RegionData;
+const groupByRegion = computed<Record<number, RegionData>>(() => a1FilterByProject.value
+  .filter(project => project.parent1_code && project.parent1_code !== 0)
+  .reduce((acc, curr) => {
+    if (!acc[curr.parent1_code]) {
+      acc[curr.parent1_code] = {
+        ...curr,
+        count: 1,
+        sroki_dolg: curr.duration_label.includes('Долгосрочные') ? 1 : 0,
+        sroki_sred: curr.duration_label.includes('Среднесрочные') ? 1 : 0,
+        sroki_krat: curr.duration_label.includes('Краткосрочные') ? 1 : 0,
+        risk_otsut: curr.ball_tip_name.includes('Отсутствует') ? 1 : 0,
+        risk_vysok: curr.ball_tip_name.includes('Высокий') ? 1 : 0,
+        risk_sred: curr.ball_tip_name.includes('Средний') ? 1 : 0,
+      } as RegionData;
+      return acc;
+    }
+
+    acc[curr.parent1_code].project_price += curr.project_price;
+    acc[curr.parent1_code].work_places += curr.work_places;
+    acc[curr.parent1_code].plan_fot += curr.plan_fot;
+    acc[curr.parent1_code].count += 1;
+
+    acc[curr.parent1_code].sroki_dolg += curr.duration_label.includes('Долгосрочные') ? 1 : 0;
+    acc[curr.parent1_code].sroki_sred += curr.duration_label.includes('Среднесрочные') ? 1 : 0;
+    acc[curr.parent1_code].sroki_krat += curr.duration_label.includes('Краткосрочные') ? 1 : 0;
+
+    acc[curr.parent1_code].risk_otsut += curr.ball_tip_name.includes('Отсутствует') ? 1 : 0;
+    acc[curr.parent1_code].risk_vysok += curr.ball_tip_name.includes('Высокий') ? 1 : 0;
+    acc[curr.parent1_code].risk_sred += curr.ball_tip_name.includes('Средний') ? 1 : 0;
+
     return acc;
-  }
+  }, {} as Record<number, RegionData>));
 
-  acc[curr.parent1_code].project_price += curr.project_price;
-  acc[curr.parent1_code].work_places += curr.work_places;
-  acc[curr.parent1_code].plan_fot += curr.plan_fot;
-  acc[curr.parent1_code].count += 1;
+const groupByRaion = computed<Record<number, RegionData>>(() => a1FilterByProject.value
 
-  acc[curr.parent1_code].sroki_dolg += curr.duration_label.includes('Долгосрочные') ? 1 : 0;
-  acc[curr.parent1_code].sroki_sred += curr.duration_label.includes('Среднесрочные') ? 1 : 0;
-  acc[curr.parent1_code].sroki_krat += curr.duration_label.includes('Краткосрочные') ? 1 : 0;
+  .filter(project => project.parent2_code && project.parent2_code !== 0)
+  .reduce((acc, curr) => {
+    if (!acc[curr.parent2_code]) {
+      acc[curr.parent2_code] = {
+        ...curr,
+        count: 1,
+        sroki_dolg: curr.duration_label.includes('Долгосрочные') ? 1 : 0,
+        sroki_sred: curr.duration_label.includes('Среднесрочные') ? 1 : 0,
+        sroki_krat: curr.duration_label.includes('Краткосрочные') ? 1 : 0,
+        risk_otsut: curr.ball_tip_name.includes('Отсутствует') ? 1 : 0,
+        risk_vysok: curr.ball_tip_name.includes('Высокий') ? 1 : 0,
+        risk_sred: curr.ball_tip_name.includes('Средний') ? 1 : 0,
+      } as RegionData;
+      return acc;
+    }
 
-  acc[curr.parent1_code].risk_otsut += curr.ball_tip_name.includes('Отсутствует') ? 1 : 0;
-  acc[curr.parent1_code].risk_vysok += curr.ball_tip_name.includes('Высокий') ? 1 : 0;
-  acc[curr.parent1_code].risk_sred += curr.ball_tip_name.includes('Средний') ? 1 : 0;
+    acc[curr.parent2_code].project_price += curr.project_price;
+    acc[curr.parent2_code].work_places += curr.work_places;
+    acc[curr.parent2_code].plan_fot += curr.plan_fot;
+    acc[curr.parent2_code].count += 1;
 
-  return acc;
-}, {} as Record<number, RegionData>))
+    acc[curr.parent2_code].sroki_dolg += curr.duration_label.includes('Долгосрочные') ? 1 : 0;
+    acc[curr.parent2_code].sroki_sred += curr.duration_label.includes('Среднесрочные') ? 1 : 0;
+    acc[curr.parent2_code].sroki_krat += curr.duration_label.includes('Краткосрочные') ? 1 : 0;
 
-const groupByRaion = computed<Record<number, RegionData>>(() => a1FilterByProject.value.reduce((acc, curr) => {
-  if (!acc[curr.parent2_code]) {
-    acc[curr.parent2_code] = {
-      ...curr,
-      count: 1,
-      sroki_dolg: curr.duration_label.includes('Долгосрочные') ? 1 : 0,
-      sroki_sred: curr.duration_label.includes('Среднесрочные') ? 1 : 0,
-      sroki_krat: curr.duration_label.includes('Краткосрочные') ? 1 : 0,
-      risk_otsut: curr.ball_tip_name.includes('Отсутствует') ? 1 : 0,
-      risk_vysok: curr.ball_tip_name.includes('Высокий') ? 1 : 0,
-      risk_sred: curr.ball_tip_name.includes('Средний') ? 1 : 0,
-    } as RegionData;
+    acc[curr.parent2_code].risk_otsut += curr.ball_tip_name.includes('Отсутствует') ? 1 : 0;
+    acc[curr.parent2_code].risk_vysok += curr.ball_tip_name.includes('Высокий') ? 1 : 0;
+    acc[curr.parent2_code].risk_sred += curr.ball_tip_name.includes('Средний') ? 1 : 0;
+
     return acc;
-  }
-
-  acc[curr.parent2_code].project_price += curr.project_price;
-  acc[curr.parent2_code].work_places += curr.work_places;
-  acc[curr.parent2_code].plan_fot += curr.plan_fot;
-  acc[curr.parent2_code].count += 1;
-
-  acc[curr.parent2_code].sroki_dolg += curr.duration_label.includes('Долгосрочные') ? 1 : 0;
-  acc[curr.parent2_code].sroki_sred += curr.duration_label.includes('Среднесрочные') ? 1 : 0;
-  acc[curr.parent2_code].sroki_krat += curr.duration_label.includes('Краткосрочные') ? 1 : 0;
-
-  acc[curr.parent2_code].risk_otsut += curr.ball_tip_name.includes('Отсутствует') ? 1 : 0;
-  acc[curr.parent2_code].risk_vysok += curr.ball_tip_name.includes('Высокий') ? 1 : 0;
-  acc[curr.parent2_code].risk_sred += curr.ball_tip_name.includes('Средний') ? 1 : 0;
-
-  return acc;
-}, {} as Record<number, RegionData>))
+  }, {} as Record<number, RegionData>))
 
 const getRegionZoom = (regionCode: number | null): number => {
   if (regionCode === null) return 6;
