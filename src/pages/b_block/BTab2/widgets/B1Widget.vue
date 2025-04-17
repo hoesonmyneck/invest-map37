@@ -150,7 +150,7 @@ import { storeToRefs } from "pinia";
 import { chartOptions } from "../helpers/chartOption";
 import IinPopupWidget from "./IinPopupWidget.vue";
 import { FullscreenOutlined, DownloadOutlined } from "@ant-design/icons-vue";
-import { exportToExcel } from "../../../../shared/helpers/excelExport";
+import { exportToExcel, exportToExcelMultiSheet } from "../../../../shared/helpers/excelExport";
 
 const programStore = useProgramStore();
 const { serpinFilter, serpin } = storeToRefs(programStore);
@@ -229,19 +229,43 @@ function showIinPopup(category: { name: string, key: string, count: number, perc
 }
 
 function downloadExcel() {
-  const excelData = listSerpin.value.map(item => ({
+  const sheetsData = listSerpin.value.map(item => {
+    const iins = programStore.getIinsByCategory('serpin', item.key) || [];
+    const addresses = programStore.getAddressesByCategory('serpin', item.key) || [];
+    const contracts = programStore.getContractsByCategory('serpin', item.key) || [];
+    
+    const sheetData = iins.map((iin, index) => {
+      return {
+        'ИИН': iin,
+        'Адрес': addresses[index] || '-',
+        'Контракт': contracts[index] || '-'
+      };
+    });
+    
+    return {
+      name: item.name,
+      data: sheetData
+    };
+  });
+  
+  const summaryData = listSerpin.value.map(item => ({
     'Категория': item.name,
     'Количество': item.count,
     'Процент': `${Numeral(item.percent)}%`
   }));
   
-  excelData.push({
+  summaryData.push({
     'Категория': 'Всего участников',
     'Количество': total.value,
     'Процент': '100%'
   });
   
-  exportToExcel(excelData, 'Серпін_данные', 'Серпін');
+  sheetsData.unshift({
+    name: 'Общие данные',
+    data: summaryData as any[]
+  });
+  
+  exportToExcelMultiSheet(sheetsData, 'Серпін_детальные_данные');
 }
 
 const chartSerpin = computed(() =>

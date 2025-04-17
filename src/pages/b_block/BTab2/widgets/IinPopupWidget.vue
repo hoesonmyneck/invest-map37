@@ -88,7 +88,7 @@
 import { ref, computed, onMounted, watch } from "vue";
 import BaseCard from "../../../../shared/ui/BaseCard/BaseCard.vue";
 import { DownloadOutlined } from "@ant-design/icons-vue";
-import { exportToExcel } from "../../../../shared/helpers/excelExport";
+import { exportToExcel, exportToExcelMultiSheet } from "../../../../shared/helpers/excelExport";
 
 interface PersonItem {
   iin: string;
@@ -206,6 +206,7 @@ function handleScroll(event: Event) {
 }
 
 function downloadExcel() {
+  // Получаем все данные для экспорта
   const excelData = filteredItems.value.map(item => {
     const data: Record<string, string> = {
       'ИИН': item.iin
@@ -223,7 +224,23 @@ function downloadExcel() {
   });
   
   const fileName = props.title.replace(/["«»]/g, '').replace(/\s+/g, '_');
-  exportToExcel(excelData, fileName, props.categoryName);
+ 
+  if (excelData.length > 10000) {
+    const chunkSize = 5000; 
+    const chunkedData = [];
+   
+    for (let i = 0; i < excelData.length; i += chunkSize) {
+      const chunk = excelData.slice(i, i + chunkSize);
+      chunkedData.push({
+        name: `${props.categoryName} (${i+1}-${Math.min(i+chunkSize, excelData.length)})`,
+        data: chunk
+      });
+    }
+    
+    exportToExcelMultiSheet(chunkedData, fileName);
+  } else {
+    exportToExcel(excelData, fileName, props.categoryName);
+  }
 }
 
 function copyToClipboard(iin: string) {

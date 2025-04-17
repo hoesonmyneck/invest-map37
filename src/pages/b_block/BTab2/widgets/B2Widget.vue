@@ -144,7 +144,7 @@ import { storeToRefs } from "pinia";
 import { chartOptions } from "../helpers/chartOption";
 import IinPopupWidget from "./IinPopupWidget.vue";
 import { FullscreenOutlined, DownloadOutlined } from "@ant-design/icons-vue";
-import { exportToExcel } from "../../../../shared/helpers/excelExport";
+import { exportToExcel, exportToExcelMultiSheet } from "../../../../shared/helpers/excelExport";
 
 const loader = ref(true);
 const data = ref<any[]>([]);
@@ -229,19 +229,45 @@ function showIinPopup(category: { name: string, key: string, count: number, perc
 }
 
 function downloadExcel() {
-  const excelData = listAulAmanati.value.map(item => ({
+  const sheetsData = listAulAmanati.value.map(item => {
+    const iins = programStore.getIinsByCategory('aulAmanati', item.key) || [];
+    const names = programStore.getNamesByCategory('aulAmanati', item.key) || [];
+    const purposes = programStore.getPurposesByCategory('aulAmanati', item.key) || [];
+    const loanPurposes = programStore.getLoanPurposesByCategory('aulAmanati', item.key) || [];
+    
+    const sheetData = iins.map((iin, index) => {
+      return {
+        'ИИН': iin,
+        'ФИО': names[index] || '-',
+        'Тип': purposes[index] || '-',
+        'Цель кредита': loanPurposes[index] || '-'
+      };
+    });
+    
+    return {
+      name: item.name,
+      data: sheetData
+    };
+  });
+  
+  const summaryData = listAulAmanati.value.map(item => ({
     'Категория': item.name,
     'Количество': item.count,
     'Процент': `${Numeral(item.percent)}%`
   }));
   
-  excelData.push({
+  summaryData.push({
     'Категория': 'Всего участников',
     'Количество': total.value,
     'Процент': '100%'
   });
   
-  exportToExcel(excelData, 'Ауыл_Аманаты_данные', 'Ауыл Аманаты');
+  sheetsData.unshift({
+    name: 'Общие данные',
+    data: summaryData as any[]
+  });
+  
+  exportToExcelMultiSheet(sheetsData, 'Ауыл_Аманаты_детальные_данные');
 }
 
 const chart = computed(() =>

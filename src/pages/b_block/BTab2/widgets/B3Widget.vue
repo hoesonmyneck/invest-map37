@@ -146,7 +146,7 @@ import { storeToRefs } from "pinia";
 import { chartOptions } from "../helpers/chartOption";
 import IinPopupWidget from "./IinPopupWidget.vue";
 import { FullscreenOutlined, DownloadOutlined } from "@ant-design/icons-vue";
-import { exportToExcel } from "../../../../shared/helpers/excelExport";
+import { exportToExcel, exportToExcelMultiSheet } from "../../../../shared/helpers/excelExport";
 
 const programStore = useProgramStore();
 const { diplommenAulgaFilter, diplommenAulga } = storeToRefs(programStore);
@@ -204,19 +204,47 @@ function showIinPopup(category: { name: string, key: string, count: number, perc
 }
 
 function downloadExcel() {
-  const excelData = listDiplommenAulga.value.map(item => ({
+  const sheetsData = listDiplommenAulga.value.map(item => {
+    const iins = programStore.getIinsByCategory('diplommenAulga', item.key) || [];
+    const names = programStore.getNamesByCategory('diplommenAulga', item.key) || [];
+    const addresses = programStore.getAddressesByCategory('diplommenAulga', item.key) || [];
+    const supports = programStore.getSupportsByCategory('diplommenAulga', item.key) || [];
+    const credits = programStore.getCreditsByCategory('diplommenAulga', item.key) || [];
+    
+    const sheetData = iins.map((iin, index) => {
+      return {
+        'ИИН': iin,
+        'ФИО': names[index] || '-',
+        'Адрес': addresses[index] || '-',
+        'Поддержка': supports[index] || '-',
+        'Кредит': credits[index] || '-'
+      };
+    });
+    
+    return {
+      name: item.name,
+      data: sheetData
+    };
+  });
+ 
+  const summaryData = listDiplommenAulga.value.map(item => ({
     'Категория': item.name,
     'Количество': item.count,
     'Процент': `${+item.percent.toFixed(2)}%`
   }));
   
-  excelData.push({
+  summaryData.push({
     'Категория': 'Всего участников',
     'Количество': total.value,
     'Процент': '100%'
   });
   
-  exportToExcel(excelData, 'Дипломмен_Ауылға_данные', 'Дипломмен Ауылға');
+  sheetsData.unshift({
+    name: 'Общие данные',
+    data: summaryData as any[] 
+  });
+
+  exportToExcelMultiSheet(sheetsData, 'Дипломмен_Ауылға_детальные_данные');
 }
 
 const chart = computed(() =>
