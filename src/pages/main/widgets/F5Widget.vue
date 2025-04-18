@@ -172,8 +172,8 @@ const totalArea = computed(() =>
 const totalUniqueIdSum = computed(() => {
   const uniqueRaions = {};
   data.value.forEach(item => {
-    if (!uniqueRaions[item.parent2_code]) {
-      uniqueRaions[item.parent2_code] = item.total_unique_id;
+    if (!uniqueRaions[item.id_rai]) {
+      uniqueRaions[item.id_rai] = item.total_unique_id;
     }
   });
   return Object.values(uniqueRaions).reduce((acc, curr) => acc + curr, 0);

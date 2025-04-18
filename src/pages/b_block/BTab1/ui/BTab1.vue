@@ -81,7 +81,7 @@
                         <p class="font-bold">
                             {{
                                 Numeral(
-                                    getRegionUnemploymentRate(+slotProps.data.parent1_code)
+                                    getRegionUnemploymentRate(+slotProps.data.id_reg)
                                 ) + "%"
                             }}
                         </p>
@@ -95,7 +95,7 @@
                 :current-raion="currentRaion ? Number(currentRaion) : undefined"
                 :zoom="getCityZoom(currentRegion)"
                 :fill-color="(v) => {
-                    if (!groupByRaion()[+v] || groupByRaion()[+v]?.parent1_code !== Number(currentRegion)) {
+                    if (!groupByRaion()[+v] || groupByRaion()[+v]?.id_reg !== Number(currentRegion)) {
                         return '#222732'; 
                     }
                     
@@ -113,8 +113,8 @@
                         <p>Незанятые:</p>
                         <p class="font-bold">
                             {{
-                                Numeral(getRaionUnemploymentRate(+slotProps.data.parent2_code)) + "%"
-                            }}
+                                Numeral(getRaionUnemploymentRate(+slotProps.data.id_rai)) + "%"
+                            }}  
                         </p>
                     </div>
                 </div>
@@ -162,9 +162,9 @@ const getCityZoom = (regionCode: string | null): number => {
   const regionCodeNum = Number(regionCode);
   
   if (
-    regionCodeNum === 710000000 || // Астана
-    regionCodeNum === 750000000 || // Алматы
-    regionCodeNum === 790000000    // Шымкент
+    regionCodeNum === 71 || // Астана
+    regionCodeNum === 75 || // Алматы
+    regionCodeNum === 79    // Шымкент
   ) {
     return 10; 
   }
@@ -174,37 +174,37 @@ const getCityZoom = (regionCode: string | null): number => {
 
 const groupByRegion = () =>
     [...data.value].reduce((acc, curr) => {
-        if (!acc[curr.parent1_code]) {
-            acc[curr.parent1_code] = { 
+        if (!acc[curr.id_reg]) {
+            acc[curr.id_reg] = { 
                 nezaniat: +curr.nezaniat,
-                parent1_code: curr.parent1_code
+                id_reg: curr.id_reg
             };
             return acc;
         }
 
-        acc[curr.parent1_code].nezaniat += +curr.nezaniat;
+        acc[curr.id_reg].nezaniat += +curr.nezaniat;
         return acc;
     }, {} as any);
 
 const groupByRaion = () =>
     [...data.value].reduce((acc, curr) => {
-        if (!curr.parent2_code) return acc;
+        if (!curr.id_rai) return acc;
         
-        if (!acc[curr.parent2_code]) {
-            acc[curr.parent2_code] = { 
+        if (!acc[curr.id_rai]) {
+            acc[curr.id_rai] = { 
                 nezaniat: +curr.nezaniat,
-                parent1_code: curr.parent1_code,
-                parent2_code: curr.parent2_code
+                id_reg: curr.id_reg,
+                id_rai: curr.id_rai
             };
             return acc;
         }
 
-        acc[curr.parent2_code].nezaniat += +curr.nezaniat;
+        acc[curr.id_rai].nezaniat += +curr.nezaniat;
         return acc;
     }, {} as any);
 
 const getRegionUnemploymentRate = (regionCode: number) => {
-    const regionData = data.value.filter(item => item.parent1_code === regionCode);
+    const regionData = data.value.filter(item => item.id_reg === regionCode);
     const regionTrudo = regionData.reduce((acc, curr) => acc + +curr.trud_vozrast, 0);
     const regionNezaniat = regionData.reduce((acc, curr) => acc + +curr.nezaniat, 0);
     
@@ -212,7 +212,7 @@ const getRegionUnemploymentRate = (regionCode: number) => {
 };
 
 const getRaionUnemploymentRate = (raionCode: number) => {
-    const raionData = data.value.filter(item => item.parent2_code === raionCode);
+    const raionData = data.value.filter(item => item.id_rai === raionCode);
     const raionTrudo = raionData.reduce((acc, curr) => acc + +curr.trud_vozrast, 0);
     const raionNezaniat = raionData.reduce((acc, curr) => acc + +curr.nezaniat, 0);
     
@@ -275,10 +275,10 @@ const getRegionColorByRank = (): Record<number, string> => {
 const getRaionColorByRank = (currentRegionCode: number): Record<number, string> => {
    
     const raionsWithRates = Object.values(groupByRaion())
-        .filter((raion: any) => raion.parent1_code === currentRegionCode)
+        .filter((raion: any) => raion.id_reg === currentRegionCode)
         .map((raion: any) => ({
-            raionCode: +raion.parent2_code,
-            rate: getRaionUnemploymentRate(+raion.parent2_code)
+            raionCode: +raion.id_rai,
+            rate: getRaionUnemploymentRate(+raion.id_rai)
         }))
         .filter(raion => !isNaN(raion.raionCode) && raion.raionCode > 0);
     
@@ -289,11 +289,11 @@ const getRaionColorByRank = (currentRegionCode: number): Record<number, string> 
     const raionColors: Record<number, string> = {};
 
    
-    if (currentRegionCode === 710000000 || 
-        currentRegionCode === 750000000 || 
-        currentRegionCode === 790000000 ||
-        currentRegionCode === 620000000 ||
-        currentRegionCode === 470000000) {
+    if (currentRegionCode === 71 || 
+        currentRegionCode === 75 || 
+        currentRegionCode === 79 ||
+        currentRegionCode === 62 ||
+        currentRegionCode === 47) {
         
         const greenCount = Math.min(2, raionsWithRates.length);
         const greenRaions = raionsWithRates.slice(0, greenCount);
@@ -349,16 +349,16 @@ const getRaionColorByRank = (currentRegionCode: number): Record<number, string> 
 const regionBezrabot = computed(() => {
     if (!currentRegion.value) return 0;
     return data.value
-        .filter(item => item.parent1_code === Number(currentRegion.value))
+        .filter(item => item.id_reg === Number(currentRegion.value))
         .reduce((acc, curr) => acc + +curr.nezaniat, 0);
 });
 
 const _filter = computed(() => {
     if (currentRaion.value) {
-        return [...data.value].filter(e => e.parent2_code === Number(currentRaion.value));
+        return [...data.value].filter(e => e.id_rai === Number(currentRaion.value));
     }
     return [...data.value].filter(e => 
-        !currentRegion.value ? true : e.parent1_code === Number(currentRegion.value)
+        !currentRegion.value ? true : e.id_reg === Number(currentRegion.value)
     );
 });
 

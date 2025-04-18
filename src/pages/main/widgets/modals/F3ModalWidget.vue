@@ -8,7 +8,7 @@
       <div class="grid grid-cols-3 text-white h-[40vh]">
         <div class="flex justify-around">
           <div >
-          <highcharts :options="chartOptions" class="w-[100%] m-auto h-[calc(100%-100px)]"></highcharts>
+          <highcharts :options="chartOptions" class="w-[100%] m-auto h-[60%]"></highcharts>
           <ul class="gap-4 flex-col gap-3 text-[10px] justify-center">
             <li class="flex gap-2 mb-2">
               <p class="w-4 h-4 rounded-full" style="background-color: #4990d3"></p>
@@ -33,7 +33,7 @@
           </ul>
           </div>
           <div>
-          <highcharts :options="resumeChartOptions" class="w-[100%] m-auto h-[calc(100%-100px)]"></highcharts>
+          <highcharts :options="resumeChartOptions" class="w-[100%] m-auto h-[60%]"></highcharts>
           <ul class="gap-4 flex-col gap-3 text-[10px] justify-center">
             <li class="flex gap-2 mb-2">
               <p class="w-4 h-4 rounded-full" style="background-color: #D15B32"></p>
@@ -142,7 +142,7 @@ import { CloseOutlined } from "@ant-design/icons-vue";
 import BaseMap from "../../../../shared/ui/BaseMap/BaseMap.vue";
 
 interface F3Item {
-  parent1_code: number;
+  id_reg: number;
   name_nkz?: string;
   vacancy_count: number;
   resume_count: number;
@@ -213,7 +213,7 @@ function getRegionColor(code: string) {
 
 function groupByNkzInternal(): GroupedItem[] {
   const filteredData = data.value.filter(item => 
-    !currentRegion.value ? true : item.parent1_code === currentRegion.value
+    !currentRegion.value ? true : item.id_reg === currentRegion.value
   );
   
   const grouped: Record<string, GroupedItem> = {};
@@ -240,14 +240,14 @@ function groupByRegionInternal(): Record<number, F3Item> {
   const grouped: Record<number, F3Item> = {};
   
   for (const item of data.value) {
-    if (!item.parent1_code) continue;
+    if (!item.id_reg) continue;
     
-    if (!grouped[item.parent1_code]) {
-      grouped[item.parent1_code] = { ...item };
+    if (!grouped[item.id_reg]) {
+      grouped[item.id_reg] = { ...item };
     } else {
-      grouped[item.parent1_code].vacancy_count += item.vacancy_count;
-      grouped[item.parent1_code].resume_count += item.resume_count;
-      grouped[item.parent1_code].soot += item.soot;
+      grouped[item.id_reg].vacancy_count += item.vacancy_count;
+      grouped[item.id_reg].resume_count += item.resume_count;
+      grouped[item.id_reg].soot += item.soot;
     }
   }
   
@@ -280,7 +280,7 @@ const maxRegionResumeCount = computed(() => {
 });
 
 const filteredData = computed(() => 
-  data.value.filter(item => !currentRegion.value ? true : item.parent1_code === currentRegion.value)
+  data.value.filter(item => !currentRegion.value ? true : item.id_reg === currentRegion.value)
 );
 
 const qual_prof = computed(() => 

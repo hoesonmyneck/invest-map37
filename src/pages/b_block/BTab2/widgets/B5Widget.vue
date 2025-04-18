@@ -42,11 +42,11 @@
               <p>Регион:</p>
               <p class="font-bold">{{ slotProps.data.region }}</p>
             </div>
-            <div class="flex items-center gap-2" v-if="groupByRegion && groupByRegion[slotProps.data.parent1_code]">
+            <div class="flex items-center gap-2" v-if="groupByRegion && groupByRegion[slotProps.data.id_reg]">
               <p class="mb-2">
                 Участники:
                 <span class="font-bold">{{
-                  groupByRegion[slotProps.data.parent1_code].total
+                  groupByRegion[slotProps.data.id_reg].total
                 }}</span>
               </p>
             </div>
@@ -67,11 +67,11 @@
               <p>Район:</p>
               <p class="font-bold">{{ slotProps.data.raion }}</p>
             </div>
-            <div class="flex items-center gap-2" v-if="groupByRaion && groupByRaion[slotProps.data.parent2_code]">
+            <div class="flex items-center gap-2" v-if="groupByRaion && groupByRaion[slotProps.data.id_rai]">
               <p class="mb-2">
                 Участники:
                 <span class="font-bold">{{
-                  groupByRaion[slotProps.data.parent2_code].total
+                  groupByRaion[slotProps.data.id_rai].total
                 }}</span>
               </p>
             </div>
@@ -179,11 +179,11 @@ const getRaionFillColor = (v: string) => {
 const groupByRegion = computed(() => {
   if (current_key.value === "serpin")
     return serpin.value.reduce((acc, curr: any) => {
-      if (acc[curr.parent1_code]) {
-        acc[curr.parent1_code].total += curr.total;
-        acc[curr.parent1_code].value += curr.ispolnayet;
+      if (acc[curr.id_reg]) {
+        acc[curr.id_reg].total += curr.total;
+        acc[curr.id_reg].value += curr.ispolnayet;
       } else {
-        acc[curr.parent1_code] = {
+        acc[curr.id_reg] = {
           ...curr,
           value: curr.ispolnayet,
         };
@@ -194,13 +194,13 @@ const groupByRegion = computed(() => {
 
   if (current_key.value === "diplom")
     return diplommenAulga.value.reduce((acc, curr: any) => {
-      if (acc[curr.parent1_code]) {
-        const item = acc[curr.parent1_code];
+      if (acc[curr.id_reg]) {
+        const item = acc[curr.id_reg];
         item.value += curr.rabotaet_aul;
         item.total += curr.total;
         item.count += 1;
       } else {
-        acc[curr.parent1_code] = {
+        acc[curr.id_reg] = {
           ...curr,
           count: 1,
           value: curr.rabotaet_aul,
@@ -212,8 +212,8 @@ const groupByRegion = computed(() => {
 
   if (current_key.value === "auyl_amanat")
     return aulAmanati.value.reduce((acc, curr: any) => {
-      if (acc[curr.parent1_code]) {
-        const item = acc[curr.parent1_code];
+      if (acc[curr.id_reg]) {
+        const item = acc[curr.id_reg];
         item.value += curr.active_ip;
         item.total += curr.total;
         item.not_active += curr.not_active;
@@ -222,7 +222,7 @@ const groupByRegion = computed(() => {
         item.loan_price_sum += !!curr.loan_price_sum ? curr.loan_price_sum : 0;
         item.count += 1;
       } else {
-        acc[curr.parent1_code] = {
+        acc[curr.id_reg] = {
           ...curr,
           count: 1,
           value: curr.active_ip,
@@ -240,12 +240,12 @@ const groupByRaion = computed(() => {
   
   if (current_key.value === "serpin")
     return serpin.value.reduce((acc, curr: any) => {
-      if (curr.parent1_code === currentRegion.value) {
-        if (acc[curr.parent2_code]) {
-          acc[curr.parent2_code].total += curr.total;
-          acc[curr.parent2_code].value += curr.ispolnayet;
+      if (curr.id_reg === currentRegion.value) {
+        if (acc[curr.id_rai]) {
+          acc[curr.id_rai].total += curr.total;
+          acc[curr.id_rai].value += curr.ispolnayet;
         } else {
-          acc[curr.parent2_code] = {
+          acc[curr.id_rai] = {
             ...curr,
             value: curr.ispolnayet,
           };
@@ -256,14 +256,14 @@ const groupByRaion = computed(() => {
 
   if (current_key.value === "diplom")
     return diplommenAulga.value.reduce((acc, curr: any) => {
-      if (curr.parent1_code === currentRegion.value) {
-        if (acc[curr.parent2_code]) {
-          const item = acc[curr.parent2_code];
+      if (curr.id_reg === currentRegion.value) {
+        if (acc[curr.id_rai]) {
+          const item = acc[curr.id_rai];
           item.value += curr.rabotaet_aul;
           item.total += curr.total;
           item.count += 1;
         } else {
-          acc[curr.parent2_code] = {
+          acc[curr.id_rai] = {
             ...curr,
             count: 1,
             value: curr.rabotaet_aul,
@@ -275,9 +275,9 @@ const groupByRaion = computed(() => {
 
   if (current_key.value === "auyl_amanat")
     return aulAmanati.value.reduce((acc, curr: any) => {
-      if (curr.parent1_code === currentRegion.value) {
-        if (acc[curr.parent2_code]) {
-          const item = acc[curr.parent2_code];
+      if (curr.id_reg === currentRegion.value) {
+        if (acc[curr.id_rai]) {
+          const item = acc[curr.id_rai];
           item.value += curr.active_ip;
           item.total += curr.total;
           item.not_active += curr.not_active;
@@ -286,7 +286,7 @@ const groupByRaion = computed(() => {
           item.loan_price_sum += !!curr.loan_price_sum ? curr.loan_price_sum : 0;
           item.count += 1;
         } else {
-          acc[curr.parent2_code] = {
+          acc[curr.id_rai] = {
             ...curr,
             count: 1,
             value: curr.active_ip,
@@ -303,9 +303,9 @@ const getCityZoom = (regionCode: number | null): number => {
   if (regionCode === null) return 6;
   
   if (
-    regionCode === 710000000 || 
-    regionCode === 750000000 || 
-    regionCode === 790000000    
+    regionCode === 71 || 
+    regionCode === 75 || 
+    regionCode === 79    
   ) {
     return 9; 
   }

@@ -1,6 +1,6 @@
 export type Region = {
-  parent1_code: number;
+  id_reg: number;
   parent1_name: string;
-  parent2_code: number;
+  id_rai: number;
   parent2_name: string;
 };

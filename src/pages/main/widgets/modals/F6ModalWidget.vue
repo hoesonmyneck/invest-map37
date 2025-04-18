@@ -110,34 +110,34 @@
           <template v-if="currentTypeKey === 'percentage_risk_region'">
             <div class="flex">
               <p>Отсутствует: </p>
-              <p class="font-bold">{{ Numeral(groupByRegion[slotProps.data.parent1_code]?.risk_otsut) }}</p>
+              <p class="font-bold">{{ Numeral(groupByRegion[slotProps.data.id_reg]?.risk_otsut) }}</p>
             </div>
             <div class="flex">
               <p>Высокий: </p>
-              <p class="font-bold">{{ Numeral(groupByRegion[slotProps.data.parent1_code]?.risk_vysok) }}</p>
+              <p class="font-bold">{{ Numeral(groupByRegion[slotProps.data.id_reg]?.risk_vysok) }}</p>
             </div>
             <div class="flex">
               <p>Средний: </p>
-              <p class="font-bold">{{ Numeral(groupByRegion[slotProps.data.parent1_code]?.risk_sred) }}</p>
+              <p class="font-bold">{{ Numeral(groupByRegion[slotProps.data.id_reg]?.risk_sred) }}</p>
             </div>
           </template>
           <template v-else-if="currentTypeKey === 'project_duration'">
             <div class="flex">
               <p>Краткосрочные (0-5 лет): </p>
-              <p class="font-bold">{{ Numeral(groupByRegion[slotProps.data.parent1_code]?.sroki_dolg) }}</p>
+              <p class="font-bold">{{ Numeral(groupByRegion[slotProps.data.id_reg]?.sroki_dolg) }}</p>
             </div>
             <div class="flex">
               <p>Среднесрочные (6-10 лет): </p>
-              <p class="font-bold">{{ Numeral(groupByRegion[slotProps.data.parent1_code]?.sroki_sred) }}</p>
+              <p class="font-bold">{{ Numeral(groupByRegion[slotProps.data.id_reg]?.sroki_sred) }}</p>
             </div>
             <div class="flex">
               <p>Долгосрочные (11-20 лет): </p>
-              <p class="font-bold">{{ Numeral(groupByRegion[slotProps.data.parent1_code]?.sroki_krat) }}</p>
+              <p class="font-bold">{{ Numeral(groupByRegion[slotProps.data.id_reg]?.sroki_krat) }}</p>
             </div>
           </template>
           <div class="flex" v-else>
             <p>{{listLabels.find((item) => item.key === currentTypeKey)?.name}}: </p>
-            <p class="font-bold">{{ Numeral(groupByRegion[slotProps.data.parent1_code]?.[currentTypeKey || '']) }}</p>
+            <p class="font-bold">{{ Numeral(groupByRegion[slotProps.data.id_reg]?.[currentTypeKey || '']) }}</p>
           </div>
         </BaseMap>
 
@@ -169,34 +169,34 @@
           <template v-if="currentTypeKey === 'percentage_risk_region'">
             <div class="flex">
               <p>Отсутствует: </p>
-              <p class="font-bold">{{ Numeral(groupByRaion[slotProps.data.parent2_code]?.risk_otsut) }}</p>
+              <p class="font-bold">{{ Numeral(groupByRaion[slotProps.data.id_rai]?.risk_otsut) }}</p>
             </div>
             <div class="flex">
               <p>Высокий: </p>
-              <p class="font-bold">{{ Numeral(groupByRaion[slotProps.data.parent2_code]?.risk_vysok) }}</p>
+              <p class="font-bold">{{ Numeral(groupByRaion[slotProps.data.id_rai]?.risk_vysok) }}</p>
             </div>
             <div class="flex">
               <p>Средний: </p>
-              <p class="font-bold">{{ Numeral(groupByRaion[slotProps.data.parent2_code]?.risk_sred) }}</p>
+              <p class="font-bold">{{ Numeral(groupByRaion[slotProps.data.id_rai]?.risk_sred) }}</p>
             </div>
           </template>
           <template v-else-if="currentTypeKey === 'project_duration'">
             <div class="flex">
               <p>Краткосрочные (0-5 лет): </p>
-              <p class="font-bold">{{ Numeral(groupByRaion[slotProps.data.parent2_code]?.sroki_dolg) }}</p>
+              <p class="font-bold">{{ Numeral(groupByRaion[slotProps.data.id_rai]?.sroki_dolg) }}</p>
             </div>
             <div class="flex">
               <p>Среднесрочные (6-10 лет): </p>
-              <p class="font-bold">{{ Numeral(groupByRaion[slotProps.data.parent2_code]?.sroki_sred) }}</p>
+              <p class="font-bold">{{ Numeral(groupByRaion[slotProps.data.id_rai]?.sroki_sred) }}</p>
             </div>
             <div class="flex">
               <p>Долгосрочные (11-20 лет): </p>
-              <p class="font-bold">{{ Numeral(groupByRaion[slotProps.data.parent2_code]?.sroki_krat) }}</p>
+              <p class="font-bold">{{ Numeral(groupByRaion[slotProps.data.id_rai]?.sroki_krat) }}</p>
             </div>
           </template>
           <div class="flex" v-else>
             <p>{{listLabels.find((item) => item.key === currentTypeKey)?.name}}: </p>
-            <p class="font-bold">{{ Numeral(groupByRaion[slotProps.data.parent2_code]?.[currentTypeKey || '']) }}</p>
+            <p class="font-bold">{{ Numeral(groupByRaion[slotProps.data.id_rai]?.[currentTypeKey || '']) }}</p>
           </div>
         </BaseMapRegion>
       </div>
@@ -254,8 +254,8 @@
     plan_fot: number;
     ball_tip_name: string;
     duration_label: string;
-    parent1_code: string;
-    parent2_code: string;
+    id_reg: string;
+    id_rai: string;
     [key: string]: any;
   };
   
@@ -361,8 +361,8 @@
   
   const groupByRegion = computed(() => {
     return a1FilterByProject.value.reduce<Record<string, RegionData>>((acc, curr) => {
-      if (!acc[curr.parent1_code]) {
-        acc[curr.parent1_code] = {
+      if (!acc[curr.id_reg]) {
+        acc[curr.id_reg] = {
           ...curr,
           count: 1,
           sroki_dolg: curr.duration_label.includes('Долгосрочные') ? 1 : 0,
@@ -375,18 +375,18 @@
         return acc;
       }
   
-      acc[curr.parent1_code].project_price += curr.project_price;
-      acc[curr.parent1_code].work_places += curr.work_places;
-      acc[curr.parent1_code].plan_fot += curr.plan_fot;
-      acc[curr.parent1_code].count += 1;
+      acc[curr.id_reg].project_price += curr.project_price;
+      acc[curr.id_reg].work_places += curr.work_places;
+      acc[curr.id_reg].plan_fot += curr.plan_fot;
+      acc[curr.id_reg].count += 1;
   
-      acc[curr.parent1_code].sroki_dolg += curr.duration_label.includes('Долгосрочные') ? 1 : 0;
-      acc[curr.parent1_code].sroki_sred += curr.duration_label.includes('Среднесрочные') ? 1 : 0;
-      acc[curr.parent1_code].sroki_krat += curr.duration_label.includes('Краткосрочные') ? 1 : 0;
+      acc[curr.id_reg].sroki_dolg += curr.duration_label.includes('Долгосрочные') ? 1 : 0;
+      acc[curr.id_reg].sroki_sred += curr.duration_label.includes('Среднесрочные') ? 1 : 0;
+      acc[curr.id_reg].sroki_krat += curr.duration_label.includes('Краткосрочные') ? 1 : 0;
   
-      acc[curr.parent1_code].risk_otsut += curr.ball_tip_name.includes('Отсутствует') ? 1 : 0;
-      acc[curr.parent1_code].risk_vysok += curr.ball_tip_name.includes('Высокий') ? 1 : 0;
-      acc[curr.parent1_code].risk_sred += curr.ball_tip_name.includes('Средний') ? 1 : 0;
+      acc[curr.id_reg].risk_otsut += curr.ball_tip_name.includes('Отсутствует') ? 1 : 0;
+      acc[curr.id_reg].risk_vysok += curr.ball_tip_name.includes('Высокий') ? 1 : 0;
+      acc[curr.id_reg].risk_sred += curr.ball_tip_name.includes('Средний') ? 1 : 0;
   
       return acc;
     }, {});
@@ -394,8 +394,8 @@
   
   const groupByRaion = computed(() => {
     return a1FilterByProject.value.reduce<Record<string, RegionData>>((acc, curr) => {
-      if (!acc[curr.parent2_code]) {
-        acc[curr.parent2_code] = {
+      if (!acc[curr.id_rai]) {
+        acc[curr.id_rai] = {
           ...curr,
           count: 1,
           sroki_dolg: curr.duration_label.includes('Долгосрочные') ? 1 : 0,
@@ -408,18 +408,18 @@
         return acc;
       }
   
-      acc[curr.parent2_code].project_price += curr.project_price;
-      acc[curr.parent2_code].work_places += curr.work_places;
-      acc[curr.parent2_code].plan_fot += curr.plan_fot;
-      acc[curr.parent2_code].count += 1;
+      acc[curr.id_rai].project_price += curr.project_price;
+      acc[curr.id_rai].work_places += curr.work_places;
+      acc[curr.id_rai].plan_fot += curr.plan_fot;
+      acc[curr.id_rai].count += 1;
   
-      acc[curr.parent2_code].sroki_dolg += curr.duration_label.includes('Долгосрочные') ? 1 : 0;
-      acc[curr.parent2_code].sroki_sred += curr.duration_label.includes('Среднесрочные') ? 1 : 0;
-      acc[curr.parent2_code].sroki_krat += curr.duration_label.includes('Краткосрочные') ? 1 : 0;
+      acc[curr.id_rai].sroki_dolg += curr.duration_label.includes('Долгосрочные') ? 1 : 0;
+      acc[curr.id_rai].sroki_sred += curr.duration_label.includes('Среднесрочные') ? 1 : 0;
+      acc[curr.id_rai].sroki_krat += curr.duration_label.includes('Краткосрочные') ? 1 : 0;
   
-      acc[curr.parent2_code].risk_otsut += curr.ball_tip_name.includes('Отсутствует') ? 1 : 0;
-      acc[curr.parent2_code].risk_vysok += curr.ball_tip_name.includes('Высокий') ? 1 : 0;
-      acc[curr.parent2_code].risk_sred += curr.ball_tip_name.includes('Средний') ? 1 : 0;
+      acc[curr.id_rai].risk_otsut += curr.ball_tip_name.includes('Отсутствует') ? 1 : 0;
+      acc[curr.id_rai].risk_vysok += curr.ball_tip_name.includes('Высокий') ? 1 : 0;
+      acc[curr.id_rai].risk_sred += curr.ball_tip_name.includes('Средний') ? 1 : 0;
   
       return acc;
     }, {});

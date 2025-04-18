@@ -160,11 +160,11 @@
               <div class="flex items-center gap-2">
                 <p>Общая динамика:</p>
                 <p class="font-bold" :style="`color: ${
-                  (groupByRegion[slotProps.data.parent1_code?.toString()]?.totalProc || 0) >= 0 
+                  (groupByRegion[slotProps.data.id_reg?.toString()]?.totalProc || 0) >= 0 
                     ? '#109669' 
                     : '#FE6A35'
                 }`">
-                  {{ (groupByRegion[slotProps.data.parent1_code?.toString()]?.totalProc || 0).toFixed(1) }}%
+                  {{ (groupByRegion[slotProps.data.id_reg?.toString()]?.totalProc || 0).toFixed(1) }}%
                 </p>
               </div>
             </div>
@@ -176,21 +176,21 @@
             :current-raion="currentRaion || undefined"
             :zoom="getCityZoom(currentRegion)"
             :fill-color="(v) => {
-              if (!groupByRaion[v] || groupByRaion[v].parent1_code !== currentRegion) {
+              if (!groupByRaion[v] || groupByRaion[v].id_reg !== currentRegion) {
                 return '#222732'; 
               }
 
               const totalProc = groupByRaion[v].totalProc || 0;
               const sortedRaions = Object.values(groupByRaion)
-                .filter(raion => raion.parent1_code === currentRegion) 
+                .filter(raion => raion.id_reg === currentRegion) 
                 .sort((a, b) => b.totalProc - a.totalProc);
               const index = sortedRaions.findIndex(raion => raion === groupByRaion[v]);
 
-              if (currentRegion === 710000000 || 
-                  currentRegion === 750000000 || 
-                  currentRegion === 790000000 ||
-                  currentRegion === 620000000 ||
-                  currentRegion === 470000000) {
+              if (currentRegion === 71 || 
+                  currentRegion === 75 || 
+                  currentRegion === 79 ||
+                  currentRegion === 62 ||
+                  currentRegion === 47) {
                 if (index < 2) {
                   return getColorFromGradient(100);
                 } else if (index >= sortedRaions.length - 2) {
@@ -219,11 +219,11 @@
               <div class="flex items-center gap-2">
                 <p>Общая динамика:</p>
                 <p class="font-bold" :style="`color: ${
-                  (groupByRaion[slotProps.data.parent2_code?.toString()]?.totalProc || 0) >= 0 
+                  (groupByRaion[slotProps.data.id_rai?.toString()]?.totalProc || 0) >= 0 
                     ? '#109669' 
                     : '#FE6A35'
                 }`">
-                  {{ (groupByRaion[slotProps.data.parent2_code?.toString()]?.totalProc || 0).toFixed(1) }}%
+                  {{ (groupByRaion[slotProps.data.id_rai?.toString()]?.totalProc || 0).toFixed(1) }}%
                 </p>
               </div>
             </div>
@@ -327,11 +327,11 @@
               <div class="flex items-center gap-2">
                 <p>Процент качественных рабочих мест:</p>
                 <p class="font-bold" :style="`color: ${
-                  (groupByRegionF6[slotProps.data.parent1_code?.toString()]?.totalProc || 0) >= 0 
+                  (groupByRegionF6[slotProps.data.id_reg?.toString()]?.totalProc || 0) >= 0 
                     ? QUALITY_COLOR_F6 
                     : '#FE6A35'
                 }`">
-                  {{ ((groupByRegionF6[slotProps.data.parent1_code?.toString()]?.totalProc || 0) + 50).toFixed(1) }}%
+                  {{ ((groupByRegionF6[slotProps.data.id_reg?.toString()]?.totalProc || 0) + 50).toFixed(1) }}%
                 </p>
               </div>
             </div>
@@ -343,21 +343,21 @@
             :current-raion="currentRaionF6 ? Number(currentRaionF6) : undefined"
             :zoom="currentRegionF6 ? getCityZoomF6(currentRegionF6) : 7"
             :fill-color="(v) => {
-              if (!groupByRaionF6[v] || groupByRaionF6[v].parent1_code !== Number(currentRegionF6)) {
+              if (!groupByRaionF6[v] || groupByRaionF6[v].id_reg !== Number(currentRegionF6)) {
                 return '#222732'; 
               }
 
               const totalProc = groupByRaionF6[v].totalProc || 0;
               const sortedRaions = Object.values(groupByRaionF6)
-                .filter(raion => raion.parent1_code === Number(currentRegionF6)) 
+                .filter(raion => raion.id_reg === Number(currentRegionF6)) 
                 .sort((a, b) => b.totalProc - a.totalProc);
               const index = sortedRaions.findIndex(raion => raion === groupByRaionF6[v]);
 
-              if (Number(currentRegionF6) === 710000000 || 
-                  Number(currentRegionF6) === 750000000 || 
-                  Number(currentRegionF6) === 790000000 ||
-                  Number(currentRegionF6) === 620000000 ||
-                  Number(currentRegionF6) === 470000000) {
+              if (Number(currentRegionF6) === 71 || 
+                  Number(currentRegionF6) === 75 || 
+                  Number(currentRegionF6) === 79 ||
+                  Number(currentRegionF6) === 62 ||
+                  Number(currentRegionF6) === 47) {
                 if (index < 2) {
                   return getColorFromGradient(100);
                 } else if (index >= sortedRaions.length - 2) {
@@ -386,11 +386,11 @@
               <div class="flex items-center gap-2">
                 <p>Процент качественных рабочих мест:</p>
                 <p class="font-bold" :style="`color: ${
-                  (groupByRaionF6[slotProps.data.parent2_code?.toString()]?.totalProc || 0) >= 0 
+                  (groupByRaionF6[slotProps.data.id_rai?.toString()]?.totalProc || 0) >= 0 
                     ? QUALITY_COLOR_F6 
                     : '#FE6A35'
                 }`">
-                  {{ ((groupByRaionF6[slotProps.data.parent2_code?.toString()]?.totalProc || 0) + 50).toFixed(1) }}%
+                  {{ ((groupByRaionF6[slotProps.data.id_rai?.toString()]?.totalProc || 0) + 50).toFixed(1) }}%
                 </p>
               </div>
             </div>
@@ -437,8 +437,8 @@ interface F2Data {
   proc: number;
   prognoz: number;
   region: string | null;
-  parent1_code: string | null;
-  parent2_code: string | null;
+  id_reg: string | null;
+  id_rai: string | null;
 }
 const tab = ref(0);
 const currentRegion = ref<number | null>(null);
@@ -460,9 +460,9 @@ const getCityZoom = (regionCode: number | null): number => {
   if (regionCode === null) return 7;
   
   if (
-    regionCode === 710000000 || 
-    regionCode === 750000000 || 
-    regionCode === 790000000    
+    regionCode === 71 || 
+    regionCode === 75 || 
+    regionCode === 79    
   ) {
     return 10; 
   }
@@ -473,7 +473,7 @@ const getCityZoom = (regionCode: number | null): number => {
 const list = computed(() => {
   const filtered = props.data.filter((item) => {
     if (currentRaion.value) {
-      return item.tip === 3 && item.parent2_code === currentRaion.value;
+      return item.tip === 3 && item.id_rai === currentRaion.value;
     }
     return currentRegion.value ? item.tip === 2 : item.tip === 1;
   });
@@ -482,7 +482,7 @@ const list = computed(() => {
     if (!currentRegion.value) return true;
 
     const currentRegionNumber = parseInt(currentRegion.value.toString());
-    const itemRegionNumber = parseInt(item.parent1_code || "0");
+    const itemRegionNumber = parseInt(item.id_reg || "0");
     const matches = itemRegionNumber === currentRegionNumber;
 
     return matches;
@@ -543,7 +543,7 @@ const groupByRegion = computed(() => {
   const result = props.data
     .filter((item) => item.tip === 2 && !EXCLUDED_OKED_CATEGORIES.includes(item.vname_oked))
     .reduce((acc, curr) => {
-      const regionCode = curr.parent1_code?.toString() || "";
+      const regionCode = curr.id_reg?.toString() || "";
       const regionNumber = parseInt(regionCode);
       
       
@@ -568,7 +568,7 @@ const groupByRaion = computed(() => {
   const result = props.data
     .filter((item) => item.tip === 3 && !EXCLUDED_OKED_CATEGORIES.includes(item.vname_oked))
     .reduce((acc, curr) => {
-      const raionCode = curr.parent2_code?.toString() || "";
+      const raionCode = curr.id_rai?.toString() || "";
       const raionNumber = parseInt(raionCode);
       
       if (!acc[raionNumber]) {
@@ -607,8 +607,8 @@ interface F6DataF6 {
   cnt: number;
   cnt_quality: number;
   cnt_not_quality: number;
-  parent1_code: number | string | null;
-  parent2_code: number | string | null;
+  id_reg: number | string | null;
+  id_rai: number | string | null;
 }
 
 const currentRegionF6 = ref<number | null>(null);
@@ -621,9 +621,9 @@ const getCityZoomF6 = (regionCode: string | null): number => {
   
   const regionNumber = Number(regionCode);
   if (
-    regionNumber === 710000000 || 
-    regionNumber === 750000000 || 
-    regionNumber === 790000000
+    regionNumber === 71 || 
+    regionNumber === 75 || 
+    regionNumber === 79
   ) {
     return 10; 
   }
@@ -694,20 +694,20 @@ const filteredDataF6 = computed(() => {
 
   if (currentRaionF6.value) {
     filtered1 = filtered1.filter(item => {
-      const matchCode = safeCompareF6(item.parent2_code, currentRaionF6.value);
+      const matchCode = safeCompareF6(item.id_rai, currentRaionF6.value);
       return (item.tp === 4) && matchCode;
     });
     filtered2 = filtered2.filter(item => {
-      const matchCode = safeCompareF6(item.parent2_code, currentRaionF6.value);
+      const matchCode = safeCompareF6(item.id_rai, currentRaionF6.value);
       return (item.tp === 4) && matchCode;
     });
   } else if (currentRegionF6.value) {
     filtered1 = filtered1.filter(item => {
-      const matchCode = safeCompareF6(item.parent1_code, currentRegionF6.value);
+      const matchCode = safeCompareF6(item.id_reg, currentRegionF6.value);
       return (item.tp === 3 || item.tp === 1) && matchCode;
     });
     filtered2 = filtered2.filter(item => {
-      const matchCode = safeCompareF6(item.parent1_code, currentRegionF6.value);
+      const matchCode = safeCompareF6(item.id_reg, currentRegionF6.value);
       return (item.tp === 3 || item.tp === 1) && matchCode;
     });
   } else {
@@ -762,7 +762,7 @@ const groupByRegionF6 = computed(() => {
   const result = props.dataF6
     .filter(item => item.tp === 3 && !EXCLUDED_OKED_CATEGORIES_F6.includes(item.vname_oked))
     .reduce((acc, curr) => {
-      const regionCode = curr.parent1_code?.toString() || "";
+      const regionCode = curr.id_reg?.toString() || "";
       
       if (!acc[regionCode]) {
         const qualityPercent = curr.cnt > 0 
@@ -796,8 +796,8 @@ const groupByRaionF6 = computed(() => {
   const result = props.dataF6
     .filter(item => item.tp === 4 && !EXCLUDED_OKED_CATEGORIES_F6.includes(item.vname_oked))
     .reduce((acc, curr) => {
-      const raionCode = curr.parent2_code?.toString() || "";
-      const parent1Code = curr.parent1_code ? Number(curr.parent1_code) : null;
+      const raionCode = curr.id_rai?.toString() || "";
+      const parent1Code = curr.id_reg ? Number(curr.id_reg) : null;
       
       if (!acc[raionCode]) {
         const qualityPercent = curr.cnt > 0 
@@ -806,7 +806,7 @@ const groupByRaionF6 = computed(() => {
           
         acc[raionCode] = { 
           ...curr,
-          parent1_code: parent1Code,
+          id_reg: parent1Code,
           totalProc: qualityPercent
         };
         return acc;
@@ -823,7 +823,7 @@ const groupByRaionF6 = computed(() => {
         : 0;
       
       return acc;
-    }, {} as Record<string, F6DataF6 & { parent1_code: number | null, totalProc: number }>);
+    }, {} as Record<string, F6DataF6 & { id_reg: number | null, totalProc: number }>);
 
   return result;
 });
@@ -855,7 +855,7 @@ const selectedRegionNameF6 = computed(() => {
   if (!currentRegionF6.value) return '';
   
   const regionData = props.dataF6.find(item => 
-    (item.tp === 3 || item.tp === 1) && safeCompareF6(item.parent1_code, currentRegionF6.value) && item.reg_ru
+    (item.tp === 3 || item.tp === 1) && safeCompareF6(item.id_reg, currentRegionF6.value) && item.reg_ru
   );
   
   return regionData?.reg_ru || '';
@@ -865,7 +865,7 @@ const selectedRaionNameF6 = computed(() => {
   if (!currentRaionF6.value) return '';
   
   const raionData = props.dataF6.find(item => 
-    item.tp === 4 && safeCompareF6(item.parent2_code, currentRaionF6.value) && item.rai_ru
+    item.tp === 4 && safeCompareF6(item.id_rai, currentRaionF6.value) && item.rai_ru
   );
   
   return raionData?.rai_ru || '';
@@ -897,12 +897,12 @@ const chartOptionsF6 = computed(() => {
     let filtered = dataSource;
     if (currentRaionF6.value) {
       filtered = filtered.filter(item => {
-        const matchCode = safeCompareF6(item.parent2_code, currentRaionF6.value);
+        const matchCode = safeCompareF6(item.id_rai, currentRaionF6.value);
         return (item.tp === 4) && matchCode;
       });
     } else if (currentRegionF6.value) {
       filtered = filtered.filter(item => {
-        const matchCode = safeCompareF6(item.parent1_code, currentRegionF6.value);
+        const matchCode = safeCompareF6(item.id_reg, currentRegionF6.value);
         return (item.tp === 3 || item.tp === 1) && matchCode;
       });
     } else {
@@ -1251,7 +1251,7 @@ const chartOptionsF6 = computed(() => {
 });
 
 const isMapActiveF6 = computed(() => {
-  return props.dataF6.some(item => item.parent1_code || item.parent2_code);
+  return props.dataF6.some(item => item.id_reg || item.id_rai);
 });
 
 const hasChartDataF6 = computed(() => {
@@ -1264,12 +1264,12 @@ const singleYearData = computed(() => {
   let filtered = dataSource;
   if (currentRaionF6.value) {
     filtered = filtered.filter(item => {
-      const matchCode = safeCompareF6(item.parent2_code, currentRaionF6.value);
+      const matchCode = safeCompareF6(item.id_rai, currentRaionF6.value);
       return (item.tp === 4) && matchCode;
     });
   } else if (currentRegionF6.value) {
     filtered = filtered.filter(item => {
-      const matchCode = safeCompareF6(item.parent1_code, currentRegionF6.value);
+      const matchCode = safeCompareF6(item.id_reg, currentRegionF6.value);
       return (item.tp === 3 || item.tp === 1) && matchCode;
     });
   } else {

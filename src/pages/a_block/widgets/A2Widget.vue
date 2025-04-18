@@ -84,34 +84,34 @@
         <template v-if="currentTypeKey === 'percentage_risk_region'">
           <div class="flex">
             <p>Отсутствует: </p>
-            <p class="font-bold">{{ Numeral(groupByRegion[slotProps.data.parent1_code]?.risk_otsut) }}</p>
+            <p class="font-bold">{{ Numeral(groupByRegion[slotProps.data.id_reg]?.risk_otsut) }}</p>
           </div>
           <div class="flex">
             <p>Высокий: </p>
-            <p class="font-bold">{{ Numeral(groupByRegion[slotProps.data.parent1_code]?.risk_vysok) }}</p>
+            <p class="font-bold">{{ Numeral(groupByRegion[slotProps.data.id_reg]?.risk_vysok) }}</p>
           </div>
           <div class="flex">
             <p>Средний: </p>
-            <p class="font-bold">{{ Numeral(groupByRegion[slotProps.data.parent1_code]?.risk_sred) }}</p>
+            <p class="font-bold">{{ Numeral(groupByRegion[slotProps.data.id_reg]?.risk_sred) }}</p>
           </div>
         </template>
         <template v-else-if="currentTypeKey === 'project_duration'">
           <div class="flex">
             <p>Краткосрочные (0-5 лет): </p>
-            <p class="font-bold">{{ Numeral(groupByRegion[slotProps.data.parent1_code]?.sroki_dolg) }}</p>
+            <p class="font-bold">{{ Numeral(groupByRegion[slotProps.data.id_reg]?.sroki_dolg) }}</p>
           </div>
           <div class="flex">
             <p>Среднесрочные (6-10 лет): </p>
-            <p class="font-bold">{{ Numeral(groupByRegion[slotProps.data.parent1_code]?.sroki_sred) }}</p>
+            <p class="font-bold">{{ Numeral(groupByRegion[slotProps.data.id_reg]?.sroki_sred) }}</p>
           </div>
           <div class="flex">
             <p>Долгосрочные (11-20 лет): </p>
-            <p class="font-bold">{{ Numeral(groupByRegion[slotProps.data.parent1_code]?.sroki_krat) }}</p>
+            <p class="font-bold">{{ Numeral(groupByRegion[slotProps.data.id_reg]?.sroki_krat) }}</p>
           </div>
         </template>
         <div class="flex" v-else>
           <p>{{listLabels.find((item) => item.key === currentTypeKey)?.name}}: </p>
-          <p class="font-bold">{{ Numeral(groupByRegion[slotProps.data.parent1_code]?.[currentTypeKey]) }}</p>
+          <p class="font-bold">{{ Numeral(groupByRegion[slotProps.data.id_reg]?.[currentTypeKey]) }}</p>
         </div>
       </BaseMap>
 
@@ -142,34 +142,34 @@
         <template v-if="currentTypeKey === 'percentage_risk_region'">
           <div class="flex">
             <p>Отсутствует: </p>
-            <p class="font-bold">{{ Numeral(groupByRaion[slotProps.data.parent2_code]?.risk_otsut) }}</p>
+            <p class="font-bold">{{ Numeral(groupByRaion[slotProps.data.id_rai]?.risk_otsut) }}</p>
           </div>
           <div class="flex">
             <p>Высокий: </p>
-            <p class="font-bold">{{ Numeral(groupByRaion[slotProps.data.parent2_code]?.risk_vysok) }}</p>
+            <p class="font-bold">{{ Numeral(groupByRaion[slotProps.data.id_rai]?.risk_vysok) }}</p>
           </div>
           <div class="flex">
             <p>Средний: </p>
-            <p class="font-bold">{{ Numeral(groupByRaion[slotProps.data.parent2_code]?.risk_sred) }}</p>
+            <p class="font-bold">{{ Numeral(groupByRaion[slotProps.data.id_rai]?.risk_sred) }}</p>
           </div>
         </template>
         <template v-else-if="currentTypeKey === 'project_duration'">
           <div class="flex">
             <p>Краткосрочные (0-5 лет): </p>
-            <p class="font-bold">{{ Numeral(groupByRaion[slotProps.data.parent2_code]?.sroki_dolg) }}</p>
+            <p class="font-bold">{{ Numeral(groupByRaion[slotProps.data.id_rai]?.sroki_dolg) }}</p>
           </div>
           <div class="flex">
             <p>Среднесрочные (6-10 лет): </p>
-            <p class="font-bold">{{ Numeral(groupByRaion[slotProps.data.parent2_code]?.sroki_sred) }}</p>
+            <p class="font-bold">{{ Numeral(groupByRaion[slotProps.data.id_rai]?.sroki_sred) }}</p>
           </div>
           <div class="flex">
             <p>Долгосрочные (11-20 лет): </p>
-            <p class="font-bold">{{ Numeral(groupByRaion[slotProps.data.parent2_code]?.sroki_krat) }}</p>
+            <p class="font-bold">{{ Numeral(groupByRaion[slotProps.data.id_rai]?.sroki_krat) }}</p>
           </div>
         </template>
         <div class="flex" v-else>
           <p>{{listLabels.find((item) => item.key === currentTypeKey)?.name}}: </p>
-          <p class="font-bold">{{ Numeral(groupByRaion[slotProps.data.parent2_code]?.[currentTypeKey]) }}</p>
+          <p class="font-bold">{{ Numeral(groupByRaion[slotProps.data.id_rai]?.[currentTypeKey]) }}</p>
         </div>
       </BaseMapRegion>
     </div>
@@ -257,8 +257,8 @@ const clickPolygon = (code: string) => {
 }
 
 interface RegionData {
-  parent1_code: number;
-  parent2_code: number;
+  id_reg: number;
+  id_rai: number;
   region: string;
   raion: string;
   project_price: number;
@@ -274,10 +274,10 @@ interface RegionData {
 }
 
 const groupByRegion = computed<Record<number, RegionData>>(() => a1FilterByProject.value
-  .filter(project => project.parent1_code && project.parent1_code !== 0)
+  .filter(project => project.id_reg && project.id_reg !== 0)
   .reduce((acc, curr) => {
-    if (!acc[curr.parent1_code]) {
-      acc[curr.parent1_code] = {
+    if (!acc[curr.id_reg]) {
+      acc[curr.id_reg] = {
         ...curr,
         count: 1,
         sroki_dolg: curr.duration_label.includes('Долгосрочные') ? 1 : 0,
@@ -290,28 +290,28 @@ const groupByRegion = computed<Record<number, RegionData>>(() => a1FilterByProje
       return acc;
     }
 
-    acc[curr.parent1_code].project_price += curr.project_price;
-    acc[curr.parent1_code].work_places += curr.work_places;
-    acc[curr.parent1_code].plan_fot += curr.plan_fot;
-    acc[curr.parent1_code].count += 1;
+    acc[curr.id_reg].project_price += curr.project_price;
+    acc[curr.id_reg].work_places += curr.work_places;
+    acc[curr.id_reg].plan_fot += curr.plan_fot;
+    acc[curr.id_reg].count += 1;
 
-    acc[curr.parent1_code].sroki_dolg += curr.duration_label.includes('Долгосрочные') ? 1 : 0;
-    acc[curr.parent1_code].sroki_sred += curr.duration_label.includes('Среднесрочные') ? 1 : 0;
-    acc[curr.parent1_code].sroki_krat += curr.duration_label.includes('Краткосрочные') ? 1 : 0;
+    acc[curr.id_reg].sroki_dolg += curr.duration_label.includes('Долгосрочные') ? 1 : 0;
+    acc[curr.id_reg].sroki_sred += curr.duration_label.includes('Среднесрочные') ? 1 : 0;
+    acc[curr.id_reg].sroki_krat += curr.duration_label.includes('Краткосрочные') ? 1 : 0;
 
-    acc[curr.parent1_code].risk_otsut += curr.ball_tip_name.includes('Отсутствует') ? 1 : 0;
-    acc[curr.parent1_code].risk_vysok += curr.ball_tip_name.includes('Высокий') ? 1 : 0;
-    acc[curr.parent1_code].risk_sred += curr.ball_tip_name.includes('Средний') ? 1 : 0;
+    acc[curr.id_reg].risk_otsut += curr.ball_tip_name.includes('Отсутствует') ? 1 : 0;
+    acc[curr.id_reg].risk_vysok += curr.ball_tip_name.includes('Высокий') ? 1 : 0;
+    acc[curr.id_reg].risk_sred += curr.ball_tip_name.includes('Средний') ? 1 : 0;
 
     return acc;
   }, {} as Record<number, RegionData>));
 
 const groupByRaion = computed<Record<number, RegionData>>(() => a1FilterByProject.value
 
-  .filter(project => project.parent2_code && project.parent2_code !== 0)
+  .filter(project => project.id_rai && project.id_rai !== 0)
   .reduce((acc, curr) => {
-    if (!acc[curr.parent2_code]) {
-      acc[curr.parent2_code] = {
+    if (!acc[curr.id_rai]) {
+      acc[curr.id_rai] = {
         ...curr,
         count: 1,
         sroki_dolg: curr.duration_label.includes('Долгосрочные') ? 1 : 0,
@@ -324,18 +324,18 @@ const groupByRaion = computed<Record<number, RegionData>>(() => a1FilterByProjec
       return acc;
     }
 
-    acc[curr.parent2_code].project_price += curr.project_price;
-    acc[curr.parent2_code].work_places += curr.work_places;
-    acc[curr.parent2_code].plan_fot += curr.plan_fot;
-    acc[curr.parent2_code].count += 1;
+    acc[curr.id_rai].project_price += curr.project_price;
+    acc[curr.id_rai].work_places += curr.work_places;
+    acc[curr.id_rai].plan_fot += curr.plan_fot;
+    acc[curr.id_rai].count += 1;
 
-    acc[curr.parent2_code].sroki_dolg += curr.duration_label.includes('Долгосрочные') ? 1 : 0;
-    acc[curr.parent2_code].sroki_sred += curr.duration_label.includes('Среднесрочные') ? 1 : 0;
-    acc[curr.parent2_code].sroki_krat += curr.duration_label.includes('Краткосрочные') ? 1 : 0;
+    acc[curr.id_rai].sroki_dolg += curr.duration_label.includes('Долгосрочные') ? 1 : 0;
+    acc[curr.id_rai].sroki_sred += curr.duration_label.includes('Среднесрочные') ? 1 : 0;
+    acc[curr.id_rai].sroki_krat += curr.duration_label.includes('Краткосрочные') ? 1 : 0;
 
-    acc[curr.parent2_code].risk_otsut += curr.ball_tip_name.includes('Отсутствует') ? 1 : 0;
-    acc[curr.parent2_code].risk_vysok += curr.ball_tip_name.includes('Высокий') ? 1 : 0;
-    acc[curr.parent2_code].risk_sred += curr.ball_tip_name.includes('Средний') ? 1 : 0;
+    acc[curr.id_rai].risk_otsut += curr.ball_tip_name.includes('Отсутствует') ? 1 : 0;
+    acc[curr.id_rai].risk_vysok += curr.ball_tip_name.includes('Высокий') ? 1 : 0;
+    acc[curr.id_rai].risk_sred += curr.ball_tip_name.includes('Средний') ? 1 : 0;
 
     return acc;
   }, {} as Record<number, RegionData>))
@@ -345,9 +345,9 @@ const getRegionZoom = (regionCode: number | null): number => {
   
   // Города республиканского значения имеют больший зум
   if (
-    regionCode === 710000000 || // Алматы
-    regionCode === 750000000 || // Астана
-    regionCode === 790000000    // Шымкент
+    regionCode === 71 || // Алматы
+    regionCode === 75 || // Астана
+    regionCode === 79    // Шымкент
   ) {
     return 10; 
   }
@@ -357,11 +357,11 @@ const getRegionZoom = (regionCode: number | null): number => {
 
 const selectedLocation = computed(() => {
   if (currentRaion.value) {
-    const raion = Object.values(groupByRaion.value).find((r: RegionData) => r.parent2_code === currentRaion.value);
+    const raion = Object.values(groupByRaion.value).find((r: RegionData) => r.id_rai === currentRaion.value);
     return raion ? `${raion.region}, ${raion.raion}` : 'Казахстан';
   }
   if (currentRegion.value) {
-    const region = Object.values(groupByRegion.value).find((r: RegionData) => r.parent1_code === currentRegion.value);
+    const region = Object.values(groupByRegion.value).find((r: RegionData) => r.id_reg === currentRegion.value);
     return region ? `${region.region}` : 'Казахстан';
   }
   return 'Казахстан';

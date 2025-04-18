@@ -1,10 +1,10 @@
 <template>
   <l-map ref="mapRef" :zoom="zoom ?? 5" :max-zoom="5" :min-zoom="4" :center="mapCenter" :options="mapOptions"
     class="w-full" :use-global-leaflet="false">
-    <l-polygon v-for="feature in polygonFeatures" :key="(feature as any).parent1_code"
-      @click="handlePolygonClick((feature as any).properties.parent1_code)"
+    <l-polygon v-for="feature in polygonFeatures" :key="(feature as any).id_reg"
+      @click="handlePolygonClick((feature as any).properties.id_reg)"
       :lat-lngs="reverseCoordinates((feature as any).geometry.coordinates as [number, number][][])"
-      v-bind="polygonStyles((feature as any).properties.parent1_code)">
+      v-bind="polygonStyles((feature as any).properties.id_reg)">
       <l-tooltip class="p-0 bg-transparent rounded-md">
         <slot :data="(feature as any).properties" />
       </l-tooltip>

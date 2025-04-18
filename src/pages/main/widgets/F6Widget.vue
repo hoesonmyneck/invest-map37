@@ -48,8 +48,8 @@ interface F6Data {
   cnt: number;
   cnt_quality: number;
   cnt_not_quality: number;
-  parent1_code: string | null;
-  parent2_code: string | null;
+  id_reg: string | null;
+  id_rai: string | null;
 }
 
 const loader = ref(true);

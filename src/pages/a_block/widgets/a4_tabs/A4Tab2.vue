@@ -54,7 +54,7 @@
                         <td class="map-cell">
                             <div class="w-full h-full flex items-center justify-center rounded bg-[#252A36] cursor-pointer">
                                 <img src="/images/icons/map.png" alt="" class="w-[16px]" v-if="!!item.coordinates"
-                                    @click="aStore.setCurrentProject(item.id), aStore.setCurrentRegion(item.parent1_code), aStore.setCurrentRaion(item.parent2_code), aStore.setCurrentOtrasl(item.otrasl)">
+                                    @click="aStore.setCurrentProject(item.id), aStore.setCurrentRegion(item.id_reg), aStore.setCurrentRaion(item.id_rai), aStore.setCurrentOtrasl(item.otrasl)">
                             </div>
                         </td>
                         <td class="name-cell">

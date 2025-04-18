@@ -15,16 +15,16 @@ export const useProgramStore = defineStore("program", {
     getters: {
         serpinFilter(): any[] {
             if(!this.serpin) return [];
-            return this.serpin.filter((item) => (this.currentYear === 'Все' ? true : +item.year_contract === +this.currentYear) && (!this.currentRegion || item.parent1_code === this.currentRegion) && (!this.currentRaion || item.parent2_code === this.currentRaion));
+            return this.serpin.filter((item) => (this.currentYear === 'Все' ? true : +item.year_contract === +this.currentYear) && (!this.currentRegion || item.id_reg === this.currentRegion) && (!this.currentRaion || item.id_rai === this.currentRaion));
         },
         aulAmanatiFilter(): any[] {
-            return this.aulAmanati.filter((item) => (this.currentYear === 'Все' ? true : +item.year_contract === +this.currentYear) && (!this.currentRegion || item.parent1_code === this.currentRegion) && (!this.currentRaion || item.parent2_code === this.currentRaion));
+            return this.aulAmanati.filter((item) => (this.currentYear === 'Все' ? true : +item.year_contract === +this.currentYear) && (!this.currentRegion || item.id_reg === this.currentRegion) && (!this.currentRaion || item.id_rai === this.currentRaion));
         },
         diplommenAulgaFilter(): any[] {
-            return this.diplommenAulga.filter((item) => (this.currentYear === 'Все' ? true : +item.year_contract === +this.currentYear) && (!this.currentRegion || item.parent1_code === this.currentRegion) && (!this.currentRaion || item.parent2_code === this.currentRaion));
+            return this.diplommenAulga.filter((item) => (this.currentYear === 'Все' ? true : +item.year_contract === +this.currentYear) && (!this.currentRegion || item.id_reg === this.currentRegion) && (!this.currentRaion || item.id_rai === this.currentRaion));
         },
         aulBesigiFilter(): any[] {
-            return this.aulBesigi.filter((item) => (this.currentYear === 'Все' ? true : +item.start_date === +this.currentYear) && (!this.currentRegion || item.parent1_code === this.currentRegion) && (!this.currentRaion || item.parent2_code === this.currentRaion));
+            return this.aulBesigi.filter((item) => (this.currentYear === 'Все' ? true : +item.start_date === +this.currentYear) && (!this.currentRegion || item.id_reg === this.currentRegion) && (!this.currentRaion || item.id_rai === this.currentRaion));
         },
     },
     actions: {

@@ -15,7 +15,7 @@ export const useAStore = defineStore("a", {
     }), 
     getters: {
         a1Filter(): any[] {
-            return this.a1.filter((item) =>  (!this.currentLabel || +item.label === this.currentLabel) && (!this.currentRegion || +item.parent1_code === +this.currentRegion) && (!this.currentRaion || item.parent2_code === this.currentRaion));
+            return this.a1.filter((item) =>  (!this.currentLabel || +item.label === this.currentLabel) && (!this.currentRegion || +item.id_reg === +this.currentRegion) && (!this.currentRaion || item.id_rai === this.currentRaion));
         },
         a1FilterByOtrasl(): any[] {
             return this.a1Filter.filter((item) =>  (!this.currentOtrasl || item.otrasl === this.currentOtrasl));
@@ -24,7 +24,7 @@ export const useAStore = defineStore("a", {
             return this.a1FilterByOtrasl.filter((item) =>  (!this.currentProject || item.id === this.currentProject));
         },
         a1YearFilter(): any[] {
-            return this.a1Year.filter((item) => +item.year > 2019 && (!this.currentProject || item.id === this.currentProject) && (!this.currentOtrasl || item.otrasl === this.currentOtrasl) && (!this.currentLabel || +item.label === this.currentLabel) && (!this.currentRegion || item.parent1_code === this.currentRegion) && (!this.currentRaion || item.parent2_code === this.currentRaion));
+            return this.a1Year.filter((item) => +item.year > 2019 && (!this.currentProject || item.id === this.currentProject) && (!this.currentOtrasl || item.otrasl === this.currentOtrasl) && (!this.currentLabel || +item.label === this.currentLabel) && (!this.currentRegion || item.id_reg === this.currentRegion) && (!this.currentRaion || item.id_rai === this.currentRaion));
         },
         currentProjectPopup(): any | undefined {
             return this.popup?.find(e => e.id === this.currentProject);

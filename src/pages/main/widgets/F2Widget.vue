@@ -45,8 +45,8 @@ interface F2Data {
   proc: number;
   prognoz: number;
   region: string | null;
-  parent1_code: string | null;
-  parent2_code: string | null;
+  id_reg: string | null;
+  id_rai: string | null;
 }
 
 interface F6Data {
@@ -60,8 +60,8 @@ interface F6Data {
   cnt: number;
   cnt_quality: number;
   cnt_not_quality: number;
-  parent1_code: number | string | null;
-  parent2_code: number | string | null;
+  id_reg: number | string | null;
+  id_rai: number | string | null;
 }
 
 interface F2_2023_Data {
@@ -105,8 +105,8 @@ async function loadF2() {
       cnt: item.CNT,
       cnt_quality: item.CNT_QUALITY,
       cnt_not_quality: item.CNT - item.CNT_QUALITY,
-      parent1_code: item.REGID ? Number(item.REGID) : null,
-      parent2_code: item.IDRAI ? Number(item.IDRAI) : null
+      id_reg: item.REGID ? Number(item.REGID) : null,
+      id_rai: item.IDRAI ? Number(item.IDRAI) : null
     }));
   } catch (error) {
     console.error("Ошибка загрузки данных:", error);
@@ -267,7 +267,7 @@ const list = computed(() =>
     data.value
       .filter((item) => item.tip === 1)
       .filter((item) =>
-        !!currentRegion.value ? item.parent1_code === currentRegion.value : true
+        !!currentRegion.value ? item.id_reg === currentRegion.value : true
       )
       .filter((item) => item.vname_oked !== "Окэд не указан")
       .reduce((acc, curr) => {
@@ -288,15 +288,15 @@ const groupByRegion = computed(() =>
   data.value
     .filter((item) => item.tip === 1)
     .filter((item) =>
-      !!currentRegion.value ? item.parent1_code === currentRegion.value : true
+      !!currentRegion.value ? item.id_reg === currentRegion.value : true
     )
     .reduce((acc, curr) => {
-      if (!acc[curr.parent1_code || '']) {
-        acc[curr.parent1_code || ''] = { ...curr };
+      if (!acc[curr.id_reg || '']) {
+        acc[curr.id_reg || ''] = { ...curr };
         return acc;
       }
 
-      acc[curr.parent1_code || ''].cnt_2024 += curr.cnt_2024;
+      acc[curr.id_reg || ''].cnt_2024 += curr.cnt_2024;
       return acc;
     }, {} as Record<string, F2Data>)
 );

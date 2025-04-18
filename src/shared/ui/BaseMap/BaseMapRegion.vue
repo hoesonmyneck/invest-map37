@@ -1,11 +1,11 @@
 <template>
   <l-map :zoom="zoom ?? 6" :max-zoom="10" :min-zoom="5" :center="mapCenter" :options="mapOptions" class="w-full"
     :use-global-leaflet="false">
-    <template v-for="feature in polygonFeatures" :key="(feature as any).parent2_code + Math.random()">
-      <l-polygon @click="handlePolygonClick((feature as any).properties.parent2_code)"
-        v-if="!currentRegion ? true : +currentRegion === +(feature as any).properties.parent1_code"
+    <template v-for="feature in polygonFeatures" :key="(feature as any).id_rai + Math.random()">
+      <l-polygon @click="handlePolygonClick((feature as any).properties.id_rai)"
+        v-if="!currentRegion ? true : +currentRegion === +(feature as any).properties.id_reg"
         :lat-lngs="reverseCoordinates((feature as any).geometry.coordinates as [number, number][][])"
-        v-bind="polygonStyles(+(feature as any).properties.parent2_code)">
+        v-bind="polygonStyles(+(feature as any).properties.id_rai)">
         <l-tooltip class="p-0 bg-transparent rounded-md">
           <slot :data="(feature as any).properties" />
         </l-tooltip>
@@ -47,7 +47,7 @@ const MAP_CENTER = () => {
   try {
     if (props.currentRegion === undefined) return DEFAULT_MAP_CENTER;
     
-    const centroid = regionStore.regionCenteroid?.find((item) => +item.parent1_code === +props.currentRegion)?.centroid;
+    const centroid = regionStore.regionCenteroid?.find((item) => +item.id_reg === +props.currentRegion)?.centroid;
     if (!centroid || !Array.isArray(centroid) || centroid.length < 2) {
       console.warn(`Не найден центроид для региона ${props.currentRegion}, используем запасной центр`);
       return DEFAULT_MAP_CENTER;
