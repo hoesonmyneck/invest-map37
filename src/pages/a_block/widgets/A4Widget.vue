@@ -61,7 +61,7 @@
                     </a-button>
                 </div>
 
-                <div class="h-[calc(100vh-150px)] overflow-hidden">
+                <div class="h-[calc(100vh-150px)] overflow-auto">
                     <div>
                         <div v-show="modalTab === 0">
                             <A4Tab1 :isModal="true" ref="modalTab1Component" />
