@@ -234,7 +234,7 @@ const totalRegionsCount = computed(() => {
 });
 
 const SumValues = computed(() => ({
-  count: totalRegionsCount.value,
+  count: a1FilterByProject.value.length,
   project_price: project_price.value,
   work_places: work_places.value,
   plan_fot: plan_fot.value,
@@ -243,7 +243,7 @@ const SumValues = computed(() => ({
 }))
 
 const listLabels = computed(() => [
-  { name: 'Инвестпроекты', icon: '/img/m1-4.png', percent: 0, key: 'count', value: totalRegionsCount.value },
+  { name: 'Инвестпроекты', icon: '/img/m1-4.png', percent: 0, key: 'count', value: a1FilterByProject.value.length },
   { name: 'Инвестиции', icon: '/img/m1-4.png', percent: 0, key: 'project_price', value: project_price.value },
   { name: 'Рабочие места', icon: '/img/m1-2.png', percent: 0, key: 'work_places', value: work_places.value },
   { name: 'ФОТ', icon: '/img/m2-1.png', percent: 0, key: 'plan_fot', value: plan_fot.value },
