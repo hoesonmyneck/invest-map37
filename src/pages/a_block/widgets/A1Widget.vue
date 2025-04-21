@@ -35,6 +35,21 @@
             <p class="px-4 py-2 hover:bg-gray-700 cursor-pointer transition-colors duration-150" 
                :class="{'bg-gray-700': currentLabel === 2}"
                @click="selectLabel(2)">СГП</p>
+               <p class="px-4 py-2 hover:bg-gray-700 cursor-pointer transition-colors duration-150" 
+               :class="{'bg-gray-700': currentLabel === 6}"
+               @click="selectLabel(6)">МинВод</p>
+               <p class="px-4 py-2 hover:bg-gray-700 cursor-pointer transition-colors duration-150" 
+               :class="{'bg-gray-700': currentLabel === 7}"
+               @click="selectLabel(7)">МинВод (КазВодХоз)</p>
+               <p class="px-4 py-2 hover:bg-gray-700 cursor-pointer transition-colors duration-150" 
+               :class="{'bg-gray-700': currentLabel === 8}"
+               @click="selectLabel(8)">МинКультуры</p>
+               <p class="px-4 py-2 hover:bg-gray-700 cursor-pointer transition-colors duration-150" 
+               :class="{'bg-gray-700': currentLabel === 9}"
+               @click="selectLabel(9)">МСХ</p>
+               <p class="px-4 py-2 hover:bg-gray-700 cursor-pointer transition-colors duration-150" 
+               :class="{'bg-gray-700': currentLabel === 10}"
+               @click="selectLabel(10)">МинТранспорт</p>
           </div>
         </transition>
       </div>
@@ -99,6 +114,11 @@ const getSelectedLabel = computed(() => {
   if (currentLabel.value === 4) return 'Минэнерго (зеленая энергетика)';
   if (currentLabel.value === 5) return 'Минэнерго';
   if (currentLabel.value === 2) return 'СГП';
+  if (currentLabel.value === 6) return 'МинВод';
+  if (currentLabel.value === 7) return 'МинВод (КазВодХоз)';
+  if (currentLabel.value === 8) return 'МинКультуры';
+  if (currentLabel.value === 9) return 'МСХ';
+  if (currentLabel.value === 10) return 'МинТранспорт';
   return 'Выбрать';
 });
 
