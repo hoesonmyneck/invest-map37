@@ -83,7 +83,7 @@
                         {{ Numeral(Math.min(item.fact_fot / item.plan_fot * 100, 100)) }}%
                     </p>
 
-                    <p class="element truncate text-center">{{ Numeral(item.smz_12mes) }}</p>
+                    <p class="element truncate text-center">{{ Numeral(item.smz_count > 0 ? item.smz_12mes_sum / item.smz_count : 0) }}</p>
                     <p class="element truncate text-center border border-[#3090e8]">
                         {{ Numeral(item.risk_otsut + item.risk_vysok + item.risk_sred) }}
                     </p>
@@ -132,6 +132,8 @@ interface OtraslItem {
     risk_sred: number;
     data_project_roadmap_tasks: any[];
     data_project_temporaryworkplacescount: number;
+    smz_12mes_sum: number;
+    smz_count: number;
     [key: string]: any;
 }
 
@@ -213,7 +215,9 @@ const groupByOtrasl = computed(() => Object.values(a1Filter.value.reduce((acc, c
             risk_vysok: curr.ball_tip_name.includes('Высокий') ? 1 : 0,
             risk_sred: curr.ball_tip_name.includes('Средний') ? 1 : 0,
             data_project_roadmap_tasks: curr.data_project_roadmap_tasks || [],
-            data_project_temporaryworkplacescount: curr.data_project_temporaryworkplacescount || 0
+            data_project_temporaryworkplacescount: curr.data_project_temporaryworkplacescount || 0,
+            smz_12mes_sum: curr.smz_12mes || 0,
+            smz_count: curr.smz_12mes ? 1 : 0
         };
     } else {
         acc[curr.otrasl].count++;
@@ -240,7 +244,11 @@ const groupByOtrasl = computed(() => Object.values(a1Filter.value.reduce((acc, c
         
         acc[curr.otrasl].plan_fot += curr.plan_fot;
         acc[curr.otrasl].fact_fot += curr.fact_fot;
-        acc[curr.otrasl].smz_12mes += curr.smz_12mes;
+        
+        if (curr.smz_12mes) {
+            acc[curr.otrasl].smz_12mes_sum = (acc[curr.otrasl].smz_12mes_sum || 0) + curr.smz_12mes;
+            acc[curr.otrasl].smz_count = (acc[curr.otrasl].smz_count || 0) + 1;
+        }
 
         acc[curr.otrasl].risk_otsut += curr.ball_tip_name.includes('Отсутствует') ? 1 : 0;
         acc[curr.otrasl].risk_vysok += curr.ball_tip_name.includes('Высокий') ? 1 : 0;
@@ -311,6 +319,7 @@ function getExportData() {
                 Math.min(100, (!isSMRActiveOrCompleteForItem(item) ? 0 : 
                     item.data_project_temporaryworkplacescount / item.work_places * 100)));
         const fotPercent = item.plan_fot === 0 ? 0 : Math.min(100, item.fact_fot / item.plan_fot * 100);
+        const avgSMZ = item.smz_count > 0 ? item.smz_12mes_sum / item.smz_count : 0;
         
         return {
             'Отрасль': item.otrasl,
@@ -325,7 +334,7 @@ function getExportData() {
             'План ФОТ': item.plan_fot,
             'Факт ФОТ': item.fact_fot,
             '% ФОТ': fotPercent.toFixed(2) + '%',
-            'СМЗ': item.smz_12mes,
+            'СМЗ': avgSMZ,
             'Риски КТР': item.risk_otsut + item.risk_vysok + item.risk_sred,
             'Высокий': item.risk_vysok,
             'Средний': item.risk_sred,
