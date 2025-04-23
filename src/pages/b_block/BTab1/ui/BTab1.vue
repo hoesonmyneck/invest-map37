@@ -442,6 +442,12 @@ const list = computed(() => [
         percent: (nezaniat.value / trudo.value) * 100,
         icon: "work_not",
     },
+    {
+        title: "Неактивные по причине",
+        value: naselenie.value - (trudo.value + nezaniat.value + bezrabot.value),
+        percent: ((naselenie.value - (trudo.value + nezaniat.value + bezrabot.value)) / naselenie.value) * 100,
+        icon: "work_not",
+    },
 ]);
 
 const chartOptions = computed(() => {
