@@ -25,14 +25,14 @@
             <p class="text-xs mt-6">Трудоспособные</p>
             <ul class="flex gap-7 text-[12px] justify-center mt-5">
               <li class="border-t-2 border-[#DF173B] pt-1">
-                {{ Numeral((bezrabot / trudo) * 100) }}%
+                {{ NumeralWithDecimal((bezrabot / trudo) * 100) }}%
               </li>
 
               <li class="border-t-2 border-[#3090E8] pt-1">
-                {{ Numeral((trudo / naselenie) * 100) }}%
+                {{ NumeralWithDecimal((trudo / naselenie) * 100) }}%
               </li>
               <li class="border-t-2 border-[#0CCF89] pt-1">
-                {{ Numeral((working / trudo) * 100) }}%
+                {{ NumeralWithDecimal((working / trudo) * 100) }}%
               </li>
             </ul>
           </div>
@@ -55,7 +55,7 @@
               </div>
               <div class="flex gap-2 items-center">
                 <p>{{ Numeral(item.value) }}</p>
-                <p class="bg-black p-1 rounded">{{ Numeral(item.percent) }}%</p>
+                <p class="bg-black p-1 rounded">{{ NumeralWithDecimal(item.percent) }}%</p>
               </div>
             </li>
           </ul>
@@ -68,7 +68,7 @@
 <script setup lang="ts">
 import { computed, ref } from "vue";
 import { getF1 } from "../../../entities/f/api";
-import { Numeral } from "../../../shared/helpers/numeral";
+import { Numeral, NumeralWithDecimal } from "../../../shared/helpers/numeral";
 import F1ModalWidget from "./modals/F1ModalWidget.vue";
 import BaseCard from "../../../shared/ui/BaseCard/BaseCard.vue";
 

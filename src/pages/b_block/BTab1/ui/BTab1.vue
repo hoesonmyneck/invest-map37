@@ -16,13 +16,13 @@
                         <p class="mt-6">Трудоспособные</p>
                         <ul class="flex gap-7 text-[16px] justify-center mt-5">
                             <li class="border-t-2 border-[#DF173B] pt-1">
-                                {{ Numeral((bezrabot / trudo) * 100) }}%
+                                {{ NumeralWithDecimal((bezrabot / trudo) * 100) }}%
                             </li>
                             <li class="border-t-2 border-[#3090E8] pt-1">
-                                {{ Numeral((trudo / naselenie) * 100) }}%
+                                {{ NumeralWithDecimal((trudo / naselenie) * 100) }}%
                             </li>
                             <li class="border-t-2 border-[#0CCF89] pt-1">
-                                {{ Numeral((working / naselenie) * 100) }}%
+                                {{ NumeralWithDecimal((working / naselenie) * 100) }}%
                             </li>
                         </ul>
                     </div>
@@ -39,7 +39,7 @@
                             <div class="flex gap-2 items-center">
                                 <p>{{ Numeral(item.value) }}</p>
                                 <p class="bg-black p-1 rounded">
-                                    {{ Numeral(item.percent) }}%
+                                    {{ NumeralWithDecimal(item.percent) }}%
                                 </p>
                             </div>
                         </li>
@@ -80,7 +80,7 @@
                         <p>Незанятые:</p>
                         <p class="font-bold">
                             {{
-                                Numeral(
+                                NumeralWithDecimal(
                                     getRegionUnemploymentRate(+slotProps.data.id_reg)
                                 ) + "%"
                             }}
@@ -113,7 +113,7 @@
                         <p>Незанятые:</p>
                         <p class="font-bold">
                             {{
-                                Numeral(getRaionUnemploymentRate(+slotProps.data.id_rai)) + "%"
+                                NumeralWithDecimal(getRaionUnemploymentRate(+slotProps.data.id_rai)) + "%"
                             }}  
                         </p>
                     </div>
@@ -127,7 +127,7 @@
 import { computed, ref } from "vue";
 import BaseCard from "../../../../shared/ui/BaseCard/BaseCard.vue";
 import { getF1 } from "../../../../entities/f/api";
-import { Numeral } from "../../../../shared/helpers/numeral";
+import { Numeral, NumeralWithDecimal } from "../../../../shared/helpers/numeral";
 import { getColorFromGradient } from "../../../../shared/helpers/gradientColors";
 import { CloseOutlined } from "@ant-design/icons-vue";
 import BaseMap from "../../../../shared/ui/BaseMap/BaseMap.vue";

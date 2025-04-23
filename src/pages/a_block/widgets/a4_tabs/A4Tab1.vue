@@ -1,6 +1,6 @@
 <template>
     <div :class="[isModal ? 'h-full' : 'h-[27vh]', 'overflow-x-hidden overflow-y-scroll text-white text-[12px]']">
-        <ul class="head text-white pb-1 mb-1 border-b border-gray-700 items-start w-[100%] sticky top-0 z-10 bg-[#1E2028]">
+        <ul class="head text-white pb-1 mb-1 border-b border-gray-700 items-start w-[100%] sticky top-0 z-[20] bg-[#1E2028]">
             <li class="w-[100%]">Отрасль</li>
             <li class="w-[100%] cursor-pointer" @click="toggleSort('count')">
                 К-во проектов
@@ -60,10 +60,10 @@
                     <p class="element truncate text-center">{{ item.count }}</p>
                     <p class="element truncate text-center">{{ Numeral(item.project_price) }}</p>
                     <div class="element truncate text-center">
-                        <p class="absolute top-0 left-0 w-full h-full bg-[#059669] rounded"
+                        <p class="absolute top-0 left-0 w-full h-full bg-[#059669] rounded z-[5]"
                             :style="{ width: +item.finsihed / (+item.not_finsihed + item.finsihed) * 100 + '%' }">
                         </p>
-                        <p class="z-10 relative w-full text-center">
+                        <p class="z-[10] relative w-full text-center">
                             {{ Numeral(item.finsihed / (+item.not_finsihed + item.finsihed) * 100) }} %
                         </p>
                     </div>
@@ -382,6 +382,8 @@ defineExpose({
         display: grid;
         grid-gap: 4px;
         grid-template-columns: 17% 8% 8% 6% 7% 7% 3% 6% 5% 3% 6% 5% 5% 5% 5%;
+        position: relative;
+        z-index: 1;
     }
 }
 
