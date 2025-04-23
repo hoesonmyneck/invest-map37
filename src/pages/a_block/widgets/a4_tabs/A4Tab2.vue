@@ -9,7 +9,11 @@
                 <SortDescendingOutlined v-if="sortField === 'project_price' && sortOrder === 'desc'" class="text-blue-400 ml-1" />
                 <br><br>{{ Numeral(totalProjectPrice) }}
             </li>
-            <li class="w-[100%]">Срок</li>
+            <li class="w-[100%] cursor-pointer" @click="toggleSort('project_date')">
+                Срок
+                <SortAscendingOutlined v-if="sortField === 'project_date' && sortOrder === 'asc'" class="text-blue-400 ml-1" />
+                <SortDescendingOutlined v-if="sortField === 'project_date' && sortOrder === 'desc'" class="text-blue-400 ml-1" />
+            </li>
             <li class="w-[100%] cursor-pointer" @click="toggleSort('work_places')">
                 План раб.мест
                 <SortAscendingOutlined v-if="sortField === 'work_places' && sortOrder === 'asc'" class="text-blue-400 ml-1" />
@@ -244,6 +248,9 @@ const sortedProjects = computed(() => {
     if (sortField.value === 'project_price') {
       valA = Number(a.project_price || 0);
       valB = Number(b.project_price || 0);
+    } else if (sortField.value === 'project_date') {
+      valA = new Date(a.project_exploitation_date).getTime();
+      valB = new Date(b.project_exploitation_date).getTime();
     } else if (sortField.value === 'work_places') {
       valA = Number(a.work_places || 0);
       valB = Number(b.work_places || 0);
