@@ -8,15 +8,15 @@
     aStore.setCurrentOtrasl(null)
   }">
     <div class="flex gap-1 text-xs p-1">
-      <p class="h-6 px-4 flex items-center border cursor-pointer" @click="aStore.setCurrentLabel(0)"
+      <!--<p class="h-6 px-4 flex items-center border cursor-pointer" @click="aStore.setCurrentLabel(0)"
         :class="`${currentLabel === 0 ? 'border-[#3090e8]' : 'border-gray-600'}`">
-        Общее</p>
+        Общее</p> -->
       <p class="h-6 px-4 flex items-center border cursor-pointer" @click="aStore.setCurrentLabel(3)"
         :class="`${currentLabel === 3 ? 'border-[#3090e8]' : 'border-gray-600'}`">
         К-Инвест</p>
       
      
-      <div class="relative dropdown-container w-[170px]">
+      <!-- <div class="relative dropdown-container w-[170px]">
         <p class="h-6 px-4 flex items-center justify-around border cursor-pointer select-none" @click="toggleDropdown"
           :class="`${[1, 2, 4, 5].includes(currentLabel) ? 'border-[#3090e8]' : 'border-gray-600'}`">
           {{ getSelectedLabel + (isDropdownOpen ? ' ▲' : ' ▼') }}
@@ -52,7 +52,7 @@
                @click="selectLabel(10)">МинТранспорт</p>
           </div>
         </transition>
-      </div>
+      </div> -->
     </div>
     
     <div class="text-white grid grid-cols-[200px_1fr] gap-2">
