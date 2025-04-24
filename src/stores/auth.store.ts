@@ -20,7 +20,7 @@ export const useAuthStore = defineStore('auth', {
   
   actions: {
     login(username: string, password: string): boolean {
-      if (username === 'admin' && password === '2025') {
+      if (username === 'user' && password === '2025') {
         this.isAuthenticated = true;
     
         this.expiresAt = Date.now() + 2 * 60 * 60 * 1000;
