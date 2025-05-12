@@ -26,7 +26,7 @@ const availableRegions = reactive([
   { key: 'mangistauskaya', label: 'Мангистауская область' },
   { key: 'pavlodarskaya', label: 'Павлодарская область' },
   { key: 'sko', label: 'Северо-Казахстанская область' },
-  { key: 'yuzhno-kazahstanskaya', label: 'Туркестанская область' },
+  { key: 'turkestanskaya', label: 'Туркестанская область' },
   { key: 'abay', label: 'Абайская область' },
   { key: 'ulytau', label: 'Улытауская область' },
   { key: 'zhetysu', label: 'Жетысуская область' },
