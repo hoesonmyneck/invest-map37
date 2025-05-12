@@ -71,42 +71,58 @@ import { getF1 } from "../../../entities/f/api";
 import { Numeral, NumeralWithDecimal } from "../../../shared/helpers/numeral";
 import F1ModalWidget from "./modals/F1ModalWidget.vue";
 import BaseCard from "../../../shared/ui/BaseCard/BaseCard.vue";
+import { useAuthStore } from "../../../stores/auth.store";
 
 const loader = ref(true);
 const data = ref<any[]>([]);
+const filteredData = ref<any[]>([]);
 const visible = ref(false);
+const authStore = useAuthStore();
 
 async function loadF1() {
-  data.value = await getF1().finally(() => {
+  try {
+    const allData = await getF1();
+    data.value = allData;
+    
+    const userRegions = authStore.getAllowedRegions;
+
+    if (userRegions.some(region => region.id_reg === 0)) {
+      filteredData.value = data.value;
+    } else {
+      filteredData.value = data.value.filter(item => 
+        userRegions.some(region => region.id_reg === item.id_reg)
+      );
+    }
+  } finally {
     loader.value = false;
-  });
+  }
 }
 
 loadF1();
 
 const naselenie = computed(() =>
-  data.value.reduce((acc, curr) => acc + curr.cnt, 0)
+  filteredData.value.reduce((acc, curr) => acc + curr.cnt, 0)
 );
 const bezrabot = computed(() =>
-  data.value.reduce((acc, curr) => acc + curr.rt_unemployed, 0)
+  filteredData.value.reduce((acc, curr) => acc + curr.rt_unemployed, 0)
 );
 const trudo = computed(() =>
-  data.value.reduce((acc, curr) => acc + curr.trud_vozrast, 0)
+  filteredData.value.reduce((acc, curr) => acc + curr.trud_vozrast, 0)
 );
 const working = computed(() =>
-  data.value.reduce((acc, curr) => acc + curr.working, 0)
+  filteredData.value.reduce((acc, curr) => acc + curr.working, 0)
 );
 const nezaniat = computed(() =>
-  data.value.reduce((acc, curr) => acc + curr.nezaniat, 0)
+  filteredData.value.reduce((acc, curr) => acc + curr.nezaniat, 0)
 );
 const workingNaem = computed(() =>
-data.value.reduce((acc, curr) => acc + curr.working_naem, 0)
+filteredData.value.reduce((acc, curr) => acc + curr.working_naem, 0)
 );
 const workingIpNaem = computed(() =>
-data.value.reduce((acc, curr) => acc + curr.working_ip_naem, 0)
+filteredData.value.reduce((acc, curr) => acc + curr.working_ip_naem, 0)
 );
 const workingSam = computed(() =>
-data.value.reduce((acc, curr) => acc + curr.working_sam, 0)
+filteredData.value.reduce((acc, curr) => acc + curr.working_sam, 0)
 );
 
 const list = computed(() => [

@@ -60,7 +60,7 @@
     </div>
     <div class="map h-[calc(45vh)]">
       <!-- Global Map -->
-      <BaseMap v-if="!currentRegion" class="h-full" :current-region="currentRegion" :zoom="4" :fill-color="(v) => {
+      <RegionAccessMap v-if="!currentRegion" :fill-color="(v) => {
         if (!groupByRegion[v]) {
           return '#222732'
         }
@@ -113,7 +113,7 @@
           <p>{{listLabels.find((item) => item.key === currentTypeKey)?.name}}: </p>
           <p class="font-bold">{{ Numeral(groupByRegion[slotProps.data.id_reg]?.[currentTypeKey]) }}</p>
         </div>
-      </BaseMap>
+      </RegionAccessMap>
 
       <!-- Region Map -->
       <BaseMapRegion v-else class="h-full" :current-region="currentRegion" :current-raion="currentRaion" :zoom="getRegionZoom(currentRegion)"
@@ -178,14 +178,17 @@
 <script setup lang="ts">
 import { computed } from 'vue';
 import BaseMap from '../../../shared/ui/BaseMap/BaseMap.vue';
+import RegionAccessMap from '../../../shared/ui/BaseMap/RegionAccessMap.vue';
 import { useAStore } from '../store';
 import { Numeral } from '../../../shared/helpers/numeral';
 import { storeToRefs } from 'pinia';
 import { CloseOutlined } from '@ant-design/icons-vue';
 import { getColorFromGradient } from '../../../shared/helpers/gradientColors';
 import BaseMapRegion from '../../../shared/ui/BaseMap/BaseMapRegion.vue';
+import { useAuthStore } from '../../../stores/auth.store';
 
 const aStore = useAStore();
+const authStore = useAuthStore();
 const { currentRegion, currentRaion, a1FilterByProject, currentTypeKey } = storeToRefs(aStore);
 
 const groupByProject = computed(() => Object.values(a1FilterByProject.value.reduce((acc, curr) => {

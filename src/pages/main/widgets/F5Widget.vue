@@ -95,21 +95,73 @@ import BaseCard from "../../../shared/ui/BaseCard/BaseCard.vue";
 import { getF5, getF7_total } from "../../../entities/f/api";
 import { Numeral } from "../../../shared/helpers/numeral";
 import F5ModalWidget from "./modals/F5ModalWidget.vue";
+import { useAuthStore } from "../../../stores/auth.store";
 
-const loader = ref(true);
-const data = ref([]);
-const tab = ref(0);
-const visible = ref(false);
-const f7Data = ref([]);
-
-async function loadF5() {
-  data.value = await getF5();
-  const responseF7 = await getF7_total();
-  f7Data.value = responseF7;
-  loader.value = false;
+interface F5Item {
+  id_reg: number;
+  id_rai: number;
+  region: string;
+  raion: string;
+  tip: number;
+  crop_ru: string;
+  area: number;
+  new_id: number;
+  total_unique_id?: number;
+  [key: string]: any;
 }
 
+interface F7Item {
+  id_reg: number;
+  id_rai?: number;
+  region: string;
+  raion?: string;
+  tip: number;
+  iin_sum: number;
+  bin: number;
+  work_places: number;
+  area: number;
+  total_head_count: number;
+  [key: string]: any;
+}
+
+const loader = ref(true);
+const data = ref<F5Item[]>([]);
+const filteredData = ref<F5Item[]>([]);
+const tab = ref(0);
+const visible = ref(false);
+const f7Data = ref<F7Item[]>([]);
+const authStore = useAuthStore();
+const currentRegion = ref<number | null>(null);
+
+async function loadF5() {
+  try {
+    const allData = await getF5();
+    data.value = allData;
+    
+    const userRegions = authStore.getAllowedRegions;
+    
+    if (userRegions.length === 1 && userRegions[0].id_reg !== 0) {
+      currentRegion.value = userRegions[0].id_reg;
+    }
+    
+    if (userRegions.some(region => region.id_reg === 0)) {
+      filteredData.value = data.value;
+    } else {
+      filteredData.value = data.value.filter(item => 
+        userRegions.some(region => region.id_reg === item.id_reg)
+      );
+    }
+    
+  const responseF7 = await getF7_total();
+  f7Data.value = responseF7;
+  } finally {
+  loader.value = false;
+  }
+}
+
+onMounted(() => {
 loadF5();
+});
 
 const allCount = computed(() =>
   Object.values(_transformedData.value)?.reduce(
@@ -119,7 +171,7 @@ const allCount = computed(() =>
 );
 
 const _transformedData = computed(() =>
-  data.value.reduce((acc, curr) => {
+  filteredData.value.reduce((acc: Record<string, F5Item>, curr) => {
     const _key = curr.raion + curr.tip + curr.region;
     acc[_key] = curr;
 
@@ -129,22 +181,22 @@ const _transformedData = computed(() =>
 
 const type_1 = computed(() =>
   Object.values(_transformedData.value)?.filter(
-    (item) => item.tip === 1
+    (item: F5Item) => item.tip === 1
   )
 );
 const type_2 = computed(() =>
   Object.values(_transformedData.value)?.filter(
-    (item) => item.tip === 2
+    (item: F5Item) => item.tip === 2
   )
 );
 
 const totalArea = computed(() =>
-  data.value
+  filteredData.value
     .filter(
       (item) =>
         item.tip === (tab.value === 1 ? 1 : 2)
     )
-    ?.reduce((acc, curr) => {
+    ?.reduce((acc: Record<string, F5Item>, curr) => {
       if (
         [
           "Кулан",
@@ -170,10 +222,10 @@ const totalArea = computed(() =>
 );
 
 const totalUniqueIdSum = computed(() => {
-  const uniqueRaions = {};
-  data.value.forEach(item => {
+  const uniqueRaions: Record<number, number> = {};
+  filteredData.value.forEach(item => {
     if (!uniqueRaions[item.id_rai]) {
-      uniqueRaions[item.id_rai] = item.total_unique_id;
+      uniqueRaions[item.id_rai] = item.total_unique_id || 0;
     }
   });
   return Object.values(uniqueRaions).reduce((acc, curr) => acc + curr, 0);
@@ -223,12 +275,12 @@ const chartOptions1 = computed(() => {
           {
             name: "Растениеводство",
             color: "#0CCF89",
-            y: type_1.value.reduce((acc, curr) => acc + curr.new_id, 0),
+            y: type_1.value.reduce((acc: number, curr: F5Item) => acc + curr.new_id, 0),
           },
           {
             name: "Животноводство",
             color: "#FFA559",
-            y: type_2.value.reduce((acc, curr) => acc + curr.new_id, 0),
+            y: type_2.value.reduce((acc: number, curr: F5Item) => acc + curr.new_id, 0),
           },
         ],
       },
@@ -271,8 +323,8 @@ const chartOptions2 = computed(() => {
     },
     xAxis: {
       categories: Object.values(totalArea.value)
-        .sort((a, b) => b.area - a.area)
-        .map((item) => item.crop_ru),
+        .sort((a: F5Item, b: F5Item) => b.area - a.area)
+        .map((item: F5Item) => item.crop_ru),
       tickmarkPlacement: "on",
       labels: {
         style: {
@@ -298,8 +350,8 @@ const chartOptions2 = computed(() => {
         pointWidth: 12,
         borderWidth: 0,
         data: Object.values(totalArea.value)
-          .sort((a, b) => b.area - a.area)
-          .map((item) => {
+          .sort((a: F5Item, b: F5Item) => b.area - a.area)
+          .map((item: F5Item) => {
             return {
               name: item.crop_ru,
               y: item.area,
@@ -315,6 +367,6 @@ const chartOptions2 = computed(() => {
 const filteredBin = computed(() => {
   return f7Data.value
     .filter(item => item.tip === 0)
-    .reduce((acc, curr) => acc + (curr.bin || 0), 0);
+    .reduce((acc: number, curr: F7Item) => acc + (curr.bin || 0), 0);
 });
 </script>

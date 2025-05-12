@@ -1,4 +1,5 @@
 import { defineStore } from "pinia";
+import { useAuthStore } from "../../../stores/auth.store";
 
 export const useProgramStore = defineStore("program", {
     state: () => ({
@@ -15,16 +16,77 @@ export const useProgramStore = defineStore("program", {
     getters: {
         serpinFilter(): any[] {
             if(!this.serpin) return [];
-            return this.serpin.filter((item) => (this.currentYear === 'Все' ? true : +item.year_contract === +this.currentYear) && (!this.currentRegion || item.id_reg === this.currentRegion) && (!this.currentRaion || item.id_rai === this.currentRaion));
+            
+            const authStore = useAuthStore();
+            const userRegions = authStore.getAllowedRegions;
+            
+            let filtered = this.serpin.filter((item) => 
+                (this.currentYear === 'Все' ? true : +item.year_contract === +this.currentYear) &&
+                (!this.currentRegion || item.id_reg === this.currentRegion) && 
+                (!this.currentRaion || item.id_rai === this.currentRaion)
+            );
+            
+            if (!userRegions.some(region => region.id_reg === 0)) {
+                filtered = filtered.filter(item => 
+                    userRegions.some(region => region.id_reg === item.id_reg)
+                );
+            }
+            
+            return filtered;
         },
         aulAmanatiFilter(): any[] {
-            return this.aulAmanati.filter((item) => (this.currentYear === 'Все' ? true : +item.year_contract === +this.currentYear) && (!this.currentRegion || item.id_reg === this.currentRegion) && (!this.currentRaion || item.id_rai === this.currentRaion));
+            const authStore = useAuthStore();
+            const userRegions = authStore.getAllowedRegions;
+            
+            let filtered = this.aulAmanati.filter((item) => 
+                (this.currentYear === 'Все' ? true : +item.year_contract === +this.currentYear) &&
+                (!this.currentRegion || item.id_reg === this.currentRegion) && 
+                (!this.currentRaion || item.id_rai === this.currentRaion)
+            );
+            
+            if (!userRegions.some(region => region.id_reg === 0)) {
+                filtered = filtered.filter(item => 
+                    userRegions.some(region => region.id_reg === item.id_reg)
+                );
+            }
+            
+            return filtered;
         },
         diplommenAulgaFilter(): any[] {
-            return this.diplommenAulga.filter((item) => (this.currentYear === 'Все' ? true : +item.year_contract === +this.currentYear) && (!this.currentRegion || item.id_reg === this.currentRegion) && (!this.currentRaion || item.id_rai === this.currentRaion));
+            const authStore = useAuthStore();
+            const userRegions = authStore.getAllowedRegions;
+            
+            let filtered = this.diplommenAulga.filter((item) => 
+                (this.currentYear === 'Все' ? true : +item.year_contract === +this.currentYear) &&
+                (!this.currentRegion || item.id_reg === this.currentRegion) && 
+                (!this.currentRaion || item.id_rai === this.currentRaion)
+            );
+            
+            if (!userRegions.some(region => region.id_reg === 0)) {
+                filtered = filtered.filter(item => 
+                    userRegions.some(region => region.id_reg === item.id_reg)
+                );
+            }
+            
+            return filtered;
         },
         aulBesigiFilter(): any[] {
-            return this.aulBesigi.filter((item) => (this.currentYear === 'Все' ? true : +item.start_date === +this.currentYear) && (!this.currentRegion || item.id_reg === this.currentRegion) && (!this.currentRaion || item.id_rai === this.currentRaion));
+            const authStore = useAuthStore();
+            const userRegions = authStore.getAllowedRegions;
+            
+            let filtered = this.aulBesigi.filter((item) => 
+                (this.currentYear === 'Все' ? true : +item.start_date === +this.currentYear) &&
+                (!this.currentRegion || item.id_reg === this.currentRegion) && 
+                (!this.currentRaion || item.id_rai === this.currentRaion)
+            );
+            
+            if (!userRegions.some(region => region.id_reg === 0)) {
+                filtered = filtered.filter(item => 
+                    userRegions.some(region => region.id_reg === item.id_reg)
+                );
+            }
+            
+            return filtered;
         },
     },
     actions: {

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref } from 'vue';
+import { ref, reactive } from 'vue';
 import { useRouter } from 'vue-router';
 import { useAuthStore } from '../../../stores/auth.store';
 
@@ -8,6 +8,29 @@ const password = ref('');
 const error = ref('');
 const authStore = useAuthStore();
 const router = useRouter();
+const showRegionHelp = ref(false);
+
+const availableRegions = reactive([
+  { key: 'admin', label: 'Администратор (все регионы)' },
+  { key: 'user', label: 'Пользователь (все регионы)' },
+  { key: 'akmolinskaya', label: 'Акмолинская область' },
+  { key: 'aktubinskaya', label: 'Актюбинская область' },
+  { key: 'almatinskaya', label: 'Алматинская область' },
+  { key: 'atyrauskaya', label: 'Атырауская область' },
+  { key: 'vko', label: 'Восточно-Казахстанская область' },
+  { key: 'zhambylskaya', label: 'Жамбылская область' },
+  { key: 'zko', label: 'Западно-Казахстанская область' },
+  { key: 'karagandinskaya', label: 'Карагандинская область' },
+  { key: 'kostanayskaya', label: 'Костанайская область' },
+  { key: 'kyzylordinskaya', label: 'Кызылординская область' },
+  { key: 'mangistauskaya', label: 'Мангистауская область' },
+  { key: 'pavlodarskaya', label: 'Павлодарская область' },
+  { key: 'sko', label: 'Северо-Казахстанская область' },
+  { key: 'yuzhno-kazahstanskaya', label: 'Туркестанская область' },
+  { key: 'almaty', label: 'г. Алматы' },
+  { key: 'astana', label: 'г. Астана' },
+  { key: 'shymkent', label: 'г. Шымкент' },
+]);
 
 const login = () => {
   if (username.value.trim() === '' || password.value.trim() === '') {
@@ -20,6 +43,15 @@ const login = () => {
   } else {
     error.value = 'Неверный логин или пароль';
   }
+};
+
+const selectRegion = (region: string) => {
+  username.value = region;
+  password.value = '';
+};
+
+const toggleRegionHelp = () => {
+  showRegionHelp.value = !showRegionHelp.value;
 };
 </script>
 
@@ -60,6 +92,34 @@ const login = () => {
           >
             Войти
           </button>
+        </div>
+        
+        <div class="mt-4">
+          <div class="flex items-center justify-between">
+            <span class="text-sm text-gray-300 cursor-pointer hover:text-blue-400" @click="toggleRegionHelp">
+              Выбрать регион для входа
+            </span>
+          </div>
+          
+          <div v-if="showRegionHelp" class="mt-3 bg-gray-700 p-3 rounded-md">
+            <h3 class="text-white text-sm font-medium mb-2">Выберите регион:</h3>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-2 max-h-60 overflow-y-auto">
+              <button
+                v-for="region in availableRegions"
+                :key="region.key"
+                @click="selectRegion(region.key)"
+                class="text-xs text-left text-white bg-gray-600 hover:bg-blue-600 px-2 py-1 rounded"
+              >
+                {{ region.label }}
+              </button>
+            </div>
+            <div class="mt-2 text-xs text-gray-400">
+              После выбора региона, нажмите "Войти" для авторизации. Вы получите доступ только к данным выбранного региона.
+            </div>
+            <div class="mt-2 text-xs text-white bg-blue-800 p-2 rounded">
+              <b>Важно:</b> При входе с учетной записью определенной области, вы будете видеть данные только по этой области во всех отчетах и картах.
+            </div>
+          </div>
         </div>
       </form>
     </div>

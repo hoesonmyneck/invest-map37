@@ -173,18 +173,32 @@ import { PieChartOutlined } from "@ant-design/icons-vue";
 import { Numeral } from "../../../shared/helpers/numeral";
 import BaseCard from "../../../shared/ui/BaseCard/BaseCard.vue";
 import F3ModalWidget from "./modals/F3ModalWidget.vue";
+import { useAuthStore } from "../../../stores/auth.store";
 
 const loader = ref(false);
 const data = ref([]);
 const tab = ref(0);
 const visible = ref(false);
+const authStore = useAuthStore();
 
 async function loadF3() {
   loader.value = true;
 
-  data.value = await getF3().finally(() => {
+  try {
+    const allData = await getF3();
+    
+    const userRegions = authStore.getAllowedRegions;
+    
+    if (!userRegions.some(region => region.id_reg === 0)) {
+      data.value = allData.filter(item => 
+        userRegions.some(region => region.id_reg === item.id_reg)
+      );
+    } else {
+      data.value = allData;
+    }
+  } finally {
     loader.value = false;
-  });
+  }
 }
 
 loadF3();

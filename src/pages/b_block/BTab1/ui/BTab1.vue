@@ -62,7 +62,7 @@
                 }">
                 <CloseOutlined />
             </div>
-            <BaseMap 
+            <RegionAccessMap 
                 v-if="!currentRegion"
                 :current-region="currentRegion ? Number(currentRegion) : undefined" 
                 :fill-color="(v) => {
@@ -70,6 +70,7 @@
                     return regionColors[+v] || '#222732';
                 }" 
                 @click-polygon="clickPolygon" 
+                @region-selected="handleRegionSelected"
                 v-slot="slotProps">
                 <div>
                     <div class="flex items-center gap-2">
@@ -87,7 +88,7 @@
                         </p>
                     </div>
                 </div>
-            </BaseMap>
+            </RegionAccessMap>
             
             <BaseMapNoMarker
                 v-else
@@ -124,7 +125,7 @@
     </div>
 </template>
 <script setup lang="ts">
-import { computed, ref } from "vue";
+import { computed, ref, watch } from "vue";
 import BaseCard from "../../../../shared/ui/BaseCard/BaseCard.vue";
 import { getF1 } from "../../../../entities/f/api";
 import { Numeral, NumeralWithDecimal } from "../../../../shared/helpers/numeral";
@@ -132,6 +133,8 @@ import { getColorFromGradient } from "../../../../shared/helpers/gradientColors"
 import { CloseOutlined } from "@ant-design/icons-vue";
 import BaseMap from "../../../../shared/ui/BaseMap/BaseMap.vue";
 import BaseMapNoMarker from "../../../../shared/ui/BaseMap/BaseMapNoMarker.vue";
+import RegionAccessMap from "../../../../shared/ui/BaseMap/RegionAccessMap.vue";
+import { useAuthStore } from "../../../../stores/auth.store";
 
 const loader = ref(true);
 const data = ref<any[]>([]);
@@ -139,15 +142,58 @@ const currentRegion = ref<string | null>(null);
 const currentRaion = ref<string | null>(null);
 const activeTab = ref('program1');
 const visible = ref(false);
+const authStore = useAuthStore();
 
 async function loadF1() {
-    data.value = await getF1().finally(() => {
+    try {
+        loader.value = true;
+        const allData = await getF1();
+        
+        data.value = allData.map((item: any) => ({
+            ...item,
+            cnt: Number(item.cnt || 0),
+            nasel: Number(item.nasel || 0),
+            trud_vozrast: Number(item.trud_vozrast || 0),
+            working: Number(item.working || 0),
+            working_naem: Number(item.working_naem || 0),
+            working_ip_naem: Number(item.working_ip_naem || 0),
+            working_sam: Number(item.working_sam || 0),
+            rt_unemployed: Number(item.rt_unemployed || 0),
+            nezaniat: Number(item.nezaniat || 0)
+        }));
+        
+        const userRegions = authStore.getAllowedRegions;
+        
+        if (!userRegions.some(region => region.id_reg === 0)) {
+            data.value = data.value.filter(item => 
+                userRegions.some(region => region.id_reg === Number(item.id_reg))
+            );
+            
+            if (userRegions.length === 1) {
+                currentRegion.value = String(userRegions[0].id_reg);
+            }
+        }
+        
+        console.log("Данные загружены успешно:", data.value.length, "записей");
+    } catch (error) {
+        console.error("Ошибка при загрузке данных F1:", error);
+        data.value = [];
+    } finally {
         loader.value = false;
-    });
+    }
 }
 
 function clickPolygon(code: string) {
+    if (!authStore.hasAccessToRegion(Number(code))) {
+        return;
+    }
+    
     currentRegion.value = code;
+    currentRaion.value = null;
+}
+
+function handleRegionSelected(regionId: number) {
+    currentRegion.value = String(regionId);
     currentRaion.value = null;
 }
 
@@ -346,52 +392,98 @@ const getRaionColorByRank = (currentRegionCode: number): Record<number, string> 
     return raionColors;
 };
 
-const regionBezrabot = computed(() => {
-    if (!currentRegion.value) return 0;
-    return data.value
-        .filter(item => item.id_reg === Number(currentRegion.value))
-        .reduce((acc, curr) => acc + +curr.nezaniat, 0);
-});
+const getFilteredData = () => {
+  if (currentRaion.value) {
+    return data.value.filter(item => item.id_rai === Number(currentRaion.value));
+  } 
+  else if (currentRegion.value) {
+    return data.value.filter(item => item.id_reg === Number(currentRegion.value));
+  } 
+  else if (!authStore.getAllowedRegions.some(region => region.id_reg === 0)) {
+    return data.value.filter(item => 
+      authStore.getAllowedRegions.some(region => region.id_reg === Number(item.id_reg))
+    );
+  } 
+  else {
+    return data.value;
+  }
+};
 
 const _filter = computed(() => {
-    if (currentRaion.value) {
-        return [...data.value].filter(e => e.id_rai === Number(currentRaion.value));
-    }
-    return [...data.value].filter(e => 
-        !currentRegion.value ? true : e.id_reg === Number(currentRegion.value)
-    );
+  return getFilteredData();
 });
 
-const allBezrabot = computed(() =>
-    data.value.reduce((acc, curr) => acc + +curr.rt_unemployed, 0)
-);
-const naselenie = computed(() =>
-    _filter.value.reduce((acc, curr) => acc + +curr.cnt, 0)
-);
-const bezrabot = computed(() =>
-    _filter.value.reduce((acc, curr) => acc + +curr.rt_unemployed, 0)
-);
-const trudo = computed(() =>
-    _filter.value.reduce((acc, curr) => acc + +curr.trud_vozrast, 0)
-);
-const working = computed(() =>
-    _filter.value.reduce((acc, curr) => acc + +curr.working, 0)
-);
-const allNezaniat = computed(() =>
-    data.value.reduce((acc, curr) => acc + +curr.nezaniat, 0)
-);
-const nezaniat = computed(() =>
-    _filter.value.reduce((acc, curr) => acc + +curr.nezaniat, 0)
-);
-const workingNaem = computed(() =>
-    _filter.value.reduce((acc, curr) => acc + +curr.working_naem, 0)
-);
-const workingIpNaem = computed(() =>
-    _filter.value.reduce((acc, curr) => acc + +curr.working_ip_naem, 0)
-);
-const workingSam = computed(() =>
-    _filter.value.reduce((acc, curr) => acc + +curr.working_sam, 0)
-);
+const naselenie = computed(() => {
+  try {
+    return getFilteredData().reduce((sum, curr) => sum + Number(curr.cnt || 0), 0);
+  } catch (error) {
+    console.error("Ошибка при вычислении населения:", error);
+    return 0;
+  }
+});
+
+const trudo = computed(() => {
+  try {
+    return getFilteredData().reduce((sum, curr) => sum + Number(curr.trud_vozrast || 0), 0);
+  } catch (error) {
+    console.error("Ошибка при вычислении трудоспособного населения:", error);
+    return 0;
+  }
+});
+
+const bezrabot = computed(() => {
+  try {
+    return getFilteredData().reduce((sum, curr) => sum + Number(curr.rt_unemployed || 0), 0);
+  } catch (error) {
+    console.error("Ошибка при вычислении безработных:", error);
+    return 0;
+  }
+});
+
+const working = computed(() => {
+  try {
+    return getFilteredData().reduce((sum, curr) => sum + Number(curr.working || 0), 0);
+  } catch (error) {
+    console.error("Ошибка при вычислении работающих:", error);
+    return 0;
+  }
+});
+
+const workingNaem = computed(() => {
+    try {
+        return _filter.value.reduce((acc, curr) => acc + Number(curr.working_naem || 0), 0);
+    } catch (error) {
+        console.error("Ошибка при вычислении работающих в ЮЛ:", error);
+        return 0;
+    }
+});
+
+const workingIpNaem = computed(() => {
+    try {
+        return _filter.value.reduce((acc, curr) => acc + Number(curr.working_ip_naem || 0), 0);
+    } catch (error) {
+        console.error("Ошибка при вычислении работающих в ИП:", error);
+        return 0;
+    }
+});
+
+const workingSam = computed(() => {
+    try {
+        return _filter.value.reduce((acc, curr) => acc + Number(curr.working_sam || 0), 0);
+    } catch (error) {
+        console.error("Ошибка при вычислении самозанятых:", error);
+        return 0;
+    }
+});
+
+const nezaniatValue = computed(() => {
+    try {
+        return _filter.value.reduce((acc, curr) => acc + Number(curr.nezaniat || 0), 0);
+    } catch (error) {
+        console.error("Ошибка при вычислении незанятых:", error);
+        return 0;
+    }
+});
 
 const list = computed(() => [
     {
@@ -438,14 +530,14 @@ const list = computed(() => [
     },
     {
         title: "Незанятые",
-        value: nezaniat.value,
-        percent: (nezaniat.value / trudo.value) * 100,
+        value: nezaniatValue.value,
+        percent: ((nezaniatValue.value / trudo.value) * 100),
         icon: "work_not",
     },
     {
         title: "Неактивные по причине",
-        value: naselenie.value - (trudo.value + nezaniat.value + bezrabot.value),
-        percent: ((naselenie.value - (trudo.value + nezaniat.value + bezrabot.value)) / naselenie.value) * 100,
+        value: naselenie.value - (trudo.value + nezaniatValue.value + bezrabot.value),
+        percent: ((naselenie.value - (trudo.value + nezaniatValue.value + bezrabot.value)) / naselenie.value) * 100,
         icon: "work_not",
     },
 ]);
@@ -547,6 +639,18 @@ const chartOptions = computed(() => {
             },
         ],
     };
+});
+
+watch([currentRegion, currentRaion], () => {
+  console.log("Изменился регион/район:", currentRegion.value, currentRaion.value);
+  
+  console.log("Новые данные:", {
+    населениеTotal: naselenie.value,
+    трудоспособныеTotal: trudo.value,
+    работающиеTotal: working.value,
+    безработныеTotal: bezrabot.value,
+    регионыДоступа: authStore.getAllowedRegions.map(r => r.id_reg)
+  });
 });
 </script>
 

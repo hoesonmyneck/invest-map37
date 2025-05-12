@@ -131,25 +131,13 @@
           >
             <CloseOutlined />
           </div>
-          <BaseMap
+          <RegionAccessMap
             v-if="!currentRegion"
             :current-region="currentRegion || undefined"
-            :fill-color="
-              (v) => {
-                const totalProc = groupByRegion[v]?.totalProc || 0;
-                const sortedRegions = Object.values(groupByRegion).sort((a, b) => b.totalProc - a.totalProc);
-                const index = sortedRegions.findIndex(region => region === groupByRegion[v]);
-
-                if (index < 6) {
-                  return getColorFromGradient(100); // Зеленый
-                } else if (index >= sortedRegions.length - 6) {
-                  return getColorFromGradient(10); // Красный
-                } else {
-                  return getColorFromGradient(50); // Оранжевый
-                }
-              }
-            "
+            :zoom="5"
+            :fill-color="(code: number) => getRegionProcColor(code)"
             @click-polygon="clickPolygon"
+            @region-selected="handleRegionSelected"
             v-slot="slotProps"
           >
             <div>
@@ -168,7 +156,7 @@
                 </p>
               </div>
             </div>
-          </BaseMap>
+          </RegionAccessMap>
 
           <BaseMapNoMarker
             v-else
@@ -298,25 +286,16 @@
             </div>
           </div>
           
-          <BaseMap
+          <RegionAccessMap
             v-if="!currentRegionF6"
             :current-region="currentRegionF6 ? Number(currentRegionF6) : undefined"
-            :fill-color="
-              (v) => {
-                const totalProc = groupByRegionF6[v]?.totalProc || 0;
-                const sortedRegions = Object.values(groupByRegionF6).sort((a, b) => b.totalProc - a.totalProc);
-                const index = sortedRegions.findIndex(region => region === groupByRegionF6[v]);
-
-                if (index < 6) {
-                  return getColorFromGradient(100); // Зеленый
-                } else if (index >= sortedRegions.length - 6) {
-                  return getColorFromGradient(10); // Красный
-                } else {
-                  return getColorFromGradient(50); // Оранжевый
-                }
-              }
-            "
-            @click-polygon="clickPolygonF6"
+            :fill-color="(code: number) => getF6RegionColor(code)"
+            @click-polygon="(code) => { currentRegionF6 = code; currentRaionF6 = null; }"
+            @region-selected="(regionId) => { 
+              if (!authStore.hasAccessToRegion(regionId)) return;
+              currentRegionF6 = regionId.toString(); 
+              currentRaionF6 = null; 
+            }"
             v-slot="slotProps"
           >
             <div>
@@ -335,7 +314,7 @@
                 </p>
               </div>
             </div>
-          </BaseMap>
+          </RegionAccessMap>
 
           <BaseMapNoMarker
             v-else
@@ -403,11 +382,13 @@
 <script setup lang="ts">
 import { getColorFromGradient } from "../../../../shared/helpers/gradientColors";
 import { CloseOutlined } from "@ant-design/icons-vue";
-import { computed, ref, watch } from "vue";
+import { computed, ref, watch, onMounted } from "vue";
 import BaseCard from "../../../../shared/ui/BaseCard/BaseCard.vue";
 import BaseMap from "../../../../shared/ui/BaseMap/BaseMap.vue";
+import RegionAccessMap from "../../../../shared/ui/BaseMap/RegionAccessMap.vue";
 import BaseMapNoMarker from "../../../../shared/ui/BaseMap/BaseMapNoMarker.vue";
 import { Numeral } from "../../../../shared/helpers/numeral";
+import { useAuthStore } from "../../../../stores/auth.store";
 
 const EXCLUDED_OKED_CATEGORIES = [
   "Окэд не указан", 
@@ -444,6 +425,7 @@ const tab = ref(0);
 const currentRegion = ref<number | null>(null);
 const currentRaion = ref<number | null>(null);
 const loader = ref(false);
+const authStore = useAuthStore();
 
 defineEmits(["close"]);
 const props = withDefaults(defineProps<{
@@ -535,6 +517,15 @@ function clickPolygon(code: string) {
   currentRaion.value = null;
 }
 
+function handleRegionSelected(regionId: number) {
+  if (!authStore.hasAccessToRegion(regionId)) {
+    return;
+  }
+  
+  currentRegion.value = regionId;
+  currentRaion.value = null;
+}
+
 function clickRaion(code: string) {
   currentRaion.value = Number(code);
 }
@@ -591,6 +582,20 @@ const maxTotalProc = computed(() => {
   const max = Math.max(...Object.values(groupByRegion.value).map(item => Math.abs(item.totalProc)));
   return max || 1;
 });
+
+function getRegionProcColor(code: number) {
+  const totalProc = groupByRegion.value[code]?.totalProc || 0;
+  const sortedRegions = Object.values(groupByRegion.value).sort((a, b) => b.totalProc - a.totalProc);
+  const index = sortedRegions.findIndex(region => region === groupByRegion.value[code]);
+
+  if (index < 6) {
+    return getColorFromGradient(100); // Зеленый
+  } else if (index >= sortedRegions.length - 6) {
+    return getColorFromGradient(10); // Красный
+  } else {
+    return getColorFromGradient(50); // Оранжевый
+  }
+}
 
 const QUALITY_COLOR_F6 = '#109669'; // Зеленый
 const NOT_QUALITY_COLOR_F6 = '#3090E8'; // Синий
@@ -1327,4 +1332,45 @@ function getTotalByYear2(item: F6DataF6): number {
   
   return itemYear2.cnt_quality + itemYear2.cnt_not_quality;
 }
+
+function getF6RegionColor(code: number) {
+  const totalProc = groupByRegionF6.value[code]?.totalProc || 0;
+  const sortedRegions = Object.values(groupByRegionF6.value).sort((a, b) => b.totalProc - a.totalProc);
+  const index = sortedRegions.findIndex(region => region === groupByRegionF6.value[code]);
+
+  if (index < 6) {
+    return getColorFromGradient(100); // Зеленый
+  } else if (index >= sortedRegions.length - 6) {
+    return getColorFromGradient(10); // Красный
+  } else {
+    return getColorFromGradient(50); // Оранжевый
+  }
+}
+
+// Функция для инициализации выбора региона на основе прав доступа
+const initRegionBasedOnAccess = () => {
+  // Проверяем права доступа пользователя
+  const userRegions = authStore.getAllowedRegions;
+  
+  // Если у пользователя доступ только к одному региону (не администратор)
+  if (userRegions.length === 1 && userRegions[0].id_reg !== 0) {
+    // Автоматически устанавливаем текущий регион на регион пользователя
+    currentRegion.value = userRegions[0].id_reg;
+    
+    // Также устанавливаем регион для вкладки качественных рабочих мест
+    currentRegionF6.value = userRegions[0].id_reg;
+  }
+};
+
+// Вызываем инициализацию при монтировании компонента
+onMounted(() => {
+  initRegionBasedOnAccess();
+});
+
+// При изменении видимости модального окна также проверяем права доступа
+watch(() => props.visible, (newVisible) => {
+  if (newVisible) {
+    initRegionBasedOnAccess();
+  }
+});
 </script>

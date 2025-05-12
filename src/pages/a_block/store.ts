@@ -1,4 +1,5 @@
 import { defineStore } from "pinia";
+import { useAuthStore } from "../../stores/auth.store";
 
 export const useAStore = defineStore("a", {
     state: () => ({
@@ -15,16 +16,49 @@ export const useAStore = defineStore("a", {
     }), 
     getters: {
         a1Filter(): any[] {
-            return this.a1.filter((item) =>  (!this.currentLabel || +item.label === this.currentLabel) && (!this.currentRegion || +item.id_reg === +this.currentRegion) && (!this.currentRaion || item.id_rai === this.currentRaion));
+            const authStore = useAuthStore();
+            const userRegions = authStore.getAllowedRegions;
+            
+            let filtered = this.a1.filter((item) => 
+                (!this.currentLabel || +item.label === this.currentLabel) && 
+                (!this.currentRegion || +item.id_reg === +this.currentRegion) && 
+                (!this.currentRaion || item.id_rai === this.currentRaion)
+            );
+            
+            if (!userRegions.some(region => region.id_reg === 0) && !this.currentRegion) {
+                filtered = filtered.filter(item => 
+                    userRegions.some(region => region.id_reg === item.id_reg)
+                );
+            }
+            
+            return filtered;
         },
         a1FilterByOtrasl(): any[] {
-            return this.a1Filter.filter((item) =>  (!this.currentOtrasl || item.otrasl === this.currentOtrasl));
+            return this.a1Filter.filter((item) => (!this.currentOtrasl || item.otrasl === this.currentOtrasl));
         },
         a1FilterByProject(): any[] {
-            return this.a1FilterByOtrasl.filter((item) =>  (!this.currentProject || item.id === this.currentProject));
+            return this.a1FilterByOtrasl.filter((item) => (!this.currentProject || item.id === this.currentProject));
         },
         a1YearFilter(): any[] {
-            return this.a1Year.filter((item) => +item.year > 2019 && (!this.currentProject || item.id === this.currentProject) && (!this.currentOtrasl || item.otrasl === this.currentOtrasl) && (!this.currentLabel || +item.label === this.currentLabel) && (!this.currentRegion || item.id_reg === this.currentRegion) && (!this.currentRaion || item.id_rai === this.currentRaion));
+            const authStore = useAuthStore();
+            const userRegions = authStore.getAllowedRegions;
+            
+            let filtered = this.a1Year.filter((item) => 
+                +item.year > 2019 && 
+                (!this.currentProject || item.id === this.currentProject) && 
+                (!this.currentOtrasl || item.otrasl === this.currentOtrasl) && 
+                (!this.currentLabel || +item.label === this.currentLabel) && 
+                (!this.currentRegion || item.id_reg === this.currentRegion) && 
+                (!this.currentRaion || item.id_rai === this.currentRaion)
+            );
+            
+            if (!userRegions.some(region => region.id_reg === 0) && !this.currentRegion) {
+                filtered = filtered.filter(item => 
+                    userRegions.some(region => region.id_reg === item.id_reg)
+                );
+            }
+            
+            return filtered;
         },
         currentProjectPopup(): any | undefined {
             return this.popup?.find(e => e.id === this.currentProject);
@@ -33,6 +67,13 @@ export const useAStore = defineStore("a", {
     actions: {
         async setA1(payload: any[]) {
             this.a1 = payload;
+            
+            const authStore = useAuthStore();
+            const userRegions = authStore.getAllowedRegions;
+            
+            if (userRegions.length === 1 && userRegions[0].id_reg !== 0) {
+                this.currentRegion = userRegions[0].id_reg;
+            }
         },
         setCurrentTypeKey(payload: string) {
             this.currentTypeKey = payload;

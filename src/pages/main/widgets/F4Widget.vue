@@ -7,16 +7,16 @@
       <div class="relative h-max">
         <highcharts class="hc map w-full" :options="chartOptions" />
         <div class="absolute top-1/2 text-center left-1/2 -translate-x-1/2 -translate-y-1/2">
-          <p class="text-2xl">{{ a1.length }}</p>
+          <p class="text-2xl">{{ filteredA1.length }}</p>
           <p class="text-gray-500 text-xs">Инвестпроекты</p>
         </div>
       </div>
 
       <div class="overflow-y-scroll h-[calc(50vh-65px)]">
         <ul>
-          <li class="flex text-[10px] items-center gap-2 mb-1 text-xs justify-between min-w-[200px]" v-for="item in Object.values(list).filter((item: any) => item.otrasl && item.otrasl.trim() !== '').sort(
-            (a: any, b: any) => b.count - a.count
-)" :key="item.otrasl">
+          <li class="flex text-[10px] items-center gap-2 mb-1 text-xs justify-between min-w-[200px]" 
+              v-for="item in Object.values(list).filter(item => item.otrasl && item.otrasl.trim() !== '').sort((a, b) => b.count - a.count)" 
+              :key="item.otrasl">
             <div class="flex gap-2 items-center">
               <p class="min-w-4 w-4 h-4 rounded-full" :style="{ backgroundColor: item.color }"></p>
               <p>{{ item.otrasl }}</p>
@@ -24,7 +24,7 @@
             <div class="flex gap-2 items-center">
               <p>{{ item.count }}</p>
               <p class="bg-black p-1 rounded px-2 w-[40px] text-center">
-                {{ Numeral((item.count / a1.length) * 100) }}%
+                {{ Numeral((item.count / filteredA1.length) * 100) }}%
               </p>
             </div>
           </li>
@@ -43,39 +43,66 @@ import F4ModalWidget from "./modals/F4ModalWidget.vue";
 import { useAStore } from "../../a_block/store";
 import { storeToRefs } from "pinia";
 import { getA1 } from "../../../entities/a/api";
+import { useAuthStore } from "../../../stores/auth.store";
+
+interface ProjectItem {
+  id_reg: number;
+  otrasl: string;
+  count: number;
+  color: string;
+  count_inv_project: number;
+  [key: string]: any;
+}
 
 const loader = ref(true);
 const visible = ref(false);
 const aStore = useAStore();
+const authStore = useAuthStore();
 
 const { a1 } = storeToRefs(aStore);
 
+const filteredA1 = computed(() => {
+  const userRegions = authStore.getAllowedRegions;
+  
+  if (userRegions.some(region => region.id_reg === 0)) {
+    return a1.value;
+  }
+  
+  return a1.value.filter(item => 
+    userRegions.some(region => region.id_reg === item.id_reg)
+  );
+});
+
 async function loadF4() {
-  getA1()
-    .then((res) => {
-      aStore.setA1(res);
-    })
-    .finally(() => {
-      loader.value = false;
-    });
-
-
+  try {
+    const res = await getA1();
+    
+    const userRegions = authStore.getAllowedRegions;
+    
+    aStore.setA1(res);
+  } finally {
+    loader.value = false;
+  }
 }
 
 loadF4();
 
-const list = computed(() =>
-  a1.value.reduce((acc, curr) => {
+const list = computed(() => {
+  return filteredA1.value.reduce((acc: Record<string, ProjectItem>, curr: any) => {
     if (!acc[curr.otrasl]) {
-      acc[curr.otrasl] = { ...curr, count: 1, color: randomColorGenerate() };
+      acc[curr.otrasl] = { 
+        ...curr, 
+        count: 1, 
+        color: randomColorGenerate() 
+      };
       return acc;
     }
 
     acc[curr.otrasl].count += 1;
     acc[curr.otrasl].count_inv_project += curr.count_inv_project;
     return acc;
-  }, {})
-);
+  }, {});
+});
 
 const chartOptions = computed(() => ({
   chart: {
@@ -111,7 +138,7 @@ const chartOptions = computed(() => ({
       name: "Проекты",
       colorByPoint: true,
       innerSize: "85%",
-      data: Object.values(list.value).map((e) => ({
+      data: Object.values(list.value).map((e: ProjectItem) => ({
         name: e.otrasl,
         y: e.count,
         color: e.color,

@@ -16,7 +16,7 @@
   </div>
 </template>
 <script setup lang="ts">
-import { ref } from "vue";
+import { ref, onMounted } from "vue";
 import {
   getSerpin,
   getAulAmanati,
@@ -29,9 +29,11 @@ import B2Widget from "../widgets/B2Widget.vue";
 import B3Widget from "../widgets/B3Widget.vue";
 import B4Widget from "../widgets/B4Widget.vue";
 import B5Widget from "../widgets/B5Widget.vue";
+import { useAuthStore } from "../../../../stores/auth.store";
 
 const loader = ref(true);
 const programStore = useProgramStore();
+const authStore = useAuthStore();
 
 async function loadSerpin() {
   Promise.all([
@@ -45,13 +47,21 @@ async function loadSerpin() {
       programStore.setAulAmanati(aulAmanati);
       programStore.setDiplommenAulga(diplommenAulga);
       programStore.setAulBesigi(aulBesigi);
+      
+      const userRegions = authStore.getAllowedRegions;
+      
+      if (userRegions.length === 1 && userRegions[0].id_reg !== 0) {
+        programStore.setCurrentRegion(String(userRegions[0].id_reg));
+      }
     })
     .finally(() => {
       loader.value = false;
     });
 }
 
-loadSerpin();
+onMounted(() => {
+  loadSerpin();
+});
 </script>
 
 <style scoped lang="scss"></style>

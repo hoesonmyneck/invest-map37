@@ -199,14 +199,15 @@
             <span v-if="currentRaion">, {{ getRaionName(currentRegion, currentRaion) }}</span>
           </span>
         </div>
-        <BaseMap 
+        <RegionAccessMap 
           v-if="!currentRegion"
           :current-region="0" 
           :fill-color="(v: number) => {
             const workPlacesData = getWorkPlacesPercentage(+v);
             return workPlacesData.color;
           }" 
-          @click-polygon="clickPolygon" 
+          @click-polygon="clickPolygon"
+          @region-selected="handleRegionSelected" 
           v-slot="slotProps">
           <div>
             <div class="flex items-center gap-2">
@@ -238,7 +239,7 @@
               </p>
             </div>
           </div>
-        </BaseMap>
+        </RegionAccessMap>
         
         <BaseMapNoMarker
           v-else
@@ -388,7 +389,7 @@
 </template>
 <script setup lang="ts">
 import "leaflet/dist/leaflet.css";
-import { computed, ref, onMounted } from "vue";
+import { computed, ref, onMounted, watch } from "vue";
 import BaseCard from "../../../../shared/ui/BaseCard/BaseCard.vue";
 import { getF5, getF5_1, getF7_total } from "../../../../entities/f/api";
 import { Numeral } from "../../../../shared/helpers/numeral";
@@ -397,7 +398,9 @@ import { getColorFromGradient } from "../../../../shared/helpers/gradientColors"
 import { CloseOutlined, SearchOutlined, SortAscendingOutlined, SortDescendingOutlined, HistoryOutlined } from "@ant-design/icons-vue";
 import BaseMap from "../../../../shared/ui/BaseMap/BaseMap.vue";
 import BaseMapNoMarker from "../../../../shared/ui/BaseMap/BaseMapNoMarker.vue";
+import RegionAccessMap from "../../../../shared/ui/BaseMap/RegionAccessMap.vue";
 import { createApp } from 'vue';
+import { useAuthStore } from "../../../../stores/auth.store";
 
 interface F5Item {
   region: string;
@@ -467,11 +470,31 @@ const sortField = ref('');
 const sortOrder = ref('asc');
 const displayLimit = ref(500);
 
-async function loadF5() {
-  data.value = await getF5();
-  dataList.value = await getF5_1();
+const authStore = useAuthStore();
 
-  loader.value = false;
+async function loadF5() {
+  try {
+    data.value = await getF5();
+    dataList.value = await getF5_1();
+    
+    const userRegions = authStore.getAllowedRegions;
+    
+    if (userRegions.length === 1 && userRegions[0].id_reg !== 0) {
+      currentRegion.value = userRegions[0].id_reg;
+    }
+    
+    try {
+      const [responseF7, responseF5] = await Promise.all([getF7_total(), getF5_2()]);
+      f7Data.value = responseF7;
+      f5Data.value = responseF5;
+    } catch (error) {
+      console.error("Ошибка при загрузке дополнительных данных:", error);
+    }
+  } catch (error) {
+    console.error("Ошибка при загрузке данных:", error);
+  } finally {
+    loader.value = false;
+  }
 }
 
 loadF5();
@@ -491,6 +514,16 @@ const allCount = computed(() =>
     0
   )
 );
+
+const totalUniqueIdSum = computed(() => {
+  const filteredData = data.value.filter(
+    (item) =>
+      (!currentRegion.value || +item.id_reg === currentRegion.value) &&
+      (!currentRaion.value || +item.id_rai === currentRaion.value)
+  );
+  
+  return filteredData.reduce((acc, curr: F5Item) => acc + (curr.total_unique_id || 0), 0);
+});
 
 const _transformedData = computed(() =>
   data.value
@@ -675,6 +708,12 @@ const groupByRaion = (): Record<number, F5Item> => data.value
   }, {});
 
 const chartOptions1 = computed(() => {
+  const filteredType1 = type_1.value;
+  const filteredType2 = type_2.value;
+  
+  const type1Count = filteredType1.reduce((acc: number, curr: F5Item) => acc + curr.new_id, 0);
+  const type2Count = filteredType2.reduce((acc: number, curr: F5Item) => acc + curr.new_id, 0);
+  
   return {
     chart: {
       type: "pie",
@@ -718,12 +757,12 @@ const chartOptions1 = computed(() => {
           {
             name: "Растениеводство",
             color: "#0CCF89",
-            y: type_1.value.reduce((acc: number, curr: F5Item) => acc + curr.new_id, 0),
+            y: type1Count,
           },
           {
             name: "Животноводство",
             color: "#FFA559",
-            y: type_2.value.reduce((acc: number, curr: F5Item) => acc + curr.new_id, 0),
+            y: type2Count,
           },
         ],
       },
@@ -813,19 +852,6 @@ onMounted(async () => {
 
   const responseF5 = await getF5();
   f5Data.value = responseF5;
-});
-
-const totalUniqueIdSum = computed(() => {
-  const uniqueRaions: Record<number, number> = {};
-  f5Data.value.forEach(item => {
-    if ((!currentRegion.value || item.id_reg === currentRegion.value) &&
-        (!currentRaion.value || item.id_rai === currentRaion.value)) {
-      if (!uniqueRaions[item.id_rai]) {
-        uniqueRaions[item.id_rai] = item.total_unique_id || 0;
-      }
-    }
-  });
-  return Object.values(uniqueRaions).reduce((acc: number, curr: number) => acc + curr, 0);
 });
 
 const filteredBin = computed(() => {
@@ -980,6 +1006,12 @@ const filteredWorkPlaces = (regionCode: number | null, raionCode: number | null)
 
 const changeTab = (newTab: number) => {
   tab.value = newTab;
+  
+  if (newTab === 0) {
+  } else if (newTab === 1) {
+  } else if (newTab === 2) {
+  } else if (newTab === 3) {
+  }
 };
 
 const app = createApp({});
@@ -1484,6 +1516,14 @@ const getCityZoom = (regionCode: number | null): number => {
   
   return 6; 
 };
+
+function handleRegionSelected(regionId: number) {
+  if (!authStore.hasAccessToRegion(regionId)) {
+    return;
+  }
+  
+  currentRegion.value = regionId;
+}
 </script>
 
 <style scoped lang="scss">

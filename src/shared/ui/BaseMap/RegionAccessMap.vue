@@ -1,0 +1,106 @@
+<template>
+  <l-map ref="mapRef" :zoom="zoom ?? 5" :max-zoom="5" :min-zoom="4" :center="mapCenter" :options="mapOptions"
+    class="w-full" :use-global-leaflet="false">
+    <l-polygon v-for="feature in polygonFeatures" :key="(feature as any).id_reg"
+      @click="handlePolygonClick((feature as any).properties.id_reg)"
+      :lat-lngs="reverseCoordinates((feature as any).geometry.coordinates as [number, number][][])"
+      v-bind="polygonStyles((feature as any).properties.id_reg)">
+      <l-tooltip class="p-0 bg-transparent rounded-md">
+        <slot :data="(feature as any).properties" />
+      </l-tooltip>
+    </l-polygon>
+  </l-map>
+</template>
+
+<script setup lang="ts">
+import { LMap, LPolygon, LTooltip } from "@vue-leaflet/vue-leaflet";
+import "leaflet/dist/leaflet.css";
+import { useRegionStore } from "../../../entities/region/store";
+import { useAuthStore } from "../../../stores/auth.store";
+import { computed, ref, watch } from "vue";
+import { reverseCoordinates } from "../../helpers/reverseCoordinates";
+
+const DEFAULT_MAP_CENTER = [49.213962, 67.109173] as [number, number];
+const MAP_OPTIONS = { 
+  zoomControl: false,
+  dragging: false, 
+  doubleClickZoom: false,
+  scrollWheelZoom: false,
+  touchZoom: false,
+  boxZoom: false
+};
+const DEFAULT_POLYGON_STYLES = {
+  color: "white",
+  opacity: 1,
+  weight: 1,
+  fillOpacity: 1,
+};
+
+interface Props {
+  fillColor: (data: any) => string;
+  currentRegion?: number;
+  zoom?: number;
+}
+
+const props = defineProps<Props>();
+
+const emit = defineEmits<{
+  (e: "clickPolygon", value: string): void;
+  (e: "region-selected", value: number): void;
+}>();
+
+const { regionPolygons } = useRegionStore();
+const authStore = useAuthStore();
+
+const polygonFeatures = computed(() => {
+  if (!regionPolygons) return [];
+  if (typeof regionPolygons !== 'object') return [];
+  
+  try {
+    const features = (regionPolygons as any).features;
+    if (!features || typeof features !== 'object') {
+      console.warn('Отсутствуют или некорректны данные regionPolygons.features');
+      return [];
+    }
+    
+    return Object.values(features);
+  } catch (error) {
+    console.error('Ошибка при получении полигонов:', error);
+    return [];
+  }
+});
+
+const mapCenter = computed(() => DEFAULT_MAP_CENTER);
+const mapOptions = computed(() => MAP_OPTIONS);
+
+const getColor = (code: number): string => {
+  if (!authStore.hasAccessToRegion(code)) {
+    return "#222732";
+  }
+  
+  if (!props.currentRegion) return props.fillColor(code);
+  return props.currentRegion === code ? props.fillColor(code) : "#252A36";
+};
+
+const polygonStyles = (code: number) => ({
+  ...DEFAULT_POLYGON_STYLES,
+  fillColor: getColor(+code),
+});
+
+const handlePolygonClick = (code: string) => {
+  const regionId = +code;
+  
+  if (!authStore.hasAccessToRegion(regionId)) {
+    return;
+  }
+  
+  emit("clickPolygon", code);
+  emit("region-selected", regionId);
+};
+
+const mapRef = ref(null);
+
+watch(() => props.currentRegion, (newRegion) => {
+  console.log(`Изменен регион на: ${newRegion}`);
+}, { immediate: true });
+</script> 

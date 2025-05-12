@@ -52,7 +52,7 @@
                @click="selectLabel(10)">МинТранспорт</p>
           </div>
         </transition>
-      </div> -->
+      </div>
     </div>
     
     <div class="text-white grid grid-cols-[200px_1fr] gap-2">

@@ -30,11 +30,12 @@
     
     <div class="map-container ml-3" style="margin-top: 30px;">
       <div class="map-absolute">
-        <BaseMap
+        <RegionAccessMap
           v-if="!regionNumber"
           :current-region="undefined"
           :fill-color="getRegionFillColor"
           @click-polygon="clickPolygon"
+          @region-selected="handleRegionSelected"
           v-slot="slotProps"
         >
           <div>
@@ -51,7 +52,7 @@
               </p>
             </div>
           </div>
-        </BaseMap>
+        </RegionAccessMap>
         
         <BaseMapNoMarker
           v-if="regionNumber"
@@ -87,13 +88,16 @@ import { useProgramStore } from "../store";
 import { storeToRefs } from "pinia";
 import BaseMap from "../../../../shared/ui/BaseMap/BaseMap.vue";
 import BaseMapNoMarker from "../../../../shared/ui/BaseMap/BaseMapNoMarker.vue";
+import RegionAccessMap from "../../../../shared/ui/BaseMap/RegionAccessMap.vue";
 import { getColorFromGradient } from "../../../../shared/helpers/gradientColors";
 import { CloseOutlined } from "@ant-design/icons-vue";
 import { useRegionStore } from "../../../../entities/region/store";
+import { useAuthStore } from "../../../../stores/auth.store";
 import "leaflet/dist/leaflet.css";
 
 const programStore = useProgramStore();
 const regionStore = useRegionStore();
+const authStore = useAuthStore();
 const { current_key, currentRegion, currentRaion, serpin, aulAmanati, diplommenAulga } =
   storeToRefs(programStore);
 
@@ -153,6 +157,10 @@ const maxTotalRaion = computed(
 );
 
 const getRegionFillColor = (v: string) => {
+  if (!authStore.hasAccessToRegion(+v)) {
+    return "#222732";
+  }
+  
   if (!groupByRegion.value || !groupByRegion.value[v]) {
     return getColorFromGradient(0, false, false, 10);
   }
@@ -313,18 +321,31 @@ const getCityZoom = (regionCode: number | null): number => {
   return 6; 
 };
 
-const clickPolygon = (code: string | null) => {
+const clickPolygon = (code: string) => {
+  if (!authStore.hasAccessToRegion(+code)) {
+    return;
+  }
+  
   programStore.setCurrentRegion(code);
 };
 
-const clickRaion = (code: string | null) => {
+const clickRaion = (code: string) => {
   programStore.setCurrentRaion(code);
 };
 
 const handleReset = () => {
-  programStore.setCurrentRegion(null);
-  programStore.setCurrentRaion(null);
+  if (currentRaion.value) {
+    programStore.setCurrentRaion(null);
+  } else {
+    programStore.setCurrentRegion(null);
+  }
 };
+
+function handleRegionSelected(regionId: number) {
+  if (authStore.hasAccessToRegion(regionId)) {
+    programStore.setCurrentRegion(String(regionId));
+  }
+}
 </script>
 
 <style scoped lang="scss">

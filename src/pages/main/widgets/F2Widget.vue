@@ -4,19 +4,27 @@
       <div class="flex pt-5 justify-center items-center w-full" v-if="loader">
         <a-spin />
       </div>
-      <div class="flex gap-1 text-white mt-1 mb-1">
-        <div :class="{ active: tab === 0 }" @click="tab = 0" class="btn">
-          По отраслям
-        </div>
-        <div :class="{ active: tab === 1 }" @click="tab = 1" class="btn">
-          Качественные рабочие места
+      <div class="flex justify-between text-white mt-1 mb-1">
+        <div class="flex gap-1">
+          <div :class="{ active: tab === 0 }" @click="tab = 0" class="btn">
+            По отраслям
+          </div>
+          <div :class="{ active: tab === 1 }" @click="tab = 1" class="btn">
+            Качественные рабочие места
+          </div>
         </div>
       </div>
       <div class="overflow-auto h-[calc(42vh-66px)]" v-if="tab === 0">
-        <highcharts :options="chartOptions" class="w-full m-auto h-max"></highcharts>
+        <div v-if="list.length === 0" class="flex items-center justify-center h-full text-gray-400">
+          Нет данных для отображения
+        </div>
+        <highcharts v-else :options="chartOptions" class="w-full m-auto h-max"></highcharts>
       </div>
       <div v-if="tab === 1" class="overflow-auto h-[calc(42vh-66px)]">
-          <highcharts :options="chartOptions2" class="w-full m-auto h-max"></highcharts>
+          <div v-if="filteredData.length === 0" class="flex items-center justify-center h-full text-gray-400">
+            Нет данных для отображения
+          </div>
+          <highcharts v-else :options="chartOptions2" class="w-full m-auto h-max"></highcharts>
         </div> 
     </BaseCard>
 
@@ -24,11 +32,12 @@
   </div>
 </template>
 <script setup lang="ts">
-import { computed, ref, onMounted } from "vue";
+import { computed, ref, onMounted, watch } from "vue";
 import BaseCard from "../../../shared/ui/BaseCard/BaseCard.vue";
 import { getF2_new, getF6, getF2_2023 } from "../../../entities/f/api";
 import { Numeral } from "../../../shared/helpers/numeral";
 import F2ModalWidget from "./modals/F2ModalWidget.vue";
+import { useAuthStore } from "../../../stores/auth.store";
 
 const tab = ref(0);
 
@@ -45,8 +54,6 @@ interface F2Data {
   proc: number;
   prognoz: number;
   region: string | null;
-  id_reg: string | null;
-  id_rai: string | null;
 }
 
 interface F6Data {
@@ -60,8 +67,6 @@ interface F6Data {
   cnt: number;
   cnt_quality: number;
   cnt_not_quality: number;
-  id_reg: number | string | null;
-  id_rai: number | string | null;
 }
 
 interface F2_2023_Data {
@@ -81,19 +86,32 @@ const data = ref<F2Data[]>([]);
 const dataF6 = ref<F6Data[]>([]);
 const dataF6_2023 = ref<F6Data[]>([]);
 const visible = ref(false);
-const currentRegion = ref("");
+const currentRegion = ref<number | null>(null);
 const selectedYear = ref('2024');
+const authStore = useAuthStore();
 
 async function loadF2() {
   try {
+    loader.value = true;
+    
     const [f2Data, f6Data, f6Data2023] = await Promise.all([
       getF2_new(),
       getF6(),
       getF2_2023()
     ]);
     
-    data.value = f2Data;
-    dataF6.value = f6Data;
+    data.value = f2Data.map((item: any) => ({
+      ...item,
+      id_reg: typeof item.id_reg === 'string' ? Number(item.id_reg) : item.id_reg,
+      id_rai: typeof item.id_rai === 'string' ? Number(item.id_rai) : item.id_rai
+    }));
+    
+    dataF6.value = f6Data.map((item: any) => ({
+      ...item,
+      id_reg: typeof item.id_reg === 'string' ? Number(item.id_reg) : item.id_reg,
+      id_rai: typeof item.id_rai === 'string' ? Number(item.id_rai) : item.id_rai
+    }));
+    
     dataF6_2023.value = f6Data2023.map((item: F2_2023_Data) => ({
       tp: item.TP,
       id_reg: item.REGID ? Number(item.REGID) : null,
@@ -101,15 +119,21 @@ async function loadF2() {
       id_rai: item.IDRAI ? Number(item.IDRAI) : null,
       rai_ru: item.RAI_RU || null,
       vcode_oked: item.VCODE_OKED || '',
-      vname_oked: item.VNAME_OKED || item.REG_RU || '',
+      vname_oked: item.VNAME_OKED || '',
       cnt: item.CNT,
       cnt_quality: item.CNT_QUALITY,
-      cnt_not_quality: item.CNT - item.CNT_QUALITY,
-      id_reg: item.REGID ? Number(item.REGID) : null,
-      id_rai: item.IDRAI ? Number(item.IDRAI) : null
+      cnt_not_quality: item.CNT - item.CNT_QUALITY
     }));
+    
+    const userRegions = authStore.getAllowedRegions;
+    
+    if (userRegions.length === 1 && userRegions[0].id_reg !== 0) {
+      currentRegion.value = userRegions[0].id_reg;
+    }
+    
+    tab.value = 0;
   } catch (error) {
-    console.error("Ошибка загрузки данных:", error);
+    console.error("Ошибка загрузки данных F2:", error);
   } finally {
     loader.value = false;
   }
@@ -127,10 +151,59 @@ const EXCLUDED_OKED_CATEGORIES = [
 
 const filteredData = computed(() => {
   const dataSource = selectedYear.value === '2023' ? dataF6_2023.value : dataF6.value;
-  return dataSource
-    .filter(item => item.tp === 2)
-    .filter(item => !EXCLUDED_OKED_CATEGORIES.includes(item.vname_oked))
-    .sort((a, b) => b.cnt_not_quality - a.cnt_not_quality);
+  
+  if (!dataSource || dataSource.length === 0) {
+    return [];
+  }
+  
+  const userRegions = authStore.getAllowedRegions;
+  
+  let filtered = [];
+  
+  if (currentRegion.value !== null) {
+    filtered = dataSource.filter(item => 
+      (item.tp === 3 || item.tp === 2) && 
+      item.id_reg === currentRegion.value
+    );
+    
+    if (filtered.length === 0) {
+      filtered = dataSource.filter(item => 
+        item.tp === 1 && 
+        item.id_reg === currentRegion.value
+      );
+    }
+  } else {
+    filtered = dataSource.filter(item => item.tp === 2);
+    
+    if (!userRegions.some(region => region.id_reg === 0)) {
+      filtered = filtered.filter(item => 
+        userRegions.some(region => region.id_reg === item.id_reg)
+      );
+    }
+  }
+  
+  filtered = filtered.filter(item => !EXCLUDED_OKED_CATEGORIES.includes(item.vname_oked));
+  
+  console.log(`Отфильтровано ${filtered.length} записей F6 для региона ${currentRegion.value}`);
+  
+  const grouped = filtered.reduce((acc, curr) => {
+    const key = curr.vcode_oked;
+    if (!acc[key]) {
+      acc[key] = {
+        ...curr,
+        cnt: curr.cnt || 0,
+        cnt_quality: curr.cnt_quality || 0,
+        cnt_not_quality: curr.cnt_not_quality || 0
+      };
+    } else {
+      acc[key].cnt += curr.cnt || 0;
+      acc[key].cnt_quality += curr.cnt_quality || 0;
+      acc[key].cnt_not_quality += curr.cnt_not_quality || 0;
+    }
+    return acc;
+  }, {} as Record<string, F6Data>);
+  
+  return Object.values(grouped).sort((a, b) => b.cnt - a.cnt);
 });
 
 const chartOptions2 = computed(() => {
@@ -262,33 +335,61 @@ const chartOptions2 = computed(() => {
   };
 });
 
-const list = computed(() =>
-  Object.values(
-    data.value
-      .filter((item) => item.tip === 1)
-      .filter((item) =>
-        !!currentRegion.value ? item.id_reg === currentRegion.value : true
-      )
-      .filter((item) => item.vname_oked !== "Окэд не указан")
-      .reduce((acc, curr) => {
-        if (!curr.vcode_oked) return acc;
+const list = computed(() => {
+  const userRegions = authStore.getAllowedRegions;
+  
+  if (!data.value || data.value.length === 0) {
+    return [];
+  }
+  
+  let filtered = data.value;
+  
+  if (currentRegion.value !== null) {
+    filtered = filtered.filter((item) => {
+      return item.tip === 2 && item.id_reg === currentRegion.value;
+    });
+    
+    if (filtered.length === 0) {
+      filtered = data.value.filter((item) => {
+        return item.tip === 3 && item.id_reg === currentRegion.value;
+      });
+    }
+  } else {
+    filtered = filtered.filter((item) => item.tip === 1);
+    
+    if (!userRegions.some(region => region.id_reg === 0)) {
+      filtered = filtered.filter(item => 
+        userRegions.some(region => region.id_reg === item.id_reg)
+      );
+    }
+  }
+  
+  filtered = filtered.filter((item) => item.vname_oked !== "Окэд не указан");
 
-        if (!acc[curr.vcode_oked]) {
-          acc[curr.vcode_oked] = { ...curr };
-          return acc;
-        }
+  console.log(`Отфильтровано ${filtered.length} записей для региона ${currentRegion.value}`);
 
-        acc[curr.vcode_oked].cnt_2024 += curr.cnt_2024;
+  return Object.values(
+    filtered.reduce((acc, curr) => {
+      if (!curr.vcode_oked) return acc;
+
+      if (!acc[curr.vcode_oked]) {
+        acc[curr.vcode_oked] = { ...curr };
         return acc;
-      }, {} as Record<string, F2Data>)
-  ).sort((a, b) => b.cnt_2024 - a.cnt_2024)
-);
+      }
+
+      acc[curr.vcode_oked].cnt_2023 += curr.cnt_2023;
+      acc[curr.vcode_oked].cnt_2024 += curr.cnt_2024;
+      acc[curr.vcode_oked].proc = ((acc[curr.vcode_oked].cnt_2024 - acc[curr.vcode_oked].cnt_2023) / acc[curr.vcode_oked].cnt_2023) * 100;
+      return acc;
+    }, {} as Record<string, F2Data>)
+  ).sort((a, b) => b.cnt_2024 - a.cnt_2024);
+});
 
 const groupByRegion = computed(() =>
   data.value
     .filter((item) => item.tip === 1)
     .filter((item) =>
-      !!currentRegion.value ? item.id_reg === currentRegion.value : true
+      currentRegion.value !== null ? item.id_reg === currentRegion.value : true
     )
     .reduce((acc, curr) => {
       if (!acc[curr.id_reg || '']) {
@@ -321,6 +422,10 @@ const chartOptions = computed(() => {
     },
     title: {
       text: "",
+      style: {
+        color: "#fff",
+        fontSize: "14px"
+      }
     },
     legend: {
       enabled: false,
@@ -351,7 +456,7 @@ const chartOptions = computed(() => {
       },
     },
     xAxis: {
-      categories: list.value.map((item) => item.vname_oked),
+      categories: list.value.slice(0, 10).map((item) => item.vname_oked),
       tickmarkPlacement: "on",
       labels: {
         style: {
@@ -378,7 +483,7 @@ const chartOptions = computed(() => {
         pointWidth: 14,
         borderWidth: 0,
         maxPointWidth: 300,
-        data: list.value.map((e) => ({
+        data: list.value.slice(0, 10).map((e) => ({
           y: e.cnt_2024,
           color: "#3090E8",
           price: Numeral(e.cnt_2024),
@@ -387,4 +492,18 @@ const chartOptions = computed(() => {
     ],
   };
 });
+
+onMounted(() => {
+  loadF2();
+  
+  setTimeout(() => {
+    console.log(`Загружено записей: ${data.value.length}, отфильтровано: ${list.value.length}`);
+    console.log(`Текущий регион: ${currentRegion.value}, доступные регионы:`, authStore.getAllowedRegions);
+  }, 2000);
+});
+
+function getRegionName(regionId: number): string {
+  const regions = authStore.getAllowedRegions;
+  return regions.find(r => r.id_reg === regionId)?.name || `Регион ${regionId}`;
+}
 </script>

@@ -120,7 +120,12 @@
             <CloseOutlined />
           </div>
         </div>
-        <BaseMap :current-region="currentRegion ? +currentRegion : undefined" :fill-color="getRegionColor" @click-polygon="clickPolygon" v-slot="slotProps">
+        <BaseMap 
+          :current-region="currentRegion ? +currentRegion : undefined" 
+          :fill-color="getRegionColor" 
+          @click-polygon="clickPolygon"
+          v-slot="slotProps"
+        >
           <div>
             <div class="flex items-center gap-2">
               <p>Регион:</p>
@@ -140,6 +145,7 @@ import { getF3 } from "../../../../entities/f/api";
 import { getColorFromGradient } from "../../../../shared/helpers/gradientColors";
 import { CloseOutlined } from "@ant-design/icons-vue";
 import BaseMap from "../../../../shared/ui/BaseMap/BaseMap.vue";
+import { useAuthStore } from "../../../../stores/auth.store";
 
 interface F3Item {
   id_reg: number;
@@ -172,11 +178,28 @@ const nkzGroupCache = ref<{
   byResume: []
 });
 
+const authStore = useAuthStore();
+
 async function loadF3() {
   loader.value = true;
 
   try {
-    data.value = await getF3() as F3Item[];
+    const allData = await getF3() as F3Item[];
+    
+    const userRegions = authStore.getAllowedRegions;
+    
+    if (!userRegions.some(region => region.id_reg === 0)) {
+      data.value = allData.filter(item => 
+        userRegions.some(region => region.id_reg === item.id_reg)
+      );
+    } else {
+      data.value = allData;
+    }
+    
+    if (userRegions.length === 1 && userRegions[0].id_reg !== 0) {
+      currentRegion.value = userRegions[0].id_reg;
+    }
+    
     prepareData();
   } finally {
     loader.value = false;
@@ -198,7 +221,9 @@ function updateNkzCache() {
 }
 
 function clickPolygon(code: string) {
-  currentRegion.value = +code;
+  const regionId = +code;
+  currentRegion.value = regionId;
+  updateNkzCache();
 }
 
 function getRegionColor(code: string) {
@@ -212,13 +237,13 @@ function getRegionColor(code: string) {
 }
 
 function groupByNkzInternal(): GroupedItem[] {
-  const filteredData = data.value.filter(item => 
-    !currentRegion.value ? true : item.id_reg === currentRegion.value
-  );
+  const dataToProcess = currentRegion.value !== null
+    ? data.value.filter(item => item.id_reg === currentRegion.value)
+    : data.value;
   
   const grouped: Record<string, GroupedItem> = {};
   
-  for (const item of filteredData) {
+  for (const item of dataToProcess) {
     if (!item.name_nkz) continue;
     
     if (!grouped[item.name_nkz]) {
@@ -279,9 +304,21 @@ const maxRegionResumeCount = computed(() => {
   return regions.length > 0 ? regions[0].resume_count : 0;
 });
 
-const filteredData = computed(() => 
-  data.value.filter(item => !currentRegion.value ? true : item.id_reg === currentRegion.value)
-);
+const filteredData = computed(() => {
+  const userRegions = authStore.getAllowedRegions;
+  
+  return data.value.filter(item => {
+    if (currentRegion.value) {
+      return item.id_reg === currentRegion.value;
+    }
+    
+    if (userRegions.some(region => region.id_reg === 0)) {
+      return true;
+    }
+    
+    return userRegions.some(region => region.id_reg === item.id_reg);
+  });
+});
 
 const qual_prof = computed(() => 
   filteredData.value.reduce((acc, curr) => acc + curr.qual_prof, 0)
